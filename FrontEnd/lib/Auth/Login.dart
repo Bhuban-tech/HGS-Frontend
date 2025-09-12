@@ -1,7 +1,7 @@
-import 'package:HamroGharSewa/Project4/ServiceProviderSignUp.dart';
-import 'package:HamroGharSewa/Project4/UserSignUp.dart';
+import 'package:HamroGharSewa/Auth/ServiceProviderSignUp.dart';
+import 'package:HamroGharSewa/Auth/SignUp.dart';
+import 'package:HamroGharSewa/LandingPage/Landing.dart';
 import 'package:flutter/material.dart';
-
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -10,9 +10,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'HomeService Platform',
-      theme: ThemeData(
-        primarySwatch: Colors.green,
-      ),
+      theme: ThemeData(primarySwatch: Colors.green),
       home: const LoginPage(),
     );
   }
@@ -41,72 +39,18 @@ class _LoginPageState extends State<LoginPage> {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               // Logo
-              Image.asset(
-                "assets/logoo.png",
-                height: 150,
-              ),
+              Image.asset("assets/logoo.png", height: 150),
               const Text(
                 "Login to HamroGharSewa",
                 style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.green),
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.green,
+                ),
                 textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 20),
 
-              // Toggle Buttons
-              Row(
-                children: [
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: () {
-                        setState(() {
-                          isUserSelected = true;
-                        });
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor:
-                            isUserSelected ? Colors.green : Colors.white,
-                        foregroundColor:
-                            isUserSelected ? Colors.white : Colors.black,
-                        side: const BorderSide(color: Colors.green),
-                        shape: const RoundedRectangleBorder(
-                          borderRadius: BorderRadius.only(
-                            topLeft: Radius.circular(8),
-                            bottomLeft: Radius.circular(8),
-                          ),
-                        ),
-                      ),
-                      child: const Text("Customer"),
-                    ),
-                  ),
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: () {
-                        setState(() {
-                          isUserSelected = false;
-                        });
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor:
-                            !isUserSelected ? Colors.green : Colors.white,
-                        foregroundColor:
-                            !isUserSelected ? Colors.white : Colors.black,
-                        side: const BorderSide(color: Colors.green),
-                        shape: const RoundedRectangleBorder(
-                          borderRadius: BorderRadius.only(
-                            topRight: Radius.circular(8),
-                            bottomRight: Radius.circular(8),
-                          ),
-                        ),
-                      ),
-                      child: const Text("Service Provider"),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 25),
+              const SizedBox(height: 35),
 
               // Email Input
               TextField(
@@ -150,14 +94,15 @@ class _LoginPageState extends State<LoginPage> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                              builder: (context) => const UserSignUp()),
+                            builder: (context) => const SignupPage(),
+                          ),
                         );
                       } else {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                              builder: (context) =>
-                                  const ServiceProviderSignUp()),
+                            builder: (context) => const ServiceProviderSignUp(),
+                          ),
                         );
                       }
                     },
@@ -179,7 +124,12 @@ class _LoginPageState extends State<LoginPage> {
                 height: 50,
                 child: ElevatedButton(
                   onPressed: () {
-                    // login action
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const LandingPage(),
+                      ),
+                    );
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.green,
@@ -190,13 +140,14 @@ class _LoginPageState extends State<LoginPage> {
                   child: const Text(
                     "Login",
                     style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white),
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
                   ),
                 ),
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 0),
 
               // Google Button
               SizedBox(

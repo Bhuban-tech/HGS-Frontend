@@ -1,6 +1,6 @@
-import 'package:HamroGharSewa/Auth/ServiceProviderSignUp.dart';
+
 import 'package:HamroGharSewa/Auth/SignUp.dart';
-import 'package:HamroGharSewa/LandingPage/Landing.dart';
+import 'package:HamroGharSewa/LandingPage/Hero.dart';
 import 'package:flutter/material.dart';
 
 class MyApp extends StatelessWidget {
@@ -39,7 +39,7 @@ class _LoginPageState extends State<LoginPage> {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               // Logo
-              Image.asset("assets/logoo.png", height: 150),
+              Image.asset("assets/logo.png", height: 150),
               const Text(
                 "Login to HamroGharSewa",
                 style: TextStyle(
@@ -97,13 +97,6 @@ class _LoginPageState extends State<LoginPage> {
                             builder: (context) => const SignupPage(),
                           ),
                         );
-                      } else {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const ServiceProviderSignUp(),
-                          ),
-                        );
                       }
                     },
                     child: const Text(
@@ -127,7 +120,7 @@ class _LoginPageState extends State<LoginPage> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => const LandingPage(),
+                        builder: (context) => const HeroPage(),
                       ),
                     );
                   },

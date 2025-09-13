@@ -1,5 +1,6 @@
 import 'package:HamroGharSewa/Auth/Login.dart';
 import 'package:HamroGharSewa/Auth/SignUp.dart';
+import 'package:HamroGharSewa/LandingPage/Hero.dart';
 import 'package:HamroGharSewa/LandingPage/Landing.dart';
 import 'package:flutter/material.dart';
 
@@ -20,8 +21,8 @@ class MyApp extends StatelessWidget {
       routes: {
         '/login': (context) => const LoginPage(),
         '/signup': (context) => const SignupPage(),
-        '/landing': (context) => const LandingPage(),
-      
+        '/hero': (context) => const HeroPage(),
+        '/userdashboard': (context) => const UserDashboard(),
       },
     );
   }

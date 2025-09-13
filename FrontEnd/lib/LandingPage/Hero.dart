@@ -1,0 +1,134 @@
+import 'package:flutter/material.dart';
+import 'package:HamroGharSewa/LandingPage/Landing.dart';
+
+class HeroPage extends StatelessWidget {
+  const HeroPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.blue[50],
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(30.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              const SizedBox(height: 40),
+
+              // App logo centered
+              Center(
+                child: Image.asset('assets/logo.png', height: 120),
+              ),
+
+              const SizedBox(height: 30),
+
+              const Text(
+                'Welcome to',
+                style: TextStyle(
+                  fontSize: 38,
+                  fontWeight: FontWeight.bold,
+                ),
+                textAlign: TextAlign.center,
+              ),
+
+              const SizedBox(height: 10),
+              const Text(
+                'HamroGharSewa',
+                style: TextStyle(
+                  fontSize: 45,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF3A8EE6), // Solid blue color
+                ),
+                textAlign: TextAlign.center,
+              ),
+
+              const SizedBox(height: 10),
+
+              const Text(
+                "Connect with verified service providers for all your home needs. From plumbing to cleaning, we've got you covered.",
+                style: TextStyle(
+                  fontSize: 22,
+                  color: Colors.blueGrey,
+                ),
+                textAlign: TextAlign.center,
+              ),
+
+              const SizedBox(height: 40),
+
+              // Find Services Button
+              SizedBox(
+                width: double.infinity,
+                height: 50,
+                child: ElevatedButton(
+                  onPressed: () {
+                    Navigator.pushNamed(context, '/userdashboard');
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF3A8EE6),
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    mainAxisSize: MainAxisSize.min,
+                    children: const [
+                      Text(
+                        "Find Services",
+                        style: TextStyle(fontSize: 18),
+                      ),
+                      SizedBox(width: 15),
+                      Icon(Icons.arrow_forward),
+                    ],
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 20),
+
+              // Become a Provider Button
+              SizedBox(
+                width: double.infinity,
+                height: 50,
+                child: ElevatedButton(
+                  onPressed: () {
+                    Navigator.pushReplacementNamed(context, '/home');
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.white,
+                    foregroundColor: const Color(0xFF3A8EE6),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    side: const BorderSide(color: Color(0xFF3A8EE6)),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    mainAxisSize: MainAxisSize.min,
+                    children: const [
+                      Text(
+                        "Become a Provider",
+                        style: TextStyle(fontSize: 18),
+                      ),
+                      SizedBox(width: 15),
+                      Icon(Icons.person_4_outlined),
+                    ],
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 20),
+
+              // Optional: Landing Page Widget
+              const LandingPage(),
+
+              const SizedBox(height: 20),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}

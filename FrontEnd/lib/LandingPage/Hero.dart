@@ -7,6 +7,10 @@ class HeroPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        title: const Text(''),
+        backgroundColor: const Color(0xFF3A8EE6),
+      ),
       backgroundColor: Colors.blue[50],
       body: SafeArea(
         child: SingleChildScrollView(
@@ -33,14 +37,24 @@ class HeroPage extends StatelessWidget {
               ),
 
               const SizedBox(height: 10),
-              const Text(
-                'HamroGharSewa',
-                style: TextStyle(
-                  fontSize: 45,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF3A8EE6), // Solid blue color
+              ShaderMask(
+                shaderCallback: (bounds) => const LinearGradient(
+                  colors: [
+                    Color(0xFF3A7BFF),
+                    Color(0xFF9745F5),
+                  ],
+                  begin: Alignment.centerLeft,
+                  end: Alignment.centerRight,
+                ).createShader(Rect.fromLTWH(0, 0, bounds.width, bounds.height)),
+                child: const Text(
+                  'HamroGharSewa',
+                  style: TextStyle(
+                    fontSize: 45,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white, // This will be masked by shader
+                  ),
+                  textAlign: TextAlign.center,
                 ),
-                textAlign: TextAlign.center,
               ),
 
               const SizedBox(height: 10),

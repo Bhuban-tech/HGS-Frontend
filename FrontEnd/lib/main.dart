@@ -1,7 +1,7 @@
 import 'package:HamroGharSewa/Auth/Login.dart';
 import 'package:HamroGharSewa/Auth/SignUp.dart';
+import 'package:HamroGharSewa/DashBoard/User.dart';
 import 'package:HamroGharSewa/LandingPage/Hero.dart';
-import 'package:HamroGharSewa/LandingPage/Landing.dart';
 import 'package:flutter/material.dart';
 
 void main() async {

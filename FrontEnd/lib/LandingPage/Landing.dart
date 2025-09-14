@@ -35,7 +35,7 @@ class LandingPage extends StatelessWidget {
           children: [
             const SizedBox(height: 30),
 
-            // Horizontal stats
+
             SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.symmetric(horizontal: 10),
@@ -84,9 +84,11 @@ class LandingPage extends StatelessWidget {
                         'Professional services for every',
                         style: TextStyle(
                           fontSize: 22,
-                          color: Colors.blueGrey,
+                          color: Colors.blue,
+
                         ),
                       ),
+
                       Padding(
                         padding: EdgeInsets.fromLTRB(60, 0, 0, 0),
                         child: Text(
@@ -112,7 +114,7 @@ class LandingPage extends StatelessWidget {
                 children: services.map((service) {
                   return Card(
                     elevation: 6,
-                    shadowColor: Colors.grey.shade300,
+                    shadowColor: Colors.blue,
                     margin: const EdgeInsets.only(bottom: 16),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),

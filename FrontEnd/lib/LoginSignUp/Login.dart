@@ -1,5 +1,6 @@
-import 'package:HamroGharSewa/Project4/ServiceProviderSignUp.dart';
-import 'package:HamroGharSewa/Project4/UserSignUp.dart';
+
+import 'package:HamroGharSewa/LoginSignUp/ServiceProviderSignUp.dart';
+import 'package:HamroGharSewa/LoginSignUp/UserSignUp.dart';
 import 'package:flutter/material.dart';
 
 

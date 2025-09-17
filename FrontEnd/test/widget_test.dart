@@ -7,7 +7,11 @@
 
 // import 'package:Kritim_Guru/TestSeries/test_series.dart' show MyApp;
 
+<<<<<<< HEAD
 import 'package:HamroGharSewa/LoginSignUp/Login.dart';
+=======
+import 'package:HamroGharSewa/Auth/Login.dart';
+>>>>>>> cea955abe677de8ed180225d727a71f965238fdf
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 

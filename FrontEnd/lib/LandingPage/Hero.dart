@@ -36,7 +36,6 @@ class HeroPage extends StatelessWidget {
                 textAlign: TextAlign.center,
               ),
 
-              const SizedBox(height: 10),
               ShaderMask(
                 shaderCallback: (bounds) => const LinearGradient(
                   colors: [

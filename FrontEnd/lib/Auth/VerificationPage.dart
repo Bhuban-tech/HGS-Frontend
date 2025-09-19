@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:HamroGharSewa/Auth/ResetPassword.dart';
 
 class VerificationPage extends StatefulWidget {
   final String email;
@@ -26,9 +27,8 @@ class _VerificationPageState extends State<VerificationPage> {
         const SnackBar(content: Text("OTP Verified Successfully")),
       );
 
-      // Example: Navigate to Reset Password page
-      // Navigator.push(context,
-      //   MaterialPageRoute(builder: (context) => ResetPasswordPage()));
+      Navigator.push(context,
+        MaterialPageRoute(builder: (context) => ResetPasswordPage()));
     } else {
       setState(() {
         errorMessage = "Enter the 4-digit OTP code";

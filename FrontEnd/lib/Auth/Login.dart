@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:HamroGharSewa/Auth/ForgetPassword.dart';
+import 'package:HamroGharSewa/Auth/SignUp.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -84,69 +85,6 @@ class _LoginPageState extends State<LoginPage> {
 
                   const SizedBox(height: 30),
 
-                  // // Toggle (User / Service Provider)
-                  // Container(
-                  //   decoration: BoxDecoration(
-                  //     color: Colors.white.withOpacity(0.2),
-                  //     borderRadius: BorderRadius.circular(30),
-                  //   ),
-                  //   child: Row(
-                  //     children: [
-                  //       Expanded(
-                  //         child: GestureDetector(
-                  //           onTap: () => toggleSelection(true),
-                  //           child: Container(
-                  //             padding: const EdgeInsets.symmetric(vertical: 12),
-                  //             decoration: BoxDecoration(
-                  //               color: isUserSelected
-                  //                   ? Colors.white
-                  //                   : Colors.transparent,
-                  //               borderRadius: BorderRadius.circular(30),
-                  //             ),
-                  //             alignment: Alignment.center,
-                  //             child: Text(
-                  //               "User",
-                  //               style: TextStyle(
-                  //                 color: isUserSelected
-                  //                     ? Colors.blue
-                  //                     : Colors.black87,
-                  //                 fontWeight: FontWeight.bold,
-                  //               ),
-                  //             ),
-                  //           ),
-                  //         ),
-                  //       ),
-                  //       Expanded(
-                  //         child: GestureDetector(
-                  //           onTap: () => toggleSelection(false),
-                  //           child: Container(
-                  //             padding: const EdgeInsets.symmetric(vertical: 12),
-                  //             decoration: BoxDecoration(
-                  //               color: !isUserSelected
-                  //                   ? Colors.white
-                  //                   : Colors.transparent,
-                  //               borderRadius: BorderRadius.circular(30),
-                  //             ),
-                  //             alignment: Alignment.center,
-                  //             child: Text(
-                  //               "Service Provider",
-                  //               style: TextStyle(
-                  //                 color: !isUserSelected
-                  //                     ? Colors.blue
-                  //                     : Colors.black87,
-                  //                 fontWeight: FontWeight.bold,
-                  //               ),
-                  //             ),
-                  //           ),
-                  //         ),
-                  //       ),
-                  //     ],
-                  //   ),
-                  // ),
-
-
-
-                  // Email
                   TextField(
                     controller: emailController,
                     decoration: InputDecoration(
@@ -263,7 +201,10 @@ class _LoginPageState extends State<LoginPage> {
                       const Text("Don’t have an account? "),
                       GestureDetector(
                         onTap: () {
-                          // Navigate to signup
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => const SignUpPage()),
+                          );
                         },
                         child: const Text(
                           "Sign Up",

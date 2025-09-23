@@ -1,3 +1,5 @@
+import 'package:HamroGharSewa/LandingPage/Hero.dart';
+import 'package:HamroGharSewa/LandingPage/Landing.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:HamroGharSewa/Auth/ForgetPassword.dart';
@@ -65,8 +67,6 @@ class _LoginPageState extends State<LoginPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-
-                  // Logo
                   const Icon(
                     Icons.home_repair_service,
                     size: 80,
@@ -143,11 +143,16 @@ class _LoginPageState extends State<LoginPage> {
 
                   const SizedBox(height: 20),
 
-                  // Login Button
+
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
-                      onPressed: () {},
+                      onPressed: () {
+                        Navigator.push(context,
+                          MaterialPageRoute(builder: (context) => const HeroPage(),
+                          ),
+                        );
+                      },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.blue,
                         padding: const EdgeInsets.symmetric(vertical: 14),

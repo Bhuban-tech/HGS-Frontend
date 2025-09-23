@@ -1,8 +1,8 @@
-import 'package:flutter/material.dart';
 import 'package:HamroGharSewa/LandingPage/Landing.dart';
+import 'package:flutter/material.dart';
 
 class HeroPage extends StatelessWidget {
-  const HeroPage({super.key});
+  const HeroPage({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -20,7 +20,6 @@ class HeroPage extends StatelessWidget {
             children: [
               const SizedBox(height: 40),
 
-              // App logo centered
               Center(
                 child: Image.asset('assets/logo.png', height: 120),
               ),
@@ -50,7 +49,7 @@ class HeroPage extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 45,
                     fontWeight: FontWeight.bold,
-                    color: Colors.white, // This will be masked by shader
+                    color: Colors.white,
                   ),
                   textAlign: TextAlign.center,
                 ),
@@ -69,13 +68,12 @@ class HeroPage extends StatelessWidget {
 
               const SizedBox(height: 40),
 
-              // Find Services Button
               SizedBox(
                 width: double.infinity,
                 height: 50,
                 child: ElevatedButton(
                   onPressed: () {
-                    Navigator.pushNamed(context, '/userdashboard');
+                    Navigator.pushNamed(context, '/home');
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF3A8EE6),
@@ -88,10 +86,7 @@ class HeroPage extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.center,
                     mainAxisSize: MainAxisSize.min,
                     children: const [
-                      Text(
-                        "Find Services",
-                        style: TextStyle(fontSize: 18),
-                      ),
+                      Text("Find Services", style: TextStyle(fontSize: 18)),
                       SizedBox(width: 15),
                       Icon(Icons.arrow_forward),
                     ],
@@ -101,13 +96,12 @@ class HeroPage extends StatelessWidget {
 
               const SizedBox(height: 20),
 
-              // Become a Provider Button
               SizedBox(
                 width: double.infinity,
                 height: 50,
                 child: ElevatedButton(
                   onPressed: () {
-                    Navigator.pushReplacementNamed(context, '/home');
+                    Navigator.pushReplacementNamed(context, '/personalinfo');
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.white,
@@ -121,10 +115,7 @@ class HeroPage extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.center,
                     mainAxisSize: MainAxisSize.min,
                     children: const [
-                      Text(
-                        "Become a Provider",
-                        style: TextStyle(fontSize: 18),
-                      ),
+                      Text("Become a Provider", style: TextStyle(fontSize: 18)),
                       SizedBox(width: 15),
                       Icon(Icons.person_4_outlined),
                     ],
@@ -134,7 +125,6 @@ class HeroPage extends StatelessWidget {
 
               const SizedBox(height: 20),
 
-              // Optional: Landing Page Widget
               const LandingPage(),
 
               const SizedBox(height: 20),

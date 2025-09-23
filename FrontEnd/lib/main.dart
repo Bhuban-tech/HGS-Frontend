@@ -1,4 +1,5 @@
 import 'package:HamroGharSewa/Auth/Login.dart';
+import 'package:HamroGharSewa/Auth/ServiceProvider/PersonalInfo.dart';
 import 'package:HamroGharSewa/Auth/SignUp.dart';
 import 'package:HamroGharSewa/DashBoard/User.dart';
 import 'package:HamroGharSewa/LandingPage/Hero.dart';
@@ -22,7 +23,8 @@ class MyApp extends StatelessWidget {
         '/login': (context) => const LoginPage(),
         '/signup': (context) => const SignUpPage(),
         '/hero': (context) => const HeroPage(),
-        '/userdashboard': (context) => const UserDashboard(),
+        '/home': (context) => const UserDashboard(),
+        '/personalinfo': (context) => RegisterApp(),
       },
     );
   }

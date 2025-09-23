@@ -1,4 +1,12 @@
+import 'package:HamroGharSewa/Booking/BookingPage.dart';
 import 'package:flutter/material.dart';
+
+void main() {
+  runApp(const MaterialApp(
+    debugShowCheckedModeBanner: false,
+    home: UserDashboard(),
+  ));
+}
 
 class UserDashboard extends StatefulWidget {
   const UserDashboard({super.key});
@@ -118,7 +126,6 @@ class _UserDashboardState extends State<UserDashboard> {
             ),
             const SizedBox(height: 30),
 
-            // 🔵 Popular Services Icons Row
             Container(
               padding: const EdgeInsets.symmetric(vertical: 20),
               decoration: BoxDecoration(
@@ -149,7 +156,17 @@ class _UserDashboardState extends State<UserDashboard> {
                 style: TextStyle(color: Colors.grey),
               ),
             ...filteredBookings
-                .map((booking) => BookingCard(booking: booking))
+                .map((booking) => BookingCard(
+              booking: booking,
+              onBook: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => BookingPage(),
+                  ),
+                );
+              },
+            ))
                 .toList(),
 
             const SizedBox(height: 30),
@@ -164,7 +181,6 @@ class _UserDashboardState extends State<UserDashboard> {
     );
   }
 
-  // 🔧 Service Icon Widget (Icon + Label)
   Widget _buildServiceIcon(IconData icon, String label) {
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -190,8 +206,9 @@ class _UserDashboardState extends State<UserDashboard> {
 
 class BookingCard extends StatelessWidget {
   final Map<String, String> booking;
+  final VoidCallback onBook;
 
-  const BookingCard({required this.booking, super.key});
+  const BookingCard({required this.booking, required this.onBook, super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -232,15 +249,7 @@ class BookingCard extends StatelessWidget {
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(
-                        "Booking requested for ${booking['service']} (${booking['name']})",
-                      ),
-                    ),
-                  );
-                },
+                onPressed: onBook,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.blue,
                   shape: RoundedRectangleBorder(
@@ -260,3 +269,4 @@ class BookingCard extends StatelessWidget {
     );
   }
 }
+

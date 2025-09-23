@@ -22,7 +22,6 @@ class _VerificationPageState extends State<VerificationPage> {
         errorMessage = null;
       });
 
-      // ✅ Proceed to next step (for now show success message)
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("OTP Verified Successfully")),
       );

@@ -1,5 +1,3 @@
-# pubspec.yaml
-
 name: HamroGharSewa
 description: "A new Flutter project."
 
@@ -14,6 +12,9 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+
+  # 👇 Add this line to use REST API calls
+  http: ^1.2.1
 
   google_sign_in: ^6.2.1
   file_picker: ^8.1.2
@@ -34,8 +35,8 @@ flutter_launcher_icons:
   web:
     generate: true
     image_path: "assets/Hamro.png"
-    background_color: "#ffffff"   # change as needed
-    theme_color: "#000000"         # change as needed
+    background_color: "#ffffff"
+    theme_color: "#000000"
   windows:
     generate: true
     image_path: "assets/Hamro.png"
@@ -50,14 +51,3 @@ flutter:
   assets:
     - assets/logo.png
     - assets/Hamro.png
-    # If you have a whole directory, you can add like:
-    # - assets/images/
-    # - assets/icons/
-
-  # If you plan to use custom fonts, uncomment & adjust below:
-  # fonts:
-  #   - family: MyCustomFont
-  #     fonts:
-  #       - asset: assets/fonts/MyCustomFont-Regular.ttf
-  #       - asset: assets/fonts/MyCustomFont-Bold.ttf
-  #         weight: 700

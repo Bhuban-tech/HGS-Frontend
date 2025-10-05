@@ -1,19 +1,7 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import 'package:HamroGharSewa/Auth/Login.dart';
-
-void main() => runApp(const MyApp());
-
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Auth Demo',
-      theme: ThemeData(primarySwatch: Colors.blue),
-      home: const LoginPage(),
-    );
-  }
-}
 
 class SignUpPage extends StatefulWidget {
   const SignUpPage({super.key});
@@ -24,54 +12,91 @@ class SignUpPage extends StatefulWidget {
 
 class _SignUpPageState extends State<SignUpPage> {
   final TextEditingController usernameController = TextEditingController();
+  final TextEditingController phoneController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   final TextEditingController confirmPasswordController =
   TextEditingController();
 
-  String? errorMessage; // 🔴 error message holder
+  String? errorMessage;
+  bool isLoading = false;
 
-  void _handleSignUp() {
+  Future<void> _handleSignUp() async {
     setState(() {
-      errorMessage = null; // reset before validation
+      errorMessage = null;
+      isLoading = true;
     });
 
+    // ✅ Basic validation
     if (usernameController.text.isEmpty ||
+        phoneController.text.isEmpty ||
         emailController.text.isEmpty ||
         passwordController.text.isEmpty ||
         confirmPasswordController.text.isEmpty) {
       setState(() {
-        errorMessage = " Please fill all fields.";
+        errorMessage = "Please fill all fields.";
+        isLoading = false;
       });
       return;
     }
 
     if (passwordController.text != confirmPasswordController.text) {
       setState(() {
-        errorMessage = " Passwords do not match.";
+        errorMessage = "Passwords do not match.";
+        isLoading = false;
       });
       return;
     }
 
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (context) => const LoginPage()),
-    );
+    // ✅ API call
+    const String apiUrl = "http://10.0.2.2:8080/users/register";
+    // use http://192.168.x.x:8080 for physical device
+
+    try {
+      final response = await http.post(
+        Uri.parse(apiUrl),
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({
+          "name": usernameController.text,
+          "phone": phoneController.text,
+          "email": emailController.text,
+          "password": passwordController.text,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Account created successfully!")),
+        );
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const LoginPage()),
+        );
+      } else {
+        setState(() {
+          errorMessage =
+          "Failed to register. ${jsonDecode(response.body)['error'] ?? 'Try again'}";
+        });
+      }
+    } catch (e) {
+      setState(() {
+        errorMessage = "Error connecting to server: $e";
+      });
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-            'Create Account',
-          style: TextStyle(
-            color: Colors.white
-          ),
-        ),
+        title: const Text('Create Account', style: TextStyle(color: Colors.white)),
         backgroundColor: Colors.blue,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white,),
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () => Navigator.pop(context),
         ),
       ),
@@ -81,12 +106,9 @@ class _SignUpPageState extends State<SignUpPage> {
           child: Column(
             children: [
               const SizedBox(height: 20),
-              SizedBox(
+              Image.network(
+                "https://cdni.iconscout.com/illustration/premium/thumb/sign-up-illustration-svg-download-png-6430773.png",
                 height: 180,
-                child: Image.network(
-                  "https://cdni.iconscout.com/illustration/premium/thumb/sign-up-illustration-svg-download-png-6430773.png",
-                  fit: BoxFit.contain,
-                ),
               ),
               const SizedBox(height: 20),
 
@@ -94,106 +116,89 @@ class _SignUpPageState extends State<SignUpPage> {
               TextField(
                 controller: usernameController,
                 decoration: const InputDecoration(
-                  prefixIcon: Icon(Icons.person, color: Colors.blue,),
-                  hintText: 'Username',
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.all(Radius.circular(30)),
-                    borderSide: BorderSide(color: Colors.blue, width: 2),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.all(Radius.circular(30)),
-                    borderSide: BorderSide(color: Colors.blue, width: 2),
-                  ),
+                  prefixIcon: Icon(Icons.person, color: Colors.blue),
+                  hintText: 'Full Name',
+                  border: OutlineInputBorder(
+                      borderRadius: BorderRadius.all(Radius.circular(30))),
                 ),
               ),
               const SizedBox(height: 15),
 
-// Email
+              // Phone
+              TextField(
+                controller: phoneController,
+                keyboardType: TextInputType.phone,
+                decoration: const InputDecoration(
+                  prefixIcon: Icon(Icons.phone, color: Colors.blue),
+                  hintText: 'Phone Number',
+                  border: OutlineInputBorder(
+                      borderRadius: BorderRadius.all(Radius.circular(30))),
+                ),
+              ),
+              const SizedBox(height: 15),
+
+              // Email
               TextField(
                 controller: emailController,
                 decoration: const InputDecoration(
-                  prefixIcon: Icon(Icons.email, color: Colors.blue,),
+                  prefixIcon: Icon(Icons.email, color: Colors.blue),
                   hintText: 'Email',
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.all(Radius.circular(30)),
-                    borderSide: BorderSide(color: Colors.blue, width: 2),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.all(Radius.circular(30)),
-                    borderSide: BorderSide(color: Colors.blue, width: 2),
-                  ),
+                  border: OutlineInputBorder(
+                      borderRadius: BorderRadius.all(Radius.circular(30))),
                 ),
               ),
               const SizedBox(height: 15),
 
-// Password
+              // Password
               TextField(
                 controller: passwordController,
                 obscureText: true,
                 decoration: const InputDecoration(
-                  prefixIcon: Icon(Icons.lock, color: Colors.blue,),
+                  prefixIcon: Icon(Icons.lock, color: Colors.blue),
                   hintText: 'Password',
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.all(Radius.circular(30)),
-                    borderSide: BorderSide(color: Colors.blue, width: 2),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.all(Radius.circular(30)),
-                    borderSide: BorderSide(color: Colors.blue, width: 2),
-                  ),
+                  border: OutlineInputBorder(
+                      borderRadius: BorderRadius.all(Radius.circular(30))),
                 ),
               ),
               const SizedBox(height: 15),
 
-// Confirm Password
+              // Confirm Password
               TextField(
                 controller: confirmPasswordController,
                 obscureText: true,
                 decoration: const InputDecoration(
-                  prefixIcon: Icon(Icons.lock_outline, color: Colors.blue,),
+                  prefixIcon: Icon(Icons.lock_outline, color: Colors.blue),
                   hintText: 'Confirm Password',
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.all(Radius.circular(30)),
-                    borderSide: BorderSide(color: Colors.blue, width: 2),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.all(Radius.circular(30)),
-                    borderSide: BorderSide(color: Colors.blue, width: 2),
-                  ),
+                  border: OutlineInputBorder(
+                      borderRadius: BorderRadius.all(Radius.circular(30))),
                 ),
               ),
 
-
               const SizedBox(height: 10),
 
-              // 🔴 Show error message if not valid
               if (errorMessage != null)
-                Text(
-                  errorMessage!,
-                  style: const TextStyle(color: Colors.red),
-                ),
+                Text(errorMessage!,
+                    style: const TextStyle(color: Colors.red, fontSize: 14)),
 
               const SizedBox(height: 20),
 
-              // Sign Up Button
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: _handleSignUp,
+                  onPressed: isLoading ? null : _handleSignUp,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.blue,
                     padding: const EdgeInsets.symmetric(vertical: 15),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(30),
-
-                    ),
+                        borderRadius: BorderRadius.circular(30)),
                   ),
-                  child: const Text(
-                      'Sign Up',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold
-                  ),),
+                  child: isLoading
+                      ? const CircularProgressIndicator(
+                      color: Colors.white, strokeWidth: 2)
+                      : const Text('Sign Up',
+                      style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold)),
                 ),
               ),
               const SizedBox(height: 20),
@@ -210,9 +215,7 @@ class _SignUpPageState extends State<SignUpPage> {
                     child: const Text(
                       'Login',
                       style: TextStyle(
-                        color: Colors.blue,
-                        fontWeight: FontWeight.bold,
-                      ),
+                          color: Colors.blue, fontWeight: FontWeight.bold),
                     ),
                   ),
                 ],

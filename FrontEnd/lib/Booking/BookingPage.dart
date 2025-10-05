@@ -1,3 +1,4 @@
+import 'package:HamroGharSewa/Booking/Confirm-Booking.dart';
 import 'package:flutter/material.dart';
 
 void main() {
@@ -160,10 +161,14 @@ class _BookingPage extends State<BookingPage> {
               onPressed: selectedTimeIndex == -1
                   ? null
                   : () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text("Booking confirmed!")),
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => ConfirmPage(),
+                  ),
                 );
               },
+
               style: ElevatedButton.styleFrom(
                 backgroundColor: selectedTimeIndex == -1 ? Colors.blue : Colors.blue,
                 minimumSize: const Size(double.infinity, 50),

@@ -48,9 +48,8 @@ class _SignUpPageState extends State<SignUpPage> {
       return;
     }
 
-    // ✅ API call
     const String apiUrl = "http://10.0.2.2:8080/users/register";
-    // use http://192.168.x.x:8080 for physical device
+
 
     try {
       final response = await http.post(

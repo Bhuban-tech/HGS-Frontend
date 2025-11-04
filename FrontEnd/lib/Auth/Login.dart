@@ -1,7 +1,8 @@
-import 'package:HamroGharSewa/LandingPage/Hero.dart';
-import 'package:HamroGharSewa/LandingPage/Landing.dart';
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:HamroGharSewa/LandingPage/Hero.dart';
 import 'package:HamroGharSewa/Auth/ForgetPassword.dart';
 import 'package:HamroGharSewa/Auth/SignUp.dart';
 
@@ -13,11 +14,65 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
-  bool isUserSelected = true;
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
-
   final GoogleSignIn _googleSignIn = GoogleSignIn();
+
+  bool isLoading = false;
+
+  final String baseUrl = "http://10.0.2.2:8080/users/login";
+
+  Future<void> loginUser() async {
+    final email = emailController.text.trim();
+    final password = passwordController.text.trim();
+
+    if (email.isEmpty || password.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Please enter email and password")),
+      );
+      return;
+    }
+
+    setState(() => isLoading = true);
+
+    try {
+      final response = await http.post(
+        Uri.parse(baseUrl),
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({"email": email, "password": password}),
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final token = data["token"];
+        final userEmail = data["email"];
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Welcome, $userEmail")),
+        );
+
+        // You can store token for later use if needed
+        print("✅ Login successful");
+        print("Token: $token");
+
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const HeroPage()),
+        );
+      } else {
+        final error = jsonDecode(response.body);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(error["error"] ?? "Invalid email or password")),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("⚠️ Error: $e")),
+      );
+    } finally {
+      setState(() => isLoading = false);
+    }
+  }
 
   Future<void> _handleGoogleSignIn() async {
     try {
@@ -34,19 +89,12 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
-  void toggleSelection(bool userSelected) {
-    setState(() {
-      isUserSelected = userSelected;
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: SingleChildScrollView(
         child: Column(
           children: [
-
             ClipPath(
               clipper: TopWaveClipper(),
               child: Container(
@@ -60,29 +108,17 @@ class _LoginPageState extends State<LoginPage> {
                 ),
               ),
             ),
-
-
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24,),
+              padding: const EdgeInsets.symmetric(horizontal: 24),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  const Icon(
-                    Icons.home_repair_service,
-                    size: 80,
-                    color: Colors.blue,
-                  ),
-
+                  const Icon(Icons.home_repair_service, size: 80, color: Colors.blue),
                   const SizedBox(height: 20),
                   const Text(
                     "Login to HamroGharSewa",
-                    style: TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.blue,
-                    ),
+                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.blue),
                   ),
-
                   const SizedBox(height: 30),
 
                   TextField(
@@ -90,114 +126,67 @@ class _LoginPageState extends State<LoginPage> {
                     decoration: InputDecoration(
                       hintText: "Email",
                       prefixIcon: const Icon(Icons.email, color: Colors.blue),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(color: Colors.blue),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide:
-                        const BorderSide(color: Colors.blue, width: 2),
-                      ),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                     ),
                   ),
                   const SizedBox(height: 15),
 
-                  // Password
                   TextField(
                     controller: passwordController,
                     obscureText: true,
                     decoration: InputDecoration(
                       hintText: "Password",
                       prefixIcon: const Icon(Icons.lock, color: Colors.blue),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(color: Colors.blue),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide:
-                        const BorderSide(color: Colors.blue, width: 2),
-                      ),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                     ),
                   ),
-
                   const SizedBox(height: 10),
 
-                  // Forgot Password
                   Align(
                     alignment: Alignment.centerRight,
                     child: TextButton(
                       onPressed: () {
-                        Navigator.push(context,
-                            MaterialPageRoute(builder: (context) => const ForgotPasswordPage(),
-                            ),
-                          );
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => const ForgotPasswordPage()),
+                        );
                       },
-                      child: const Text(
-                        "Forgot Password?",
-                        style: TextStyle(color: Colors.blue),
-                      ),
+                      child: const Text("Forgot Password?", style: TextStyle(color: Colors.blue)),
                     ),
                   ),
-
                   const SizedBox(height: 20),
-
 
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
-                      onPressed: () {
-                        Navigator.push(context,
-                          MaterialPageRoute(builder: (context) => const HeroPage(),
-                          ),
-                        );
-                      },
+                      onPressed: isLoading ? null : loginUser,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.blue,
                         padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                       ),
-                      child: const Text(
+                      child: isLoading
+                          ? const CircularProgressIndicator(color: Colors.white)
+                          : const Text(
                         "Login",
-                        style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white),
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
                       ),
                     ),
                   ),
-
                   const SizedBox(height: 15),
 
-                  // Google Button
                   SizedBox(
                     width: double.infinity,
                     child: OutlinedButton.icon(
                       onPressed: _handleGoogleSignIn,
-                      style: OutlinedButton.styleFrom(
-                        backgroundColor: Colors.white,
-                        side: const BorderSide(color: Colors.blue),
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
                       icon: Image.network(
                         "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Google_%22G%22_logo.svg/1200px-Google_%22G%22_logo.svg.png",
                         height: 24,
                         width: 24,
                       ),
-                      label: const Text(
-                        "Login with Google",
-                        style: TextStyle(
-                            fontSize: 16, fontWeight: FontWeight.bold),
-                      ),
+                      label: const Text("Login with Google"),
                     ),
                   ),
-
                   const SizedBox(height: 25),
 
                   Row(
@@ -213,10 +202,7 @@ class _LoginPageState extends State<LoginPage> {
                         },
                         child: const Text(
                           "Sign Up",
-                          style: TextStyle(
-                            color: Colors.blue,
-                            fontWeight: FontWeight.bold,
-                          ),
+                          style: TextStyle(color: Colors.blue, fontWeight: FontWeight.bold),
                         ),
                       ),
                     ],
@@ -231,14 +217,12 @@ class _LoginPageState extends State<LoginPage> {
   }
 }
 
-
 class TopWaveClipper extends CustomClipper<Path> {
   @override
   Path getClip(Size size) {
     Path path = Path();
     path.lineTo(0, size.height - 60);
-    path.quadraticBezierTo(
-        size.width / 2, size.height, size.width, size.height - 60);
+    path.quadraticBezierTo(size.width / 2, size.height, size.width, size.height - 60);
     path.lineTo(size.width, 0);
     path.close();
     return path;

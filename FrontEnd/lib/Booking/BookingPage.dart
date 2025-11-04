@@ -175,7 +175,7 @@ class _BookingPage extends State<BookingPage> {
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
               ),
               child: const Text(
-                "Book Now",
+                "Books Now",
                 style: TextStyle(fontSize: 16, color: Colors.white),
               ),
             ),

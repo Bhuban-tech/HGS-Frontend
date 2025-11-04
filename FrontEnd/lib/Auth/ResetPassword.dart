@@ -23,7 +23,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
 
     if (newPassword.isEmpty || confirmPassword.isEmpty) {
       setState(() {
-        errorMessage = "Both fields are required";
+        errorMessage = "Boths fields are required";
       });
     } else if (newPassword != confirmPassword) {
       setState(() {

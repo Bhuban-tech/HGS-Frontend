@@ -232,7 +232,7 @@ class BookingCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              booking['service'] ?? '',
+              booking['services'] ?? '',
               style: const TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,

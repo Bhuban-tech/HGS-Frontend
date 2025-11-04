@@ -105,7 +105,7 @@ class LandingPage extends StatelessWidget {
                   child: Row(
                     children: [
                       Icon(
-                        service['icon'] as IconData,
+                        service['icons'] as IconData,
                         size: 40,
                         color: const Color(0xFF3A8EE6),
                       ),

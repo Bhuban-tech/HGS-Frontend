@@ -84,7 +84,7 @@ class _ChatPageState extends State<ChatPage> {
                   child: TextField(
                     controller: _controller,
                     decoration: InputDecoration(
-                      hintText: "Type a message...",
+                      hintText: "Type as message...",
                       filled: true,
                       fillColor: Colors.white,
                       contentPadding:

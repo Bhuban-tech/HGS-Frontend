@@ -42,7 +42,7 @@ class ConfirmPage extends StatelessWidget {
             const SizedBox(height: 16),
             _buildInputField(
               controller: addressController,
-              hintText: "Address",
+              hintText: "Addresss",
               icon: Icons.location_on_outlined,
               maxLines: 3,
             ),

@@ -56,7 +56,7 @@ class _SignUpPageState extends State<SignUpPage> {
         Uri.parse(apiUrl),
         headers: {"Content-Type": "application/json"},
         body: jsonEncode({
-          "name": usernameController.text,
+          "names": usernameController.text,
           "phone": phoneController.text,
           "email": emailController.text,
           "password": passwordController.text,

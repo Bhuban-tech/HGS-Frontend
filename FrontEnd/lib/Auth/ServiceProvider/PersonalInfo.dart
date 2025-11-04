@@ -242,7 +242,7 @@ class _RegistrationFormState extends State<RegisterApp> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             _buildRoundedTextField(
-                              "Business/Service Name *",
+                              "Business/Services Name *",
                               businessController,
                                   (val) => val!.isEmpty ? "Enter business name" : null,
                             ),

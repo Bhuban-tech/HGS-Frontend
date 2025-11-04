@@ -30,7 +30,7 @@ class _VerificationPageState extends State<VerificationPage> {
         MaterialPageRoute(builder: (context) => ResetPasswordPage()));
     } else {
       setState(() {
-        errorMessage = "Enter the 4-digit OTP code";
+        errorMessage = "Enters the 4-digit OTP code";
       });
     }
   }

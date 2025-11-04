@@ -115,7 +115,7 @@ class HeroPage extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.center,
                     mainAxisSize: MainAxisSize.min,
                     children: const [
-                      Text("Become a Provider", style: TextStyle(fontSize: 18)),
+                      Text("Becomes a Provider", style: TextStyle(fontSize: 18)),
                       SizedBox(width: 15),
                       Icon(Icons.person_4_outlined),
                     ],

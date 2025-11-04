@@ -33,7 +33,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
       );
     } else {
       setState(() {
-        errorMessage = "Enter a valid email address";
+        errorMessage = "Enter  valid email address";
       });
     }
   }

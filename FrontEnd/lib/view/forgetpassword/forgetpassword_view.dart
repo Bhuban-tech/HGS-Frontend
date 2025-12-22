@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:HamroGharSewa/Auth/VerificationPage.dart';
+
+import '../verifyotpscreen/verifyotpscreen.dart';
 
 class ForgotPasswordPage extends StatefulWidget {
   const ForgotPasswordPage({super.key});

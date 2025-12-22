@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:HamroGharSewa/Auth/Login.dart';
+
+import '../Login/login_view.dart';
 
 class ResetPasswordPage extends StatefulWidget {
   const ResetPasswordPage({super.key});
@@ -39,7 +40,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
       );
 
       Navigator.pushReplacement(context,
-        MaterialPageRoute(builder: (context) => const LoginPage()));
+          MaterialPageRoute(builder: (context) => const LoginPage()));
     }
   }
   @override

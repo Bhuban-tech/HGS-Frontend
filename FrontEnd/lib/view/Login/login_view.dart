@@ -1,10 +1,9 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'package:google_sign_in/google_sign_in.dart';
 import 'package:HamroGharSewa/LandingPage/Hero.dart';
-import 'package:HamroGharSewa/Auth/ForgetPassword.dart';
-import 'package:HamroGharSewa/Auth/SignUp.dart';
+
+import '../forgetpassword/forgetpassword_view.dart';
+import '../register/register_view.dart';
+
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -16,77 +15,20 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
-  final GoogleSignIn _googleSignIn = GoogleSignIn();
 
   bool isLoading = false;
 
-  final String baseUrl = "http://10.0.2.2:8080/users/login";
-
-  Future<void> loginUser() async {
-    final email = emailController.text.trim();
-    final password = passwordController.text.trim();
-
-    if (email.isEmpty || password.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Pleases enter email and password")),
-      );
-      return;
-    }
-
+  void openDashboard() {
     setState(() => isLoading = true);
 
-    try {
-      final response = await http.post(
-        Uri.parse(baseUrl),
-        headers: {"Content-Type": "application/json"},
-        body: jsonEncode({"email": email, "password": password}),
+    Future.delayed(const Duration(seconds: 1), () {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const HeroPage()),
       );
 
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        final token = data["token"];
-        final userEmail = data["email"];
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Welcome, $userEmail")),
-        );
-
-        // You can store token for later use if needed
-        print("✅ Login successful");
-        print("Token: $token");
-
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const HeroPage()),
-        );
-      } else {
-        final error = jsonDecode(response.body);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(error["error"] ?? "Invalid email or password")),
-        );
-      }
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("⚠️ Error: $e")),
-      );
-    } finally {
       setState(() => isLoading = false);
-    }
-  }
-
-  Future<void> _handleGoogleSignIn() async {
-    try {
-      final account = await _googleSignIn.signIn();
-      if (account != null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Signed in as ${account.displayName}")),
-        );
-      }
-    } catch (error) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Google Sign-In failed: $error")),
-      );
-    }
+    });
   }
 
   @override
@@ -159,7 +101,7 @@ class _LoginPageState extends State<LoginPage> {
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
-                      onPressed: isLoading ? null : loginUser,
+                      onPressed: isLoading ? null : openDashboard,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.blue,
                         padding: const EdgeInsets.symmetric(vertical: 14),
@@ -175,18 +117,8 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                   const SizedBox(height: 15),
 
-                  SizedBox(
-                    width: double.infinity,
-                    child: OutlinedButton.icon(
-                      onPressed: _handleGoogleSignIn,
-                      icon: Image.network(
-                        "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Google_%22G%22_logo.svg/1200px-Google_%22G%22_logo.svg.png",
-                        height: 24,
-                        width: 24,
-                      ),
-                      label: const Text("Login with Google"),
-                    ),
-                  ),
+                  // Removed Google Sign In Button
+
                   const SizedBox(height: 25),
 
                   Row(

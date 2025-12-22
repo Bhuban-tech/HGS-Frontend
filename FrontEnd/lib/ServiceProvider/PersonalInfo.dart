@@ -1,26 +1,30 @@
 import 'package:flutter/material.dart';
 
+import 'homePage.dart'; // Make sure ProviderDashboard is defined here
+
 void main() {
   runApp(MaterialApp(
     debugShowCheckedModeBanner: false,
     initialRoute: '/',
     routes: {
-      '/': (context) => LandingPage(),
+      '/': (context) => const LandingPage(),
     },
   ));
 }
 
 class LandingPage extends StatelessWidget {
+  const LandingPage({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Landing Page'),
+        title: const Text('Landing Page'),
         backgroundColor: Colors.blue,
       ),
       body: Center(
         child: ElevatedButton(
-          child: Text('Register as Service Provider'),
+          child: const Text('Register as Service Provider'),
           onPressed: () {
             Navigator.push(
               context,
@@ -110,7 +114,8 @@ class _RegistrationFormState extends State<RegisterApp> {
         body: Column(
           children: [
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16),
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16),
               child: Column(
                 children: [
                   Center(
@@ -149,7 +154,8 @@ class _RegistrationFormState extends State<RegisterApp> {
                 padding: const EdgeInsets.all(16),
                 decoration: const BoxDecoration(
                   color: Colors.white,
-                  borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
+                  borderRadius:
+                      BorderRadius.vertical(top: Radius.circular(30)),
                 ),
                 child: Stepper(
                   type: StepperType.horizontal,
@@ -162,7 +168,9 @@ class _RegistrationFormState extends State<RegisterApp> {
                         _businessFormKey.currentState!.validate()) {
                       if (selectedServices.isEmpty) {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text("Please select at least one service")),
+                          const SnackBar(
+                              content:
+                                  Text("Please select at least one service")),
                         );
                         return;
                       }
@@ -172,7 +180,11 @@ class _RegistrationFormState extends State<RegisterApp> {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(content: Text("Registration Complete")),
                       );
-                      Navigator.pop(context);
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => const ProviderDashboard()),
+                      );
                     }
                   },
                   onStepCancel: () {
@@ -186,7 +198,6 @@ class _RegistrationFormState extends State<RegisterApp> {
                       children: [
                         if (_currentStep > 0)
                           TextButton(
-
                             onPressed: details.onStepCancel,
                             child: const Text("Back"),
                           ),
@@ -200,7 +211,8 @@ class _RegistrationFormState extends State<RegisterApp> {
                               borderRadius: BorderRadius.circular(20),
                             ),
                           ),
-                          child: Text(_currentStep == 2 ? "Submit" : "Next"),
+                          child:
+                              Text(_currentStep == 2 ? "Submit" : "Next"),
                         ),
                       ],
                     );
@@ -216,17 +228,24 @@ class _RegistrationFormState extends State<RegisterApp> {
                           children: [
                             _buildRoundedTextField(
                                 "Full Name", nameController,
-                                    (val) => val!.isEmpty ? "Enter your name" : null),
+                                (val) =>
+                                    val!.isEmpty ? "Enter your name" : null),
                             _buildRoundedTextField(
                                 "Email Address", emailController,
-                                    (val) => val!.contains("@") ? null : "Enter valid email"),
+                                (val) => val!.contains("@")
+                                    ? null
+                                    : "Enter valid email"),
                             _buildRoundedTextField(
                                 "Phone Number", phoneController,
-                                    (val) => val!.length < 10 ? "Enter valid phone number" : null,
+                                (val) => val!.length < 5
+                                    ? "Enter valid phone number"
+                                    : null,
                                 type: TextInputType.phone),
                             _buildRoundedTextField(
                                 "Address", addressController,
-                                    (val) => val!.isEmpty? "Enter a valid address" : null),
+                                (val) => val!.isEmpty
+                                    ? "Enter a valid address"
+                                    : null),
                           ],
                         ),
                       ),
@@ -244,7 +263,8 @@ class _RegistrationFormState extends State<RegisterApp> {
                             _buildRoundedTextField(
                               "Business/Services Name *",
                               businessController,
-                                  (val) => val!.isEmpty ? "Enter business name" : null,
+                              (val) =>
+                                  val!.isEmpty ? "Enter business name" : null,
                             ),
                             const SizedBox(height: 20),
 
@@ -287,7 +307,8 @@ class _RegistrationFormState extends State<RegisterApp> {
                                           value: exp, child: Text(exp));
                                     }).toList(),
                                     onChanged: (val) {},
-                                    validator: (val) => val == null ? "Select experience" : null,
+                                    validator: (val) =>
+                                        val == null ? "Select experience" : null,
                                   ),
                                 ),
                                 const SizedBox(width: 10),
@@ -300,7 +321,8 @@ class _RegistrationFormState extends State<RegisterApp> {
                                       prefixText: "₨ ",
                                       border: OutlineInputBorder(),
                                     ),
-                                    validator: (val) => val!.isEmpty ? "Enter rate" : null,
+                                    validator: (val) =>
+                                        val!.isEmpty ? "Enter rate" : null,
                                   ),
                                 ),
                               ],
@@ -310,21 +332,21 @@ class _RegistrationFormState extends State<RegisterApp> {
                             _buildRoundedTextField(
                               "Specialization",
                               specializationController,
-                                  (val) => null,
+                              (val) => null,
                             ),
                             const SizedBox(height: 20),
 
                             _buildRoundedTextField(
                               "Service Area",
                               serviceAreaController,
-                                  (val) => null,
+                              (val) => null,
                             ),
                           ],
                         ),
                       ),
                     ),
 
-
+                    // Step 3: Verification
                     Step(
                       title: const Text("3"),
                       isActive: _currentStep >= 2,
@@ -333,7 +355,6 @@ class _RegistrationFormState extends State<RegisterApp> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            // 🔹 Dropdown for KYC Document Type
                             DropdownButtonFormField<String>(
                               decoration: InputDecoration(
                                 labelText: "KYC Document Type *",
@@ -343,23 +364,26 @@ class _RegistrationFormState extends State<RegisterApp> {
                               ),
                               value: kycType,
                               items: ["Passport", "ID Card", "Driving License"]
-                                  .map((e) => DropdownMenuItem(value: e, child: Text(e)))
+                                  .map((e) =>
+                                      DropdownMenuItem(value: e, child: Text(e)))
                                   .toList(),
                               onChanged: (val) => setState(() => kycType = val),
-                              validator: (val) => val == null ? "Select document type" : null,
+                              validator: (val) =>
+                                  val == null ? "Select document type" : null,
                             ),
                             const SizedBox(height: 20),
 
-                            // 🔹 Upload KYC Document (box style)
                             Container(
                               padding: const EdgeInsets.all(20),
                               decoration: BoxDecoration(
-                                border: Border.all(color: Colors.grey, style: BorderStyle.solid),
+                                border: Border.all(
+                                    color: Colors.grey, style: BorderStyle.solid),
                                 borderRadius: BorderRadius.circular(15),
                               ),
                               child: Column(
                                 children: [
-                                  const Icon(Icons.upload_file, size: 40, color: Colors.grey),
+                                  const Icon(Icons.upload_file,
+                                      size: 40, color: Colors.grey),
                                   const SizedBox(height: 10),
                                   const Text(
                                     "Click to upload your KYC document",
@@ -367,7 +391,8 @@ class _RegistrationFormState extends State<RegisterApp> {
                                   ),
                                   const Text(
                                     "PDF, JPG, PNG (Max 10MB)",
-                                    style: TextStyle(color: Colors.grey, fontSize: 12),
+                                    style: TextStyle(
+                                        color: Colors.grey, fontSize: 12),
                                   ),
                                   const SizedBox(height: 10),
                                   ElevatedButton(
@@ -388,7 +413,6 @@ class _RegistrationFormState extends State<RegisterApp> {
                             ),
                             const SizedBox(height: 20),
 
-                            // 🔹 Portfolio Images (Optional)
                             const Text(
                               "Portfolio Images (Optional)",
                               style: TextStyle(fontWeight: FontWeight.bold),
@@ -414,7 +438,6 @@ class _RegistrationFormState extends State<RegisterApp> {
                         ),
                       ),
                     ),
-
                   ],
                 ),
               ),
@@ -425,12 +448,9 @@ class _RegistrationFormState extends State<RegisterApp> {
     );
   }
 
-  Widget _buildRoundedTextField(
-      String label,
-      TextEditingController controller,
-      String? Function(String?) validator, {
-        TextInputType type = TextInputType.text,
-      }) {
+  Widget _buildRoundedTextField(String label,
+      TextEditingController controller, String? Function(String?) validator,
+      {TextInputType type = TextInputType.text}) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12.0),
       child: TextFormField(
@@ -443,11 +463,11 @@ class _RegistrationFormState extends State<RegisterApp> {
           ),
           enabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(20),
-            borderSide: BorderSide(color: Colors.grey),
+            borderSide: const BorderSide(color: Colors.grey),
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(20),
-            borderSide: BorderSide(color: Colors.blue),
+            borderSide: const BorderSide(color: Colors.blue),
           ),
         ),
         validator: validator,

@@ -40,10 +40,7 @@ class LandingPage extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 10),
           child: Row(
             children: const [
-              _StatBox(
-                number: '500+',
-                label: 'Service Providers',
-              ),
+              _StatBox(number: '500+', label: 'Service Providers'),
               SizedBox(width: 20),
               _StatBox(
                 number: '1000+',
@@ -78,10 +75,7 @@ class LandingPage extends StatelessWidget {
               const SizedBox(height: 8),
               const Text(
                 'Professional services for every corner of your home',
-                style: TextStyle(
-                  fontSize: 22,
-                  color: Colors.blueGrey,
-                ),
+                style: TextStyle(fontSize: 22, color: Colors.blueGrey),
               ),
             ],
           ),
@@ -105,7 +99,7 @@ class LandingPage extends StatelessWidget {
                   child: Row(
                     children: [
                       Icon(
-                        service['icons'] as IconData,
+                        service['icon'] as IconData,
                         size: 40,
                         color: const Color(0xFF3A8EE6),
                       ),
@@ -184,11 +178,7 @@ class _StatBox extends StatelessWidget {
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
-          BoxShadow(
-            color: color,
-            blurRadius: 6,
-            offset: const Offset(0, 4),
-          ),
+          BoxShadow(color: color, blurRadius: 6, offset: const Offset(0, 4)),
         ],
       ),
       child: Column(

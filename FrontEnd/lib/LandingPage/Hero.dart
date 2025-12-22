@@ -1,3 +1,4 @@
+
 import 'package:HamroGharSewa/LandingPage/Landing.dart';
 import 'package:flutter/material.dart';
 
@@ -125,8 +126,8 @@ class HeroPage extends StatelessWidget {
 
               const SizedBox(height: 20),
 
-              const LandingPage(),
-
+              
+             LandingPage(),
               const SizedBox(height: 20),
             ],
           ),

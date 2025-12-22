@@ -3,8 +3,7 @@ import 'package:http/http.dart' as http;
 
 class ApiService {
   static const String baseUrl = "http://10.0.2.2:8080/users";
-  // 🔴 For Android Emulator use 10.0.2.2 instead of localhost
-  // 🔴 For real device use your PC IP address, e.g. "http://192.168.1.100:8080/users"
+
 
   static Future<Map<String, dynamic>> registerUser(
       String username, String email, String password) async {

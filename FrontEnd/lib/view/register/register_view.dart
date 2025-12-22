@@ -1,7 +1,8 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:HamroGharSewa/Auth/Login.dart';
+
+import '../Login/login_view.dart';
 
 class SignUpPage extends StatefulWidget {
   const SignUpPage({super.key});

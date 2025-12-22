@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:HamroGharSewa/Auth/ResetPassword.dart';
+
+import '../resetpassword/resetpassword_view.dart';
+
 
 class VerificationPage extends StatefulWidget {
   final String email;
@@ -27,7 +29,7 @@ class _VerificationPageState extends State<VerificationPage> {
       );
 
       Navigator.push(context,
-        MaterialPageRoute(builder: (context) => ResetPasswordPage()));
+          MaterialPageRoute(builder: (context) => ResetPasswordPage()));
     } else {
       setState(() {
         errorMessage = "Enters the 4-digit OTP code";

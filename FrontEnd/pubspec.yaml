@@ -1,5 +1,5 @@
 name: HamroGharSewa
-description: "A new Flutter project."
+description: "A Flutter authentication application with JWT token management"
 
 # Prevent publishing to pub.dev (since this is private)
 publish_to: 'none'
@@ -12,13 +12,33 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+
+  # Device Preview for testing
   device_preview: ^1.3.1
 
- 
+  # HTTP & API Communication
   http: ^1.2.1
+  dio: ^5.4.0
 
+  # Secure Storage for JWT tokens
+  flutter_secure_storage: ^9.0.0
+
+  # JWT decoding
+  jwt_decode: ^0.3.1
+
+  # State Management
+  provider: ^6.1.1
+
+  # Local Storage
+  shared_preferences: ^2.2.2
+
+  # Google Sign In
   google_sign_in: ^6.2.1
+
+  # File Picker
   file_picker: ^8.1.2
+
+  # UI Components
   cupertino_icons: ^1.0.8
   font_awesome_flutter: ^10.10.0
 

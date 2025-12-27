@@ -5,33 +5,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="f5bb15e7-3521-423f-888d-8c3a1d3f5a28" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/lib/ServiceProvider/homePage.dart" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/lib/view/ChatPage/chatPage_view.dart" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/lib/view/Login/login_view.dart" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/lib/view/booking/bookingPage_view.dart" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/lib/view/forgetpassword/forgetpassword_view.dart" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/lib/view/register/register_view.dart" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/lib/view/resetpassword/resetpassword_view.dart" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/lib/view/verifyotpscreen/verifyotpscreen.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/caches/deviceStreaming.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Dart_Packages.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/libraries/Dart_Packages.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Flutter_Plugins.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/libraries/Flutter_Plugins.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/Auth/ForgetPassword.dart" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/Auth/Login.dart" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/Auth/ResetPassword.dart" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/Auth/ServiceProvider/PersonalInfo.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/ServiceProvider/PersonalInfo.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/Auth/SignUp.dart" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/Auth/VerificationPage.dart" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/Booking/BookingPage.dart" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/DashBoard/User.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/DashBoard/User.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/LandingPage/Hero.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/LandingPage/Hero.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/LandingPage/Landing.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/LandingPage/Landing.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/main.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/main.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/services/api_service.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/services/api_service.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/macos/Flutter/GeneratedPluginRegistrant.swift" beforeDir="false" afterPath="$PROJECT_DIR$/macos/Flutter/GeneratedPluginRegistrant.swift" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pubspec.lock" beforeDir="false" afterPath="$PROJECT_DIR$/pubspec.lock" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pubspec.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/pubspec.yaml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

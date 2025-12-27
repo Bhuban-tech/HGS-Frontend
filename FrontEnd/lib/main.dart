@@ -1,41 +1,38 @@
-import 'package:HamroGharSewa/DashBoard/User.dart';
-import 'package:HamroGharSewa/LandingPage/Hero.dart';
-import 'package:HamroGharSewa/ServiceProvider/homePage.dart';
-import 'package:HamroGharSewa/view/Login/login_view.dart';
-import 'package:HamroGharSewa/view/register/register_view.dart';
+
+import 'package:HamroGharSewa/route/app_routes.dart';
+import 'package:HamroGharSewa/services/token_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:device_preview/device_preview.dart';
+import 'services/auth_service.dart';
 
-
-import 'ServiceProvider/PersonalInfo.dart';
-
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  AuthService().initialize();
+  final isLoggedIn = await TokenManager().isLoggedIn();
+  
   runApp(
     DevicePreview(
-      builder: (context) =>  MyApp(),
+      enabled: true, 
+      builder: (context) => MyApp(isLoggedIn: isLoggedIn),
     ),
   );
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  final bool isLoggedIn;
+  const MyApp({Key? key, required this.isLoggedIn}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'HamroGharSewa',
       debugShowCheckedModeBanner: false,
-
-      initialRoute: '/login',
-
-      routes: {
-        '/login': (context) => const LoginPage(),
-        '/signup': (context) => const SignUpPage(),
-        '/hero': (context) => const HeroPage(),
-        '/home': (context) => const UserDashboard(),
-        '/personalinfo': (context) => RegisterApp(),
-        '/ProviderDashboard ': (context) => ProviderDashboard(),
-      },
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+        fontFamily: 'Roboto',
+      ),
+      initialRoute: AppRoutes.login,
+      onGenerateRoute: AppRoutes.generateRoute,
     );
   }
 }

@@ -25,12 +25,14 @@ class _ServiceAdminAppState extends State<ServiceAdminApp>
   bool _isLoading = false;
   String _errorMessage = '';
   Map<String, String>? _userData;
+  bool _disposed = false;
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
-    _tabController.addListener(_onTabChanged);
+
+
 
     _loadUserData();
     _loadProviders();
@@ -38,12 +40,13 @@ class _ServiceAdminAppState extends State<ServiceAdminApp>
 
   @override
   void dispose() {
-    _tabController.removeListener(_onTabChanged);
+    _disposed = true;
     _tabController.dispose();
     _categoryController.dispose();
     _categoryDescriptionController.dispose();
     super.dispose();
   }
+
 
   void _onTabChanged() {
     if (_tabController.indexIsChanging) return;
@@ -58,7 +61,7 @@ class _ServiceAdminAppState extends State<ServiceAdminApp>
   }
 
   Future<void> _loadProviders() async {
-    if (!mounted) return;
+    if (!mounted || _disposed) return;
 
     setState(() {
       _isLoading = true;
@@ -66,28 +69,24 @@ class _ServiceAdminAppState extends State<ServiceAdminApp>
     });
 
     try {
-      List<dynamic> data;
-      if (_tabController.index == 0) {
-        data = await _apiService.getAllProviders();
-      } else {
-        data = await _apiService.getPendingProviders();
-      }
+      final data = await _apiService.getAllProviders();
 
-      if (mounted) {
-        setState(() {
-          _providers = data.map((json) => ServiceProvider.fromJson(json)).toList();
-          _isLoading = false;
-        });
-      }
+      if (!mounted || _disposed) return;
+
+      setState(() {
+        _providers =
+            data.map((e) => ServiceProvider.fromJson(e)).toList();
+        _isLoading = false;
+      });
     } catch (e) {
-      if (mounted) {
-        setState(() {
-          _errorMessage = 'Error loading providers: $e';
-          _isLoading = false;
-        });
-      }
+      if (!mounted || _disposed) return;
+      setState(() {
+        _errorMessage = 'Error loading providers';
+        _isLoading = false;
+      });
     }
   }
+
 
   Future<void> _createCategory() async {
     final name = _categoryController.text.trim();
@@ -318,12 +317,13 @@ class _ServiceAdminAppState extends State<ServiceAdminApp>
                                       Text('Logout'),
                                     ],
                                   ),
-                                  onTap: () async {
-                                    await Future.delayed(const Duration(milliseconds: 100));
-                                    if (mounted) {
+                                  onTap: () {
+                                    WidgetsBinding.instance.addPostFrameCallback((_) async {
+                                      if (!mounted || _disposed) return;
                                       await _tokenManager.logout(context);
-                                    }
+                                    });
                                   },
+
                                 ),
                               ],
                             ),

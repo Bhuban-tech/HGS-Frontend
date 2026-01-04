@@ -1,12 +1,8 @@
 import 'package:flutter/material.dart';
-import 'dart:convert';
-
-import 'package:HamroGharSewa/constants/api_constants.dart';
 import 'package:HamroGharSewa/constants/app_colors.dart';
 import 'package:HamroGharSewa/models/service_provider.dart';
-import 'package:HamroGharSewa/services/api_client.dart';
+import 'package:HamroGharSewa/services/api_service.dart'; 
 import 'package:HamroGharSewa/services/token_manager.dart';
-import 'package:http/http.dart' as http;
 
 class ServiceAdminApp extends StatefulWidget {
   const ServiceAdminApp({super.key});
@@ -22,7 +18,7 @@ class _ServiceAdminAppState extends State<ServiceAdminApp>
   final _categoryController = TextEditingController();
   final _categoryDescriptionController = TextEditingController();
 
-  final _apiClient = ApiClient();
+  final _apiService = ApiService(); // ← Use ApiService singleton
   final _tokenManager = TokenManager();
 
   List<ServiceProvider> _providers = [];
@@ -70,47 +66,18 @@ class _ServiceAdminAppState extends State<ServiceAdminApp>
     });
 
     try {
-      final endpoint = _tabController.index == 0
-          ? ApiConstants.adminProviders
-          : ApiConstants.adminPendingProviders;
-
-      final response = await _apiClient.get(endpoint);
-
-      if (response.statusCode == 200) {
-        final responseData = jsonDecode(response.body);
-
-        List<dynamic> dataList = [];
-        if (responseData is Map && responseData['success'] == true) {
-          dataList = responseData['data'] as List<dynamic>? ?? [];
-        } else if (responseData is List) {
-          dataList = responseData;
-        } else if (responseData is Map && responseData.containsKey('data')) {
-          dataList = responseData['data'] as List<dynamic>? ?? [];
-        }
-
-        if (mounted) {
-          setState(() {
-            _providers = dataList
-                .map((json) => ServiceProvider.fromJson(json))
-                .toList();
-            _isLoading = false;
-          });
-        }
-      } else if (response.statusCode == 401) {
-        if (mounted) {
-          setState(() {
-            _errorMessage = 'Session expired. Please login again.';
-            _isLoading = false;
-          });
-          await _tokenManager.logout(context);
-        }
+      List<dynamic> data;
+      if (_tabController.index == 0) {
+        data = await _apiService.getAllProviders();
       } else {
-        if (mounted) {
-          setState(() {
-            _errorMessage = 'Failed to load providers: ${response.statusCode}';
-            _isLoading = false;
-          });
-        }
+        data = await _apiService.getPendingProviders();
+      }
+
+      if (mounted) {
+        setState(() {
+          _providers = data.map((json) => ServiceProvider.fromJson(json)).toList();
+          _isLoading = false;
+        });
       }
     } catch (e) {
       if (mounted) {
@@ -132,40 +99,17 @@ class _ServiceAdminAppState extends State<ServiceAdminApp>
     setState(() => _isLoading = true);
 
     try {
-      final response = await _apiClient.post(
-        ApiConstants.adminCategories,
-        {
-          'name': name,
-          'description': _categoryDescriptionController.text.trim(),
-        },
+      await _apiService.createCategory(
+        name: name,
+        description: _categoryDescriptionController.text.trim(),
+        icon: 'category', // ← Default icon; replace with icon picker later
       );
 
-      if (response.statusCode == 200 || response.statusCode == 201) {
-        final responseData = jsonDecode(response.body);
-        _showSnackBar(
-          responseData['message'] ?? 'Category created successfully!',
-        );
-        _categoryController.clear();
-        _categoryDescriptionController.clear();
-      } else if (response.statusCode == 401) {
-        _showSnackBar('Session expired. Please login again.', isError: true);
-        await _tokenManager.logout(context);
-      } else {
-        try {
-          final errorData = jsonDecode(response.body);
-          _showSnackBar(
-            errorData['message'] ?? 'Failed to create category',
-            isError: true,
-          );
-        } catch (_) {
-          _showSnackBar(
-            'Failed to create category: ${response.statusCode}',
-            isError: true,
-          );
-        }
-      }
+      _showSnackBar('Category created successfully!');
+      _categoryController.clear();
+      _categoryDescriptionController.clear();
     } catch (e) {
-      _showSnackBar('Error: $e', isError: true);
+      _showSnackBar('Error creating category: $e', isError: true);
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -174,16 +118,9 @@ class _ServiceAdminAppState extends State<ServiceAdminApp>
   Future<void> _approveProvider(String id) async {
     setState(() => _isLoading = true);
     try {
-      final response = await _apiClient.patch(
-        ApiConstants.adminApproveProvider(id),
-        {},
-      );
-      if (response.statusCode == 200) {
-        _showSnackBar('Provider approved successfully!');
-        await _loadProviders();
-      } else {
-        _handleErrorResponse(response, 'approve');
-      }
+      await _apiService.approveProvider(id);
+      _showSnackBar('Provider approved successfully!');
+      await _loadProviders();
     } catch (e) {
       _showSnackBar('Error approving provider: $e', isError: true);
     } finally {
@@ -200,16 +137,9 @@ class _ServiceAdminAppState extends State<ServiceAdminApp>
 
     setState(() => _isLoading = true);
     try {
-      final response = await _apiClient.patch(
-        ApiConstants.adminRejectProvider(id),
-        {},
-      );
-      if (response.statusCode == 200) {
-        _showSnackBar('Provider rejected successfully!');
-        await _loadProviders();
-      } else {
-        _handleErrorResponse(response, 'reject');
-      }
+      await _apiService.rejectProvider(id);
+      _showSnackBar('Provider rejected successfully!');
+      await _loadProviders();
     } catch (e) {
       _showSnackBar('Error rejecting provider: $e', isError: true);
     } finally {
@@ -226,40 +156,13 @@ class _ServiceAdminAppState extends State<ServiceAdminApp>
 
     setState(() => _isLoading = true);
     try {
-      final response = await _apiClient.patch(
-        ApiConstants.adminDeactivateUser(id),
-        {},
-      );
-      if (response.statusCode == 200) {
-        _showSnackBar('Provider deactivated successfully!');
-        await _loadProviders();
-      } else {
-        _handleErrorResponse(response, 'deactivate');
-      }
+      await _apiService.deactivateProvider(id); // Assumes method exists in ApiService
+      _showSnackBar('Provider deactivated successfully!');
+      await _loadProviders();
     } catch (e) {
       _showSnackBar('Error deactivating provider: $e', isError: true);
     } finally {
       if (mounted) setState(() => _isLoading = false);
-    }
-  }
-
-  void _handleErrorResponse(http.Response response, String action) {
-    if (response.statusCode == 401) {
-      _showSnackBar('Session expired. Please login again.', isError: true);
-      _tokenManager.logout(context);
-    } else {
-      try {
-        final errorData = jsonDecode(response.body);
-        _showSnackBar(
-          errorData['message'] ?? 'Failed to $action provider',
-          isError: true,
-        );
-      } catch (_) {
-        _showSnackBar(
-          'Failed to $action provider: ${response.statusCode}',
-          isError: true,
-        );
-      }
     }
   }
 
@@ -416,8 +319,10 @@ class _ServiceAdminAppState extends State<ServiceAdminApp>
                                     ],
                                   ),
                                   onTap: () async {
-                                    await Future.delayed(Duration.zero);
-                                    await _tokenManager.logout(context);
+                                    await Future.delayed(const Duration(milliseconds: 100));
+                                    if (mounted) {
+                                      await _tokenManager.logout(context);
+                                    }
                                   },
                                 ),
                               ],
@@ -499,12 +404,16 @@ class _ServiceAdminAppState extends State<ServiceAdminApp>
   }
 
   Widget _buildProvidersList() {
+    final filteredProviders = _tabController.index == 0
+        ? _providers
+        : _providers.where((p) => !p.active).toList();
+
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       physics: const AlwaysScrollableScrollPhysics(),
       child: Column(
         children: [
-          // Statistics
+          // Statistics (based on all providers)
           _buildStatisticsRow(),
           const SizedBox(height: 20),
 
@@ -536,7 +445,7 @@ class _ServiceAdminAppState extends State<ServiceAdminApp>
           const SizedBox(height: 20),
 
           // Service Providers Card
-          _serviceProvidersCard(),
+          _serviceProvidersCard(filteredProviders),
         ],
       ),
     );
@@ -653,7 +562,7 @@ class _ServiceAdminAppState extends State<ServiceAdminApp>
     );
   }
 
-  Widget _serviceProvidersCard() {
+  Widget _serviceProvidersCard(List<ServiceProvider> providers) {
     return _card(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -684,7 +593,7 @@ class _ServiceAdminAppState extends State<ServiceAdminApp>
           ),
           const SizedBox(height: 16),
 
-          if (_providers.isEmpty && !_isLoading)
+          if (providers.isEmpty && !_isLoading)
             Center(
               child: Padding(
                 padding: const EdgeInsets.all(40),
@@ -698,7 +607,7 @@ class _ServiceAdminAppState extends State<ServiceAdminApp>
               ),
             )
           else
-            ..._providers.map((provider) => _providerTile(provider)),
+            ...providers.map((provider) => _providerTile(provider)),
         ],
       ),
     );
@@ -723,7 +632,7 @@ class _ServiceAdminAppState extends State<ServiceAdminApp>
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   border: Border.all(
-                    color: provider.active ? Colors.green.withOpacity(0.3) : Colors.orange.withOpacity(0.3),
+                    color: provider.active ? Colors.green.withOpacity(0.3) : Colors.orange,
                     width: 2,
                   ),
                 ),
@@ -768,7 +677,6 @@ class _ServiceAdminAppState extends State<ServiceAdminApp>
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
-                  // ignore: deprecated_member_use
                   color: provider.active ? Colors.green.withOpacity(0.1) : Colors.orange.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(20),
                 ),

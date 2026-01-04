@@ -364,7 +364,7 @@ class _RegistrationFormState extends State<RegisterApp> {
                                   borderRadius: BorderRadius.circular(20),
                                 ),
                               ),
-                              value: kycType,
+                              initialValue: kycType,
                               items: ["Passport", "ID Card", "Driving License"]
                                   .map((e) =>
                                       DropdownMenuItem(value: e, child: Text(e)))
@@ -424,7 +424,7 @@ class _RegistrationFormState extends State<RegisterApp> {
                               children: [
                                 ElevatedButton(
                                   onPressed: () {
-                                    // File picker logic here
+                                   
                                   },
                                   style: ElevatedButton.styleFrom(
                                     backgroundColor: Colors.orange,

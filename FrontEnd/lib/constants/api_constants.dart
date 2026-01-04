@@ -1,6 +1,6 @@
 class ApiConstants {
   // Base URL: only host + port (no trailing /api)
-  static const String baseUrl = 'http://192.168.1.77:8080';
+  static const String baseUrl = 'http://192.168.111.232:8080';
 
   // All endpoints must be RELATIVE (start with /)
   static const String login = '/api/auth/login';
@@ -29,7 +29,11 @@ class ApiConstants {
   static String adminUpdateCategory(String id) => '/api/admin/categories/$id';
   static String adminDeleteCategory(String id) => '/api/admin/categories/$id';
 
-  static String categoryById(String id) {}
 
-  // ...
+static String categoryById(String id) => '/api/admin/categories/$id';
+
+
+ 
+
+  
 }

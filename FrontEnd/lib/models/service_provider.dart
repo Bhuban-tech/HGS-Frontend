@@ -1,51 +1,29 @@
-class ServiceCategory {
+class ServiceProvider {
   final String id;
-  final String name;
-  final String description;
-  final String icon;
+  final String userName;
+  final String email;
+  final String phoneNumber;
   final bool active;
 
-  ServiceCategory({
+  ServiceProvider({
     required this.id,
-    required this.name,
-    required this.description,
-    required this.icon,
+    required this.userName,
+    required this.email,
+    required this.phoneNumber,
     required this.active,
   });
 
-  factory ServiceCategory.fromJson(Map<String, dynamic> json) {
-    return ServiceCategory(
-      id: json['id'],
-      name: json['name'],
-      description: json['description'],
-      icon: json['icon'],
-      active: json['active'],
+  factory ServiceProvider.fromJson(Map<String, dynamic> json) {
+    return ServiceProvider(
+      id: json['_id'] ?? json['id'] ?? '',
+      userName: json['username'] ?? json['name'] ?? '',
+      email: json['email'] ?? '',
+      phoneNumber: json['phoneNumber'] ?? json['phone'] ?? '',
+      active: json['isActive'] == true || 
+             json['active'] == true || 
+             json['status'] == 'approved' ||
+             json['approved'] == true ||
+             json['approved'] == 1, // Adjust based on your backend response
     );
   }
-}
-
-class ServiceProvider {
-  final String service;
-  final String name;
-  final String rate;
-  final String location;
-  final String? imageUrl;
-
-  ServiceProvider({
-    required this.service,
-    required this.name,
-    required this.rate,
-    required this.location,
-    this.imageUrl,
-  });
-
-  get userName => null;
-
-  bool? get active => null;
-
-  String? get phoneNumber => null;
-
-  String? get email => null;
-
-  String? get id => null;
 }

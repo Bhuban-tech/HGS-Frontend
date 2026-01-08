@@ -18,7 +18,7 @@ class _HistoryPageState extends State<HistoryPage> {
       "phone": "9703497318",
     },
     {
-      "name": "Bhuban Bhandaris",
+      "name": "Bhuban Bhandari",
       "address": "chabahil\nchabahil",
       "phone": "9703497318",
     },

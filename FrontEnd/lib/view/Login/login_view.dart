@@ -2,7 +2,7 @@ import 'package:HamroGharSewa/common/custom_text_field.dart';
 import 'package:HamroGharSewa/constants/app_colors.dart';
 import 'package:HamroGharSewa/services/auth_service.dart';
 import 'package:HamroGharSewa/services/token_manager.dart';
-import 'package:HamroGharSewa/view/register/register_view.dart';
+import 'package:HamroGharSewa/view/register/register_view.dart'; // Make sure this imports SignUpScreen
 import 'package:flutter/material.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -28,7 +28,10 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Future<void> _handleLogin() async {
-    if (!_formKey.currentState!.validate()) return;
+    // Only validate form - errors will show below fields automatically
+    if (!_formKey.currentState!.validate()) {
+      return; // Stop if validation fails
+    }
 
     setState(() => _isLoading = true);
 
@@ -48,14 +51,15 @@ class _LoginScreenState extends State<LoginScreen> {
           SnackBar(
             content: Text(result.message),
             backgroundColor: Colors.green,
+            duration: const Duration(seconds: 2),
           ),
         );
 
-        // Navigate based on user role
+        // Redirect based on user role
         final tokenManager = TokenManager();
         await tokenManager.redirectBasedOnRole(context);
-        
       } else {
+        // Show backend/auth error (e.g. wrong password, user not found)
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(result.message),
@@ -188,6 +192,8 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                 ),
                 const SizedBox(height: 40),
+
+                // Welcome Text
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 30),
                   child: Column(
@@ -213,6 +219,8 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                 ),
                 const SizedBox(height: 30),
+
+                // Login Form Card
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 30),
                   child: Container(
@@ -222,7 +230,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       borderRadius: BorderRadius.circular(20),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black,
+                          color: Colors.black.withOpacity(0.08),
                           blurRadius: 20,
                           offset: const Offset(0, 10),
                         ),
@@ -232,21 +240,27 @@ class _LoginScreenState extends State<LoginScreen> {
                       key: _formKey,
                       child: Column(
                         children: [
+                          // Email Field
                           CustomTextField(
                             controller: _emailController,
                             hint: 'Enter Email',
                             keyboardType: TextInputType.emailAddress,
                             validator: (value) {
-                              if (value == null || value.isEmpty) {
+                              if (value == null || value.trim().isEmpty) {
                                 return 'Please enter your email';
                               }
-                              if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
-                                return 'Please enter a valid email';
+                              final emailRegex = RegExp(
+                                r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$',
+                              );
+                              if (!emailRegex.hasMatch(value.trim())) {
+                                return 'Please enter a valid email address';
                               }
                               return null;
                             },
                           ),
                           const SizedBox(height: 20),
+
+                          // Password Field
                           CustomTextField(
                             controller: _passwordController,
                             hint: 'Enter Password',
@@ -271,6 +285,8 @@ class _LoginScreenState extends State<LoginScreen> {
                             },
                           ),
                           const SizedBox(height: 30),
+
+                          // Login Button
                           SizedBox(
                             width: double.infinity,
                             height: 55,
@@ -286,21 +302,21 @@ class _LoginScreenState extends State<LoginScreen> {
                               ),
                               child: _isLoading
                                   ? const SizedBox(
-                                      height: 24,
-                                      width: 24,
-                                      child: CircularProgressIndicator(
-                                        strokeWidth: 2.5,
-                                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                                      ),
-                                    )
+                                height: 24,
+                                width: 24,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2.5,
+                                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                ),
+                              )
                                   : const Text(
-                                      'Login',
-                                      style: TextStyle(
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.bold,
-                                        letterSpacing: 1,
-                                      ),
-                                    ),
+                                'Login',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  letterSpacing: 1,
+                                ),
+                              ),
                             ),
                           ),
                         ],
@@ -308,7 +324,10 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ),
                 ),
+
                 const SizedBox(height: 40),
+
+                // Sign Up Link
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -334,6 +353,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ],
                 ),
+
                 const SizedBox(height: 50),
               ],
             ),

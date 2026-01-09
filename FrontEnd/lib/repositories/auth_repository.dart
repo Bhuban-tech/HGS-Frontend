@@ -23,7 +23,6 @@ class AuthRepository {
           handler.next(options);
         },
         onError: (error, handler) async {
-          // Handle 401 Unauthorized - token expired or invalid
           if (error.response?.statusCode == 401) {
             await _tokenManager.clearAll();
             if (kDebugMode) print("Token expired or invalid - cleared storage");
@@ -55,10 +54,7 @@ class AuthRepository {
       return _handleDioError(e, "Login failed");
     } catch (e) {
       if (kDebugMode) print("Unexpected login error: $e");
-      return AuthResponse(
-        success: false, 
-        message: 'Unexpected error during login'
-      );
+      return AuthResponse(success: false, message: 'Unexpected error during login');
     }
   }
 
@@ -84,10 +80,7 @@ class AuthRepository {
       return _handleDioError(e, "Registration failed");
     } catch (e) {
       if (kDebugMode) print("Unexpected registration error: $e");
-      return AuthResponse(
-        success: false, 
-        message: 'Unexpected error during registration'
-      );
+      return AuthResponse(success: false, message: 'Unexpected error during registration');
     }
   }
 
@@ -114,10 +107,7 @@ class AuthRepository {
       return _handleDioError(e, "OTP verification failed");
     } catch (e) {
       if (kDebugMode) print("Unexpected OTP verification error: $e");
-      return AuthResponse(
-        success: false, 
-        message: 'Unexpected error during OTP verification'
-      );
+      return AuthResponse(success: false, message: 'Unexpected error during OTP verification');
     }
   }
 
@@ -129,7 +119,7 @@ class AuthRepository {
           ApiConstants.logout,
           options: Options(
             headers: {'Authorization': 'Bearer $token'},
-            validateStatus: (status) => status! < 500, // Don't throw on 4xx
+            validateStatus: (status) => status! < 500,
           ),
         );
       }
@@ -138,52 +128,47 @@ class AuthRepository {
     } catch (e) {
       if (kDebugMode) print("Unexpected logout error (ignoring): $e");
     } finally {
-      // Always clear local data regardless of API result
       await _tokenManager.clearAll();
     }
   }
 
-  /// Check if user is currently authenticated with a valid token
   Future<bool> isAuthenticated() async {
     return await _tokenManager.isLoggedIn();
   }
 
-  /// Get current user data from storage
   Future<Map<String, String>?> getCurrentUser() async {
     return await _tokenManager.getUserData();
   }
 
-  // Helper: Save token and user data
+  // Fixed: Make refreshToken optional and nullable
   Future<void> _saveAuthData(AuthResponse authResponse) async {
     if (authResponse.accessToken == null) {
       throw Exception("Access token is null");
     }
 
     if (authResponse.user == null) {
-      // Save token only
       await _tokenManager.saveTokens(
         accessToken: authResponse.accessToken!,
         userId: '',
         email: '',
-        userName: '', refreshToken: null,
+        userName: '',
+        refreshToken: '', // Now safe - empty string instead of null
       );
     } else {
-      // Save token and user data together
       await _tokenManager.saveTokens(
         accessToken: authResponse.accessToken!,
         userId: authResponse.user!.id,
         email: authResponse.user!.email,
-        userName: authResponse.user!.userName, refreshToken: null,
+        userName: authResponse.user!.userName,
+        refreshToken: '', // Pass empty string (or null if you update TokenManager)
       );
     }
   }
 
-  // Helper: Handle Dio errors gracefully
   AuthResponse _handleDioError(DioException e, String fallbackMessage) {
     String message = fallbackMessage;
 
     if (e.response != null) {
-      // Try to extract message from backend
       try {
         final errorData = e.response!.data;
         if (errorData is Map<String, dynamic> && errorData['message'] != null) {
@@ -195,7 +180,6 @@ class AuthRepository {
         if (kDebugMode) print("Could not parse error response");
       }
 
-      // Common status codes with user-friendly messages
       switch (e.response!.statusCode) {
         case 400:
           message = message.isEmpty ? "Invalid request" : message;
@@ -227,16 +211,12 @@ class AuthRepository {
       message = "Connection timeout. Please check your internet";
     } else if (e.type == DioExceptionType.connectionError) {
       message = "No internet connection";
-    } else if (e.type == DioExceptionType.badResponse) {
-      message = "Server error";
-    } else if (e.type == DioExceptionType.cancel) {
-      message = "Request cancelled";
     } else {
       message = "Unable to connect. Check your internet";
     }
 
     if (kDebugMode) print("DioError: ${e.type} - $message");
-    
+
     return AuthResponse(success: false, message: message);
   }
 }

@@ -1,6 +1,6 @@
 class ApiConstants {
   // Base URL: only host + port (no trailing /api)
-  static const String baseUrl = 'http://192.168.100.5:8080';
+  static const String baseUrl = 'http://192.168.110.191:8080';
 
   static const String login = '/api/auth/login';
   static const String register = '/api/auth/register';

@@ -38,7 +38,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
     setState(() => _isLoading = true);
 
-    // Initialize AuthService if not done in main.dart
     AuthService authService = AuthService();
     authService.initialize();
 
@@ -60,7 +59,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
           ),
         );
 
-        // Navigate to OTP verification screen
         Navigator.push(
           context,
           MaterialPageRoute(
@@ -80,8 +78,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text("Network error. Please try again."),
+        const SnackBar(
+          content: Text("Network error. Please try again."),
           backgroundColor: Colors.red,
         ),
       );
@@ -171,6 +169,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   ),
                 ),
                 const SizedBox(height: 30),
+
+                // Title
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 30),
                   child: Column(
@@ -193,6 +193,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   ),
                 ),
                 const SizedBox(height: 20),
+
+                // Form Card
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 30),
                   child: Container(
@@ -215,29 +217,60 @@ class _SignUpScreenState extends State<SignUpScreen> {
                           CustomTextField(
                             controller: _nameController,
                             hint: 'Full Name',
-                            validator: (v) => v!.isEmpty ? 'Please enter your name' : null,
-                          ),
-                          const SizedBox(height: 16),
-                          CustomTextField(
-                            controller: _emailController,
-                            hint: 'Email Address',
-                            keyboardType: TextInputType.emailAddress,
-                            validator: (v) {
-                              if (v!.isEmpty) return 'Please enter your email';
-                              if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(v)) {
-                                return 'Please enter a valid email';
+                            keyboardType: TextInputType.name,
+                            validator: (value) {
+                              if (value == null || value.trim().isEmpty) {
+                                return 'Please enter your full name';
+                              }
+                              if (value.trim().length < 2) {
+                                return 'Name must be at least 2 characters';
+                              }
+                              if (!RegExp(r'^[a-zA-Z\s]+$').hasMatch(value.trim())) {
+                                return 'Name can only contain letters and spaces';
                               }
                               return null;
                             },
                           ),
                           const SizedBox(height: 16),
+
+                          CustomTextField(
+                            controller: _emailController,
+                            hint: 'Email Address',
+                            keyboardType: TextInputType.emailAddress,
+                            validator: (value) {
+                              if (value == null || value.trim().isEmpty) {
+                                return 'Please enter your email';
+                              }
+                              final emailRegex = RegExp(
+                                  r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$');
+                              if (!emailRegex.hasMatch(value.trim())) {
+                                return 'Please enter a valid email address';
+                              }
+                              return null;
+                            },
+                          ),
+                          const SizedBox(height: 16),
+
                           CustomTextField(
                             controller: _phoneController,
                             hint: 'Phone Number',
                             keyboardType: TextInputType.phone,
-                            validator: (v) => v!.isEmpty ? 'Please enter your phone number' : null,
+                            validator: (value) {
+                              if (value == null || value.trim().isEmpty) {
+                                return 'Please enter your phone number';
+                              }
+                              final cleaned = value.trim().replaceAll(RegExp(r'\D'), '');
+                              if (cleaned.length != 10) {
+                                return 'Phone number must be 10 digits';
+                              }
+                              if (!RegExp(r'^(97|98)').hasMatch(cleaned)) {
+                                return 'Phone number must start with 97 or 98';
+                              }
+                              return null;
+                            },
                           ),
                           const SizedBox(height: 16),
+
                           CustomTextField(
                             controller: _passwordController,
                             hint: 'Password',
@@ -249,13 +282,30 @@ class _SignUpScreenState extends State<SignUpScreen> {
                               ),
                               onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
                             ),
-                            validator: (v) {
-                              if (v!.isEmpty) return 'Please enter password';
-                              if (v.length < 6) return 'Password must be at least 6 characters';
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Please enter a password';
+                              }
+                              if (value.length < 8) {
+                                return 'Password must be at least 8 characters';
+                              }
+                              if (!RegExp(r'(?=.*[a-z])').hasMatch(value)) {
+                                return 'Password must contain at least one lowercase letter';
+                              }
+                              if (!RegExp(r'(?=.*[A-Z])').hasMatch(value)) {
+                                return 'Password must contain at least one uppercase letter';
+                              }
+                              if (!RegExp(r'(?=.*\d)').hasMatch(value)) {
+                                return 'Password must contain at least one number';
+                              }
+                              if (!RegExp(r'(?=.*[!@#$%^&*])').hasMatch(value)) {
+                                return 'Password must contain at least one special character (!@#\$%^&*)';
+                              }
                               return null;
                             },
                           ),
                           const SizedBox(height: 16),
+
                           CustomTextField(
                             controller: _confirmPasswordController,
                             hint: 'Confirm Password',
@@ -267,13 +317,18 @@ class _SignUpScreenState extends State<SignUpScreen> {
                               ),
                               onPressed: () => setState(() => _obscureConfirmPassword = !_obscureConfirmPassword),
                             ),
-                            validator: (v) {
-                              if (v!.isEmpty) return 'Please confirm password';
-                              if (v != _passwordController.text) return 'Passwords do not match';
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Please confirm your password';
+                              }
+                              if (value != _passwordController.text) {
+                                return 'Passwords do not match';
+                              }
                               return null;
                             },
                           ),
                           const SizedBox(height: 30),
+
                           SizedBox(
                             width: double.infinity,
                             height: 55,
@@ -289,21 +344,21 @@ class _SignUpScreenState extends State<SignUpScreen> {
                               ),
                               child: _isLoading
                                   ? const SizedBox(
-                                      height: 24,
-                                      width: 24,
-                                      child: CircularProgressIndicator(
-                                        strokeWidth: 2.5,
-                                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                                      ),
-                                    )
+                                height: 24,
+                                width: 24,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2.5,
+                                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                ),
+                              )
                                   : const Text(
-                                      'Sign Up',
-                                      style: TextStyle(
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.bold,
-                                        letterSpacing: 1,
-                                      ),
-                                    ),
+                                'Sign Up',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  letterSpacing: 1,
+                                ),
+                              ),
                             ),
                           ),
                         ],
@@ -311,7 +366,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     ),
                   ),
                 ),
+
                 const SizedBox(height: 30),
+
+                // Login link
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -332,6 +390,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     ),
                   ],
                 ),
+
                 const SizedBox(height: 40),
               ],
             ),

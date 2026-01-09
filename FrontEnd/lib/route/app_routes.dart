@@ -1,5 +1,5 @@
 import 'package:HamroGharSewa/DashBoard/AdminDashboard_view.dart';
-import 'package:HamroGharSewa/DashBoard/User.dart';
+import 'package:HamroGharSewa/DashBoard/User.dart'; // This should be your UserDashboard file
 import 'package:HamroGharSewa/DashBoard/provider_dashboard_view.dart';
 import 'package:HamroGharSewa/view/Login/login_view.dart';
 import 'package:HamroGharSewa/view/forgetpassword/forgetpassword_view.dart';
@@ -14,27 +14,30 @@ class AppRoutes {
   static const String providerDashboard = '/provider-dashboard';
   static const String adminDashboard = '/admin-dashboard';
 
-
   static Route<dynamic> generateRoute(RouteSettings settings) {
     switch (settings.name) {
       case login:
         return MaterialPageRoute(builder: (_) => const LoginScreen());
-      
+
       case signup:
         return MaterialPageRoute(builder: (_) => const SignUpScreen());
-      
+
       case forgotPassword:
         return MaterialPageRoute(builder: (_) => const ForgotPasswordScreen());
-      
+
       case userDashboard:
-        return MaterialPageRoute(builder: (_) => const UserDashboard());
-      
+      // Extract userName passed from TokenManager
+        final userName = settings.arguments as String? ?? "User";
+        return MaterialPageRoute(
+          builder: (_) => UserDashboard(userName: userName),
+        );
+
       case providerDashboard:
         return MaterialPageRoute(builder: (_) => const ProviderDashboard());
 
       case adminDashboard:
         return MaterialPageRoute(builder: (_) => const ServiceAdminApp());
-      
+
       default:
         return MaterialPageRoute(
           builder: (_) => Scaffold(

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:HamroGharSewa/view/booking/bookingPage_view.dart'; // Your booking page
+import 'package:HamroGharSewa/view/booking/bookingPage_view.dart';
 
-// Placeholder for the new screen (create this file later)
 class BecomeProviderScreen extends StatelessWidget {
   const BecomeProviderScreen({super.key});
 
@@ -9,7 +8,13 @@ class BecomeProviderScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Become a Service Provider')),
-      body: const Center(child: Text('Provider registration form goes here')),
+      body: const Center(
+        child: Text(
+          'Provider Registration Form\n(Coming Soon)',
+          textAlign: TextAlign.center,
+          style: TextStyle(fontSize: 18),
+        ),
+      ),
     );
   }
 }
@@ -17,12 +22,14 @@ class BecomeProviderScreen extends StatelessWidget {
 void main() {
   runApp(const MaterialApp(
     debugShowCheckedModeBanner: false,
-    home: UserDashboard(),
+    home: UserDashboard(userName: "Sita"), // Pass dynamic name here in real app
   ));
 }
 
 class UserDashboard extends StatefulWidget {
-  const UserDashboard({super.key});
+  final String userName; // Will come from auth (e.g., login)
+
+  const UserDashboard({super.key, required this.userName});
 
   @override
   State<UserDashboard> createState() => _UserDashboardState();
@@ -32,24 +39,34 @@ class _UserDashboardState extends State<UserDashboard> {
   final TextEditingController _searchController = TextEditingController();
   String searchQuery = "";
 
-  final List<Map<String, String>> bookings = [
+  final List<Map<String, dynamic>> bookings = [
     {
       'service': 'Painting',
       'name': 'by Himal',
-      'rate': '500/Hour',
+      'rate': 'NPR 500/Hour',
       'location': 'Patan',
+      'icon': Icons.format_paint,
     },
     {
       'service': 'Carpenter',
       'name': 'by Hari',
-      'rate': '500/Hour',
+      'rate': 'NPR 600/Hour',
       'location': 'Kathmandu',
+      'icon': Icons.handyman,
     },
     {
       'service': 'Plumbing',
       'name': 'by Ram',
-      'rate': '500/Hour',
+      'rate': 'NPR 550/Hour',
       'location': 'Bhaktapur',
+      'icon': Icons.plumbing,
+    },
+    {
+      'service': 'Electrician',
+      'name': 'by Shyam',
+      'rate': 'NPR 700/Hour',
+      'location': 'Lalitpur',
+      'icon': Icons.electrical_services,
     },
   ];
 
@@ -59,37 +76,76 @@ class _UserDashboardState extends State<UserDashboard> {
     super.dispose();
   }
 
+  void _showLogoutDialog() {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text("Logout"),
+        content: const Text("Are you sure you want to log out?"),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text("Cancel"),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              // TODO: Implement actual logout (clear token, navigate to login)
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text("Logged out successfully")),
+              );
+              // Navigator.pushReplacementNamed(context, '/login');
+            },
+            child: const Text("Logout", style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final filteredBookings = bookings.where((booking) {
       final query = searchQuery.toLowerCase();
       return booking['service']!.toLowerCase().contains(query) ||
           booking['name']!.toLowerCase().contains(query) ||
-          booking['rate']!.toLowerCase().contains(query) ||
           booking['location']!.toLowerCase().contains(query);
     }).toList();
 
     return Scaffold(
       appBar: AppBar(
         backgroundColor: const Color(0xFF3A8EE6),
-        title: const Text(
-          'Welcome, Sita',
-          style: TextStyle(color: Colors.white),
-        ),
         elevation: 0,
+        title: Text(
+          'Welcome, ${widget.userName}',
+          style: const TextStyle(color: Colors.white, fontSize: 20),
+        ),
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 16),
-            child: GestureDetector(
-              onTap: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text("Profile clicked!")),
-                );
+            child: PopupMenuButton<String>(
+              onSelected: (value) {
+                if (value == 'logout') {
+                  _showLogoutDialog();
+                }
               },
-              child: const CircleAvatar(
+              icon: const CircleAvatar(
                 radius: 20,
-                // backgroundImage: NetworkImage("https://i.pravatar.cc/150?img=47"),
+                backgroundColor: Colors.white,
+                child: Icon(Icons.person, color: Color(0xFF3A8EE6)),
               ),
+              itemBuilder: (context) => [
+                const PopupMenuItem(
+                  value: 'logout',
+                  child: Row(
+                    children: [
+                      Icon(Icons.logout, color: Colors.red),
+                      SizedBox(width: 10),
+                      Text("Logout"),
+                    ],
+                  ),
+                ),
+              ],
             ),
           ),
         ],
@@ -97,54 +153,62 @@ class _UserDashboardState extends State<UserDashboard> {
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text(
               'Find the Perfect',
-              style: TextStyle(fontSize: 40, fontWeight: FontWeight.bold),
+              style: TextStyle(fontSize: 36, fontWeight: FontWeight.bold),
             ),
             ShaderMask(
               shaderCallback: (bounds) => const LinearGradient(
                 colors: [Color(0xFF3A7BFF), Color(0xFF9745F5)],
-                begin: Alignment.centerLeft,
-                end: Alignment.centerRight,
-              ).createShader(Rect.fromLTWH(0, 0, bounds.width, bounds.height)),
+              ).createShader(bounds),
               child: const Text(
                 'Home Service',
                 style: TextStyle(
-                  fontSize: 42,
+                  fontSize: 40,
                   fontWeight: FontWeight.bold,
                   color: Colors.white,
                 ),
-                textAlign: TextAlign.center,
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 20),
+
+            // Search Bar
             TextField(
               controller: _searchController,
-              onChanged: (value) {
-                setState(() => searchQuery = value);
-              },
+              onChanged: (value) => setState(() => searchQuery = value),
               decoration: InputDecoration(
-                hintText: 'Search services...',
-                prefixIcon: const Icon(Icons.search, color: Colors.grey),
+                hintText: 'Search for services, location...',
+                prefixIcon: const Icon(Icons.search),
+                suffixIcon: searchQuery.isNotEmpty
+                    ? IconButton(
+                  icon: const Icon(Icons.clear),
+                  onPressed: () {
+                    _searchController.clear();
+                    setState(() => searchQuery = "");
+                  },
+                )
+                    : null,
                 filled: true,
                 fillColor: Colors.white,
-                contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 16),
-                border: const OutlineInputBorder(
-                  borderRadius: BorderRadius.all(Radius.circular(12)),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(16),
                   borderSide: BorderSide.none,
                 ),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
               ),
             ),
             const SizedBox(height: 30),
 
-            // Service Icons Row
+            // Quick Service Icons
             Container(
-              padding: const EdgeInsets.symmetric(vertical: 20),
+              padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: const Color(0xFFEFF5FF),
-                borderRadius: BorderRadius.circular(12),
+                gradient: const LinearGradient(
+                  colors: [Color(0xFFE3F2FD), Color(0xFFF3E5F5)],
+                ),
+                borderRadius: BorderRadius.circular(16),
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -156,78 +220,74 @@ class _UserDashboardState extends State<UserDashboard> {
                 ],
               ),
             ),
-
             const SizedBox(height: 30),
 
-            // Popular Services Section
+            // Popular Services
             const Text(
               'Popular Services',
-              style: TextStyle(fontSize: 35, fontWeight: FontWeight.bold),
+              style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 16),
 
             if (filteredBookings.isEmpty)
-              const Text(
-                "No services found",
-                style: TextStyle(color: Colors.grey),
-              ),
-            ...filteredBookings.map((booking) => BookingCard(
-                  booking: booking,
-                  onBook: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => BookingPage(),
-                      ),
-                    );
-                  },
-                )),
+              const Center(
+                child: Text(
+                  "No services found matching your search",
+                  style: TextStyle(color: Colors.grey, fontSize: 16),
+                ),
+              )
+            else
+              ...filteredBookings.map((booking) => BookingCard(
+                booking: booking,
+                onBook: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) =>  BookingPage()),
+                  );
+                },
+              )),
 
             const SizedBox(height: 40),
 
-            // ── Become a Service Provider Button ──
+            // Become Provider Button with Gradient
             Container(
               width: double.infinity,
-              margin: const EdgeInsets.symmetric(horizontal: 8),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [Color(0xFF3A8EE6), Color(0xFF6A4CFF)],
+                ),
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.blue.withOpacity(0.4),
+                    blurRadius: 10,
+                    offset: const Offset(0, 6),
+                  ),
+                ],
+              ),
               child: ElevatedButton.icon(
                 onPressed: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(
-                      builder: (_) => const BecomeProviderScreen(),
-                    ),
+                    MaterialPageRoute(builder: (_) => const BecomeProviderScreen()),
                   );
                 },
-                icon: const Icon(Icons.work_outline, size: 28),
+                icon: const Icon(Icons.work, size: 28),
                 label: const Text(
                   "Become a Service Provider",
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
                 style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 16),
                   backgroundColor: Colors.transparent,
                   foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  elevation: 8,
-                  shadowColor: Colors.blue.withOpacity(0.5),
+                  padding: const EdgeInsets.symmetric(vertical: 18),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  elevation: 0,
                 ),
-              ).copyWith(
-                // Apply gradient background
-                backgroundColor: MaterialStateProperty.all(Colors.transparent),
               ),
             ),
 
-            const SizedBox(height: 40),
-
-            // Actions Section
-            const Text(
-              'Actions',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 12),
-            // Add your other actions here...
+            const SizedBox(height: 60),
           ],
         ),
       ),
@@ -236,99 +296,86 @@ class _UserDashboardState extends State<UserDashboard> {
 
   Widget _buildServiceIcon(IconData icon, String label) {
     return Column(
-      mainAxisSize: MainAxisSize.min,
       children: [
-        CircleAvatar(
-          radius: 24,
-          backgroundColor: Colors.white,
-          child: Icon(
-            icon,
-            color: Colors.blueAccent,
-            size: 28,
+        Container(
+          padding: const EdgeInsets.all(16),
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            shape: BoxShape.circle,
+            boxShadow: [
+              BoxShadow(color: Colors.black12, blurRadius: 8, offset: Offset(0, 4)),
+            ],
           ),
+          child: Icon(icon, size: 32, color: const Color(0xFF3A8EE6)),
         ),
         const SizedBox(height: 8),
-        Text(
-          label,
-          style: const TextStyle(fontSize: 12),
-        ),
+        Text(label, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
       ],
     );
   }
 }
 
-extension on ElevatedButton {
-  Widget? copyWith({required WidgetStateProperty<Color> backgroundColor}) {
-    return null;
-  }
-}
-
 class BookingCard extends StatelessWidget {
-  final Map<String, String> booking;
+  final Map<String, dynamic> booking;
   final VoidCallback onBook;
 
-  const BookingCard({
-    required this.booking,
-    required this.onBook,
-    super.key,
-  });
+  const BookingCard({required this.booking, required this.onBook, super.key});
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 15),
+      margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: const [
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
           BoxShadow(
-            color: Colors.blueAccent,
-            blurRadius: 6,
-            spreadRadius: 2,
-            offset: Offset(2, 4),
+            color: Colors.grey.withOpacity(0.15),
+            blurRadius: 10,
+            offset: const Offset(0, 6),
           ),
         ],
       ),
       child: Padding(
         padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        child: Row(
           children: [
-            Text(
-              booking['service'] ?? '',
-              style: const TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: Colors.blueGrey,
+            CircleAvatar(
+              radius: 30,
+              backgroundColor: Colors.blue.shade50,
+              child: Icon(booking['icon'], size: 32, color: const Color(0xFF3A8EE6)),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    booking['service'],
+                    style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(booking['name'], style: const TextStyle(color: Colors.grey)),
+                  Text(booking['location'], style: const TextStyle(color: Colors.grey)),
+                  Text(
+                    booking['rate'],
+                    style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.green),
+                  ),
+                ],
               ),
             ),
-            const SizedBox(height: 6),
-            Text("Name: ${booking['name'] ?? ''}"),
-            const SizedBox(height: 4),
-            Text("Rate: ${booking['rate'] ?? ''}"),
-            const SizedBox(height: 4),
-            Text("Location: ${booking['location'] ?? ''}"),
-            const SizedBox(height: 12),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: onBook,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blue,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                ),
-                child: const Text(
-                  "Book Now",
-                  style: TextStyle(fontSize: 16, color: Colors.white),
-                ),
+            ElevatedButton(
+              onPressed: onBook,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF3A8EE6),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
               ),
+              child: const Text("Book", style: TextStyle(color: Colors.white)),
             ),
           ],
         ),
       ),
     );
   }
-}                                      
+}

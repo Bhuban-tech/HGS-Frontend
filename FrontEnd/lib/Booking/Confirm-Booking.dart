@@ -1,8 +1,12 @@
 import 'package:HamroGharSewa/Booking/HistoryPage.dart';
+import 'package:HamroGharSewa/common/custom_text_field.dart';
+import 'package:HamroGharSewa/constants/app_colors.dart';
+import 'package:HamroGharSewa/providers/booking_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class ConfirmPage extends StatelessWidget {
-  const ConfirmPage ({super.key});
+  const ConfirmPage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -11,66 +15,95 @@ class ConfirmPage extends StatelessWidget {
     final TextEditingController addressController = TextEditingController();
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.background,
       appBar: AppBar(
         title: const Text(
-          "HomeBase - Add Address",
-          style: TextStyle(color: Colors.black, fontWeight: FontWeight.w500),
+          "Confirm Booking",
+          style: TextStyle(color: AppColors.textDark, fontWeight: FontWeight.bold),
         ),
-        backgroundColor: Colors.white,
+        backgroundColor: Colors.transparent,
         elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.black),
         centerTitle: true,
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(24.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            _buildInputField(
-              controller: nameController,
-              hintText: "Contact Person Name",
-              icon: Icons.person_outline,
-            ),
-            const SizedBox(height: 16),
-            _buildInputField(
-              controller: numberController,
-              hintText: "Contact Number",
-              icon: Icons.phone_outlined,
-              keyboardType: TextInputType.phone,
-            ),
-            const SizedBox(height: 16),
-            _buildInputField(
-              controller: addressController,
-              hintText: "Addresss",
-              icon: Icons.location_on_outlined,
-              maxLines: 3,
-            ),
-            const SizedBox(height: 32),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => HistoryPage(),
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.05),
+                    blurRadius: 20,
+                    offset: const Offset(0, 5),
                   ),
+                ],
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    "Contact Details",
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.textDark,
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  CustomTextField(
+                    controller: nameController,
+                    hint: "Contact Person Name",
+                    label: "Contact Person",
+                    prefixIcon: Icons.person_outline_rounded,
+                  ),
+                  const SizedBox(height: 16),
+                  CustomTextField(
+                    controller: numberController,
+                    hint: "Contact Number",
+                    label: "Phone Number",
+                    prefixIcon: Icons.phone_outlined,
+                    keyboardType: TextInputType.phone,
+                  ),
+                  const SizedBox(height: 16),
+                  CustomTextField(
+                    controller: addressController,
+                    hint: "Service Address",
+                    label: "Location",
+                    prefixIcon: Icons.location_on_outlined,
+                  ),
+                ],
+              ),
+            ),
+            
+            const SizedBox(height: 32),
+            
+            Consumer<BookingProvider>(
+              builder: (context, provider, child) {
+                return ElevatedButton(
+                  onPressed: provider.isLoading ? null : () async {
+                    // Create Booking using Provider (Mock)
+                    final success = await provider.createBooking(
+                      providerId: 'provider_demo',
+                      serviceId: 'service_demo',
+                      bookingDate: DateTime.now().add(const Duration(days: 1)),
+                      description: 'Plumbing Service Request',
+                      location: addressController.text.isEmpty ? 'Kathmandu' : addressController.text,
+                    );
+                    
+                    if (success && context.mounted) {
+                      _showSuccessDialog(context);
+                    }
+                  },
+                  child: provider.isLoading 
+                    ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(color: Colors.white))
+                    : const Text("CONFIRM BOOKING"),
                 );
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.deepPurpleAccent.shade100,
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(30),
-                ),
-              ),
-              child: const Text(
-                "Confirm-booking",
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
+              }
             )
           ],
         ),
@@ -78,29 +111,59 @@ class ConfirmPage extends StatelessWidget {
     );
   }
 
-  Widget _buildInputField({
-    required TextEditingController controller,
-    required String hintText,
-    required IconData icon,
-    int maxLines = 1,
-    TextInputType keyboardType = TextInputType.text,
-  }) {
-    return TextField(
-      controller: controller,
-      maxLines: maxLines,
-      keyboardType: keyboardType,
-      decoration: InputDecoration(
-        prefixIcon: Icon(icon, color: Colors.black54),
-        hintText: hintText,
-        filled: true,
-        fillColor: Colors.white,
-        contentPadding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(25),
-          borderSide: BorderSide(color: Colors.blue, width: 1.5),
-
+  void _showSuccessDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: AppColors.success.withValues(alpha: 0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.check_rounded, color: AppColors.success, size: 50),
+              ),
+              const SizedBox(height: 20),
+              const Text(
+                'Booking Confirmed!',
+                style: TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.textDark,
+                ),
+              ),
+              const SizedBox(height: 10),
+              const Text(
+                'Your service has been successfully booked. Review status in history.',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: AppColors.textMedium,
+                  fontSize: 14,
+                ),
+              ),
+              const SizedBox(height: 24),
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.pop(context); // Close dialog
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(builder: (context) => HistoryPage()),
+                  );
+                },
+                child: const Text('View Bookings'),
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 }
+

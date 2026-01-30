@@ -212,7 +212,7 @@ class _ServiceAdminAppState extends State<ServiceAdminApp>
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -234,13 +234,13 @@ class _ServiceAdminAppState extends State<ServiceAdminApp>
               Container(
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
-                    colors: [AppColors.primaryBlue, AppColors.primaryBlue.withOpacity(0.8)],
+                    colors: [AppColors.primaryBlue, AppColors.primaryBlue.withValues(alpha: 0.8)],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: AppColors.primaryBlue.withOpacity(0.3),
+                      color: AppColors.primaryBlue.withValues(alpha: 0.3),
                       blurRadius: 10,
                       offset: const Offset(0, 5),
                     ),
@@ -258,7 +258,7 @@ class _ServiceAdminAppState extends State<ServiceAdminApp>
                             Container(
                               padding: const EdgeInsets.all(12),
                               decoration: BoxDecoration(
-                                color: Colors.white.withOpacity(0.2),
+                                color: Colors.white.withValues(alpha: 0.2),
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               child: const Icon(Icons.admin_panel_settings, color: Colors.white, size: 28),
@@ -474,14 +474,14 @@ class _ServiceAdminAppState extends State<ServiceAdminApp>
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 2)),
+          BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, 2)),
         ],
       ),
       child: Column(
         children: [
           Container(
             padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(color: color.withOpacity(0.1), shape: BoxShape.circle),
+            decoration: BoxDecoration(color: color.withValues(alpha: 0.1), shape: BoxShape.circle),
             child: Icon(icon, color: color, size: 24),
           ),
           const SizedBox(height: 12),
@@ -503,7 +503,7 @@ class _ServiceAdminAppState extends State<ServiceAdminApp>
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: AppColors.primaryBlue.withOpacity(0.1),
+                  color: AppColors.primaryBlue.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Icon(Icons.category, color: AppColors.primaryBlue, size: 20),
@@ -575,7 +575,7 @@ class _ServiceAdminAppState extends State<ServiceAdminApp>
                   Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: AppColors.primaryBlue.withOpacity(0.1),
+                      color: AppColors.primaryBlue.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Icon(Icons.people, color: AppColors.primaryBlue, size: 20),
@@ -621,7 +621,7 @@ class _ServiceAdminAppState extends State<ServiceAdminApp>
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: Colors.grey.shade200),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 5, offset: const Offset(0, 2))],
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 5, offset: const Offset(0, 2))],
       ),
       child: Column(
         children: [
@@ -632,13 +632,13 @@ class _ServiceAdminAppState extends State<ServiceAdminApp>
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   border: Border.all(
-                    color: provider.active ? Colors.green.withOpacity(0.3) : Colors.orange,
+                    color: provider.active ? Colors.green.withValues(alpha: 0.3) : Colors.orange,
                     width: 2,
                   ),
                 ),
                 child: CircleAvatar(
                   radius: 28,
-                  backgroundColor: provider.active ? Colors.green.withOpacity(0.1) : Colors.orange.withOpacity(0.1),
+                  backgroundColor: provider.active ? Colors.green.withValues(alpha: 0.1) : Colors.orange.withValues(alpha: 0.1),
                   child: Text(
                     provider.userName.isNotEmpty ? provider.userName[0].toUpperCase() : '?',
                     style: TextStyle(
@@ -677,7 +677,7 @@ class _ServiceAdminAppState extends State<ServiceAdminApp>
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
-                  color: provider.active ? Colors.green.withOpacity(0.1) : Colors.orange.withOpacity(0.1),
+                  color: provider.active ? Colors.green.withValues(alpha: 0.1) : Colors.orange.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(

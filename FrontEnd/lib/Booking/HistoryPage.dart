@@ -1,5 +1,6 @@
-import 'package:flutter/material.dart';
 import 'package:HamroGharSewa/Booking/ChatPage.dart';
+import 'package:HamroGharSewa/constants/app_colors.dart';
+import 'package:flutter/material.dart';
 
 class HistoryPage extends StatefulWidget {
   const HistoryPage({super.key});
@@ -9,118 +10,189 @@ class HistoryPage extends StatefulWidget {
 }
 
 class _HistoryPageState extends State<HistoryPage> {
-  int selectedIndex = 0;
-
-  final List<Map<String, String>> addresses = [
+  final List<Map<String, dynamic>> bookings = [
     {
-      "name": "Bhuban Bhandari (Home)",
-      "address": "chabahil 3\nnear kl tower",
-      "phone": "9703497318",
+      "service": "Plumbing Service",
+      "provider": "Bhuban Bhandari",
+      "date": "Today, 2:00 PM",
+      "status": "Pending",
+      "location": "Chabahil, Kathmandu",
+      "price": "Rs. 500",
+      "color": AppColors.serviceBlue,
+      "icon": Icons.plumbing_rounded,
     },
     {
-      "name": "Bhuban Bhandaris",
-      "address": "chabahil\nchabahil",
-      "phone": "9703497318",
+      "service": "Home Painting",
+      "provider": "Himal Rai",
+      "date": "Yesterday, 10:00 AM",
+      "status": "Completed",
+      "location": "Patan, Lalitpur",
+      "price": "Rs. 1200",
+      "color": AppColors.servicePurple,
+      "icon": Icons.format_paint_rounded,
     },
   ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[100],
+      backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text("Select Address"),
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black,
+        title: const Text('My Bookings'),
+        centerTitle: true,
+        backgroundColor: Colors.transparent,
         elevation: 0,
+        foregroundColor: AppColors.textDark,
       ),
-      body: ListView.builder(
-        padding: const EdgeInsets.all(12),
-        itemCount: addresses.length,
+      body: ListView.separated(
+        padding: const EdgeInsets.all(20),
+        itemCount: bookings.length,
+        separatorBuilder: (context, index) => const SizedBox(height: 16),
         itemBuilder: (context, index) {
-          final item = addresses[index];
-          return Card(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-              side: BorderSide(
-                color: selectedIndex == index
-                    ? Colors.deepPurple
-                    : Colors.grey.shade300,
-                width: 1.5,
-              ),
+          final item = bookings[index];
+          final isCompleted = item['status'] == 'Completed';
+          
+          return Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.05),
+                  blurRadius: 15,
+                  offset: const Offset(0, 5),
+                ),
+              ],
             ),
-            margin: const EdgeInsets.symmetric(vertical: 8),
             child: Padding(
-              padding: const EdgeInsets.all(14),
+              padding: const EdgeInsets.all(20),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Row(
                     children: [
-                      Radio<int>(
-                        value: index,
-                        groupValue: selectedIndex,
-                        activeColor: Colors.deepPurple,
-                        onChanged: (value) {
-                          setState(() {
-                            selectedIndex = value!;
-                          });
-                        },
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: item['color'].withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Icon(item['icon'], color: item['color']),
                       ),
+                      const SizedBox(width: 16),
                       Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              item['service'],
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.textDark,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              item['provider'],
+                              style: const TextStyle(
+                                fontSize: 13,
+                                color: AppColors.textMedium,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: isCompleted ? Colors.green.withValues(alpha: 0.1) : Colors.orange.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
                         child: Text(
-                          item["name"]!,
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
+                          item['status'],
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                            color: isCompleted ? Colors.green : Colors.orange,
                           ),
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 4),
-                  Text(
-                    item["address"]!,
-                    style:
-                    const TextStyle(color: Colors.black87, fontSize: 14),
+                  const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 16),
+                    child: Divider(),
                   ),
-                  const SizedBox(height: 2),
-                  Text(
-                    item["phone"]!,
-                    style: const TextStyle(color: Colors.black54, fontSize: 14),
-                  ),
-                  const SizedBox(height: 12),
                   Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
                     children: [
-                      TextButton(
-                        onPressed: () {},
-                        child: const Text(
-                          "cancel",
-                          style: TextStyle(color: Colors.black54),
-                        ),
+                      const Icon(Icons.calendar_today_rounded, size: 16, color: AppColors.textLight),
+                      const SizedBox(width: 8),
+                      Text(
+                        item['date'],
+                        style: const TextStyle(color: AppColors.textDark, fontWeight: FontWeight.w500),
                       ),
-                      const SizedBox(width: 12),
-                      // Chat button navigates to ChatPage with name
-                      TextButton.icon(
-                        icon: const Icon(Icons.chat, color: Colors.deepPurple),
-                        label: const Text(
-                          "Chat",
-                          style: TextStyle(color: Colors.deepPurple),
+                      const Spacer(),
+                      Text(
+                        item['price'],
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.primaryBlue,
                         ),
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => ChatPage(
-                                name: item["name"]!,
-                              ),
-                            ),
-                          );
-                        },
                       ),
                     ],
-                  )
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      const Icon(Icons.location_on_outlined, size: 16, color: AppColors.textLight),
+                      const SizedBox(width: 8),
+                      Text(
+                        item['location'],
+                        style: const TextStyle(color: AppColors.textMedium),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton(
+                          onPressed: () {},
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: AppColors.textMedium,
+                            side: const BorderSide(color: AppColors.lightGrey),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          ),
+                          child: const Text('Cancel'),
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: ElevatedButton.icon(
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => ChatPage(
+                                  name: item['provider'],
+                                ),
+                              ),
+                            );
+                          },
+                          icon: const Icon(Icons.chat_bubble_outline_rounded, size: 18),
+                          label: const Text('Chat'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.primaryBlue,
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                            elevation: 0,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ],
               ),
             ),
@@ -130,3 +202,4 @@ class _HistoryPageState extends State<HistoryPage> {
     );
   }
 }
+

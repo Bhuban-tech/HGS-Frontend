@@ -107,6 +107,15 @@ class TokenManager {
           );
           break;
 
+        case 'PROVIDER':
+        case 'SERVICE_PROVIDER':
+          Navigator.pushNamedAndRemoveUntil(
+            context,
+            AppRoutes.providerDashboard,
+            (route) => false,
+          );
+          break;
+
         default:
           await clearAll();
           _goToLogin(context);

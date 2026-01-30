@@ -1,6 +1,6 @@
 class ApiConstants {
   // Base URL: only host + port (no trailing /api)
-  static const String baseUrl = 'http://192.168.111.232:8080';
+  static const String baseUrl = 'http://192.168.1.77:8080';
 
   // All endpoints must be RELATIVE (start with /)
   static const String login = '/api/auth/login';
@@ -28,12 +28,32 @@ class ApiConstants {
   static Duration? get receiveTimeout => null;
   static String adminUpdateCategory(String id) => '/api/admin/categories/$id';
   static String adminDeleteCategory(String id) => '/api/admin/categories/$id';
+  static String categoryById(String id) => '/api/admin/categories/$id';
 
+  // ==================== BOOKING ENDPOINTS ====================
+  static const String createBooking = '/api/booking';
+  static const String userBookings = '/api/booking/user';
+  static const String providerBookings = '/api/booking/provider';
+  static String bookingById(String id) => '/api/booking/$id';
+  static String updateBookingStatus(String id) => '/api/booking/$id/status';
 
-static String categoryById(String id) => '/api/admin/categories/$id';
+  // ==================== SERVICE ENDPOINTS ====================
+  static const String services = '/api/services';
+  static String serviceById(String id) => '/api/services/$id';
+  static const String servicesByCategory = '/api/services/category';
 
+  // ==================== PROVIDER ENDPOINTS ====================
+  static const String providers = '/api/providers';
+  static String providerById(String id) => '/api/providers/$id';
+  static const String becomeProvider = '/api/providers/register';
 
- 
+  // ==================== CHAT ENDPOINTS ====================
+  static const String chatWebSocket = '/ws-chat';
+  static String chatHistory(String bookingId) => '/api/chat/$bookingId';
+  static String chatTopic(String userId) => '/topic/user/$userId';
+  static String chatSend = '/app/chat';
 
-  
+  // ==================== USER PROFILE ENDPOINTS ====================
+  static const String userProfile = '/api/user/profile';
+  static const String updateProfile = '/api/user/profile';
 }

@@ -1,36 +1,498 @@
-
-import 'package:HamroGharSewa/DashBoard/provider_dashboard_view.dart';
+import 'package:HamroGharSewa/constants/app_colors.dart';
+import 'package:HamroGharSewa/providers/service_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
+class BecomeProviderPage extends StatefulWidget {
+  const BecomeProviderPage({Key? key}) : super(key: key);
 
-
-void main() {
-  runApp(MaterialApp(
-    debugShowCheckedModeBanner: false,
-    initialRoute: '/',
-    routes: {
-      '/': (context) => const LandingPage(),
-    },
-  ));
+  @override
+  State<BecomeProviderPage> createState() => _BecomeProviderPageState();
 }
 
-class LandingPage extends StatelessWidget {
-  const LandingPage({super.key});
+class _BecomeProviderPageState extends State<BecomeProviderPage> {
+  int _currentStep = 0;
+  final int _totalSteps = 3;
+  final PageController _pageController = PageController();
+
+  // Form Keys
+  final _personalFormKey = GlobalKey<FormState>();
+  final _professionalFormKey = GlobalKey<FormState>();
+  final _verificationFormKey = GlobalKey<FormState>();
+
+  // Controllers
+  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _phoneController = TextEditingController();
+  final TextEditingController _addressController = TextEditingController();
+  
+  final TextEditingController _categoryController = TextEditingController(); // Should be dropdown
+  final TextEditingController _experienceController = TextEditingController();
+  final TextEditingController _skillsController = TextEditingController();
+  
+  final TextEditingController _citizenshipController = TextEditingController();
+
+  String _selectedCategory = 'Plumbing'; // Default
+  final List<String> _categories = [
+    'Plumbing', 'Electrical', 'Painting', 'Cleaning', 'Carpentry', 'Gardening'
+  ];
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    _nameController.dispose();
+    _phoneController.dispose();
+    _addressController.dispose();
+    _categoryController.dispose();
+    _experienceController.dispose();
+    _skillsController.dispose();
+    _citizenshipController.dispose();
+    super.dispose();
+  }
+
+  void _nextStep() {
+    if (_currentStep == 0) {
+      if (!_personalFormKey.currentState!.validate()) return;
+    } else if (_currentStep == 1) {
+      if (!_professionalFormKey.currentState!.validate()) return;
+    } else if (_currentStep == 2) {
+      if (!_verificationFormKey.currentState!.validate()) return;
+      _submitApplication();
+      return; 
+    }
+
+    if (_currentStep < _totalSteps - 1) {
+      setState(() => _currentStep++);
+      _pageController.animateToPage(
+        _currentStep,
+        duration: const Duration(milliseconds: 600),
+        curve: Curves.easeInOutCubicEmphasized,
+      );
+    }
+  }
+
+  void _prevStep() {
+    if (_currentStep > 0) {
+      setState(() => _currentStep--);
+      _pageController.animateToPage(
+        _currentStep,
+        duration: const Duration(milliseconds: 600),
+        curve: Curves.easeInOutCubicEmphasized,
+      );
+    } else {
+      Navigator.pop(context);
+    }
+  }
+
+  Future<void> _submitApplication() async {
+    final provider = Provider.of<ServiceProvider>(context, listen: false);
+    
+    final data = {
+      'name': _nameController.text,
+      'phone': _phoneController.text,
+      'address': _addressController.text,
+      'category': _selectedCategory,
+      'experience': _experienceController.text,
+      'skills': _skillsController.text,
+      'citizenship': _citizenshipController.text,
+    };
+
+    final success = await provider.submitProviderApplication(data);
+
+    if (success && mounted) {
+      // Show Success Screen
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const ProviderApplicationSuccessPage()),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Failed to submit application. Please try again.')),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Landing Page'),
-        backgroundColor: Colors.blue,
+      backgroundColor: AppColors.background,
+      body: SafeArea(
+        child: Column(
+          children: [
+            _buildHeader(),
+            Expanded(
+              child: PageView(
+                controller: _pageController,
+                physics: const NeverScrollableScrollPhysics(), // Disable swipe
+                children: [
+                   _buildStep1Personal(),
+                   _buildStep2Professional(),
+                   _buildStep3Verification(),
+                ],
+              ),
+            ),
+            _buildBottomBar(),
+          ],
+        ),
       ),
-      body: Center(
-        child: ElevatedButton(
-          child: const Text('Register as Service Provider'),
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => RegisterApp()),
+    );
+  }
+
+  Widget _buildHeader() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              IconButton(
+                icon: const Icon(Icons.arrow_back_ios, size: 20),
+                onPressed: _prevStep,
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
+              ),
+              const SizedBox(width: 16),
+              const Text(
+                'Become a Provider',
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.textDark,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+          // Progress Bar
+          Stack(
+            children: [
+              Container(
+                height: 6,
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  color: AppColors.lightGrey,
+                  borderRadius: BorderRadius.circular(3),
+                ),
+              ),
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 600),
+                curve: Curves.easeInOut,
+                height: 6,
+                width: MediaQuery.of(context).size.width * ((_currentStep + 1) / (_totalSteps)),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [AppColors.gradientStart, AppColors.gradientEnd],
+                  ),
+                  borderRadius: BorderRadius.circular(3),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Step ${_currentStep + 1} of $_totalSteps',
+            style: const TextStyle(
+              color: AppColors.textLight,
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStep1Personal() {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.symmetric(horizontal: 24),
+      child: Form(
+        key: _personalFormKey,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const SizedBox(height: 20),
+            _buildSectionTitle('Basic Information', 'Tell us about yourself'),
+            const SizedBox(height: 32),
+            _buildTextField(
+              controller: _nameController,
+              label: 'Full Name',
+              icon: Icons.person_outline,
+              validator: (v) => v!.isEmpty ? 'Name is required' : null,
+            ),
+            const SizedBox(height: 20),
+            _buildTextField(
+              controller: _phoneController,
+              label: 'Phone Number',
+              icon: Icons.phone_outlined,
+              keyboardType: TextInputType.phone,
+              validator: (v) => v!.isEmpty ? 'Phone is required' : null,
+            ),
+            const SizedBox(height: 20),
+            _buildTextField(
+              controller: _addressController,
+              label: 'Address',
+              icon: Icons.location_on_outlined,
+              validator: (v) => v!.isEmpty ? 'Address is required' : null,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStep2Professional() {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.symmetric(horizontal: 24),
+      child: Form(
+        key: _professionalFormKey,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const SizedBox(height: 20),
+            _buildSectionTitle('Professional Info', 'What services do you provide?'),
+            const SizedBox(height: 32),
+            _buildDropdown(
+              label: 'Service Category',
+              value: _selectedCategory,
+              items: _categories,
+              onChanged: (val) => setState(() => _selectedCategory = val!),
+            ),
+            const SizedBox(height: 20),
+            _buildTextField(
+              controller: _experienceController,
+              label: 'Years of Experience',
+              icon: Icons.work_history_outlined,
+              keyboardType: TextInputType.number,
+              validator: (v) => v!.isEmpty ? 'Experience is required' : null,
+            ),
+            const SizedBox(height: 20),
+            _buildTextField(
+              controller: _skillsController,
+              label: 'Skills / Description',
+              icon: Icons.lightbulb_outline,
+              maxLines: 3,
+              validator: (v) => v!.isEmpty ? 'Description is required' : null,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStep3Verification() {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.symmetric(horizontal: 24),
+      child: Form(
+        key: _verificationFormKey,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const SizedBox(height: 20),
+            _buildSectionTitle('Identity & Validation', 'Verify your identity'),
+            const SizedBox(height: 32),
+            _buildTextField(
+              controller: _citizenshipController,
+              label: 'Citizenship Number',
+              icon: Icons.badge_outlined,
+              validator: (v) => v!.isEmpty ? 'ID Number is required' : null,
+            ),
+            const SizedBox(height: 24),
+            _buildUploadCard('Citizenship (Front)'),
+            const SizedBox(height: 16),
+            _buildUploadCard('Citizenship (Back)'),
+            const SizedBox(height: 16),
+            _buildUploadCard('Profile Photo'),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSectionTitle(String title, String subtitle) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          title,
+          style: const TextStyle(
+            fontSize: 28,
+            fontWeight: FontWeight.bold,
+            color: AppColors.textDark,
+            letterSpacing: -0.5,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          subtitle,
+          style: const TextStyle(
+            fontSize: 16,
+            color: AppColors.textLight,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildTextField({
+    required TextEditingController controller,
+    required String label,
+    required IconData icon,
+    TextInputType keyboardType = TextInputType.text,
+    int maxLines = 1,
+    String? Function(String?)? validator,
+  }) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.03),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: TextFormField(
+        controller: controller,
+        keyboardType: keyboardType,
+        maxLines: maxLines,
+        validator: validator,
+        style: const TextStyle(
+          fontWeight: FontWeight.w600,
+          color: AppColors.textDark,
+        ),
+        decoration: InputDecoration(
+          labelText: label,
+          labelStyle: const TextStyle(color: AppColors.textLight),
+          prefixIcon: Icon(icon, color: AppColors.primaryBlue),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(20),
+            borderSide: BorderSide.none,
+          ),
+          filled: true,
+          fillColor: Colors.transparent, // handled by container
+          contentPadding: const EdgeInsets.all(20),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDropdown({
+    required String label,
+    required String value,
+    required List<String> items,
+    required Function(String?) onChanged,
+  }) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.03),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: DropdownButtonFormField<String>(
+        value: value,
+        onChanged: onChanged,
+        decoration: InputDecoration(
+          labelText: label,
+          labelStyle: const TextStyle(color: AppColors.textLight),
+          prefixIcon: const Icon(Icons.category_outlined, color: AppColors.primaryBlue),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(20),
+            borderSide: BorderSide.none,
+          ),
+          filled: true,
+          fillColor: Colors.transparent,
+          contentPadding: const EdgeInsets.all(20),
+        ),
+        items: items.map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
+      ),
+    );
+  }
+
+  Widget _buildUploadCard(String title) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: AppColors.lightGrey, width: 1.5),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.02),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          Icon(Icons.cloud_upload_outlined, size: 32, color: AppColors.primaryBlue.withValues(alpha: 0.6)),
+          const SizedBox(height: 12),
+          Text(
+            title,
+            style: const TextStyle(
+              fontWeight: FontWeight.bold,
+              color: AppColors.textDark,
+              fontSize: 14,
+            ),
+          ),
+          const SizedBox(height: 4),
+          const Text(
+            'Tap to upload',
+            style: TextStyle(
+              color: AppColors.textLight,
+              fontSize: 12,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBottomBar() {
+    return SafeArea(
+      child: Container(
+        padding: const EdgeInsets.all(24),
+        child: Consumer<ServiceProvider>(
+          builder: (context, provider, child) {
+            return ElevatedButton(
+              onPressed: provider.isLoading ? null : _nextStep,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primaryBlue,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 20),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                elevation: 8,
+                shadowColor: AppColors.primaryBlue.withValues(alpha: 0.4),
+              ),
+              child: provider.isLoading
+                  ? const SizedBox(
+                      height: 24,
+                      width: 24,
+                      child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                    )
+                  : Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          _currentStep == _totalSteps - 1 ? 'Submit & Review' : 'Next Step',
+                          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                        ),
+                        if (_currentStep < _totalSteps - 1)
+                          const Padding(
+                            padding: EdgeInsets.only(left: 8.0),
+                            child: Icon(Icons.arrow_forward_rounded, size: 20),
+                          ),
+                      ],
+                    ),
             );
           },
         ),
@@ -39,462 +501,82 @@ class LandingPage extends StatelessWidget {
   }
 }
 
-class RegisterApp extends StatefulWidget {
-  @override
-  _RegistrationFormState createState() => _RegistrationFormState();
-}
-
-class _RegistrationFormState extends State<RegisterApp> {
-  int _currentStep = 0;
-
-  final _personalFormKey = GlobalKey<FormState>();
-  final _businessFormKey = GlobalKey<FormState>();
-  final _verificationFormKey = GlobalKey<FormState>();
-
-  final nameController = TextEditingController();
-  final emailController = TextEditingController();
-  final phoneController = TextEditingController();
-  final addressController = TextEditingController();
-  final businessController = TextEditingController();
-  final hourlyRateController = TextEditingController();
-  final specializationController = TextEditingController();
-  final serviceAreaController = TextEditingController();
-
-  String? kycType;
-  Set<String> selectedServices = {};
-
-  @override
-  void dispose() {
-    nameController.dispose();
-    emailController.dispose();
-    phoneController.dispose();
-    addressController.dispose();
-    businessController.dispose();
-    hourlyRateController.dispose();
-    specializationController.dispose();
-    serviceAreaController.dispose();
-    super.dispose();
-  }
-
-  Future<bool> _handleBack() async {
-    if (_currentStep > 0) {
-      setState(() => _currentStep -= 1);
-      return false;
-    }
-    return true;
-  }
+class ProviderApplicationSuccessPage extends StatelessWidget {
+  const ProviderApplicationSuccessPage({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return WillPopScope(
-      onWillPop: _handleBack,
-      child: Scaffold(
-        appBar: AppBar(
-          elevation: 0,
-          backgroundColor: Colors.blue,
-          automaticallyImplyLeading: false,
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back, color: Colors.white),
-            onPressed: () async {
-              if (await _handleBack()) {
-                Navigator.pop(context);
-              }
-            },
-          ),
-          title: const Text(
-            'Plumbing: Tap Installation',
-            style: TextStyle(
-                fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
-          ),
-          actions: const [
-            Padding(
-              padding: EdgeInsets.only(right: 16.0),
-              child: Icon(Icons.notifications_none, color: Colors.black),
-            ),
-          ],
-        ),
-        body: Column(
+    return Scaffold(
+      backgroundColor: Colors.white,
+      body: Padding(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Padding(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16),
-              child: Column(
-                children: [
-                  Center(
-                    child: Image.asset(
-                      'assets/logo.png',
-                      height: 80,
-                      width: 80,
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  const Center(
-                    child: Text(
-                      "Register as Service Provider",
-                      style: TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black87,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  const Center(
-                    child: Text(
-                      "Join our network of verified professionals",
-                      style: TextStyle(fontSize: 14, color: Colors.black54),
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-                ],
+            Container(
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                color: AppColors.success.withValues(alpha: 0.1),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.check_rounded, color: AppColors.success, size: 64),
+            ),
+            const SizedBox(height: 32),
+            const Text(
+              'Application Received!',
+              style: TextStyle(
+                fontSize: 28,
+                fontWeight: FontWeight.bold,
+                color: AppColors.textDark,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 16),
+            const Text(
+              'Your application is under review by our Admin team. You will be notified once verified.',
+              style: TextStyle(
+                fontSize: 16,
+                color: AppColors.textMedium,
+                height: 1.5,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 48),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () {
+                   Navigator.pushAndRemoveUntil(
+                    context,
+                    MaterialPageRoute(builder: (_) => const ProviderDashboard()),
+                    (route) => false,
+                  );
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primaryBlue,
+                  padding: const EdgeInsets.symmetric(vertical: 20),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                  elevation: 5,
+                ),
+                child: const Text('Go to Provider Dashboard (Demo)'),
               ),
             ),
-            const SizedBox(height: 10),
-            Expanded(
-              child: Container(
-                padding: const EdgeInsets.all(16),
-                decoration: const BoxDecoration(
-                  color: Colors.white,
-                  borderRadius:
-                      BorderRadius.vertical(top: Radius.circular(30)),
+            const SizedBox(height: 16),
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton(
+                onPressed: () => Navigator.pop(context),
+                style: OutlinedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 20),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                  side: const BorderSide(color: AppColors.primaryBlue),
                 ),
-                child: Stepper(
-                  type: StepperType.horizontal,
-                  currentStep: _currentStep,
-                  onStepContinue: () {
-                    if (_currentStep == 0 &&
-                        _personalFormKey.currentState!.validate()) {
-                      setState(() => _currentStep += 1);
-                    } else if (_currentStep == 1 &&
-                        _businessFormKey.currentState!.validate()) {
-                      if (selectedServices.isEmpty) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                              content:
-                                  Text("Please select at least one service")),
-                        );
-                        return;
-                      }
-                      setState(() => _currentStep += 1);
-                    } else if (_currentStep == 2 &&
-                        _verificationFormKey.currentState!.validate()) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text("Registration Complete")),
-                      );
-                      Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => const ProviderDashboard()),
-                      );
-                    }
-                  },
-                  onStepCancel: () {
-                    if (_currentStep > 0) {
-                      setState(() => _currentStep -= 1);
-                    }
-                  },
-                  controlsBuilder: (context, details) {
-                    return Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        if (_currentStep > 0)
-                          TextButton(
-                            onPressed: details.onStepCancel,
-                            child: const Text("Back"),
-                          ),
-                        const SizedBox(width: 10),
-                        ElevatedButton(
-                          onPressed: details.onStepContinue,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.blue,
-                            foregroundColor: Colors.white,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                          ),
-                          child:
-                              Text(_currentStep == 2 ? "Submit" : "Next"),
-                        ),
-                      ],
-                    );
-                  },
-                  steps: [
-                    // Step 1: Personal Info
-                    Step(
-                      title: const Text("1"),
-                      isActive: _currentStep >= 0,
-                      content: Form(
-                        key: _personalFormKey,
-                        child: Column(
-                          children: [
-                            _buildRoundedTextField(
-                                "Full Name", nameController,
-                                (val) =>
-                                    val!.isEmpty ? "Enter your name" : null),
-                            _buildRoundedTextField(
-                                "Email Address", emailController,
-                                (val) => val!.contains("@")
-                                    ? null
-                                    : "Enter valid email"),
-                            _buildRoundedTextField(
-                                "Phone Number", phoneController,
-                                (val) => val!.length < 5
-                                    ? "Enter valid phone number"
-                                    : null,
-                                type: TextInputType.phone),
-                            _buildRoundedTextField(
-                                "Address", addressController,
-                                (val) => val!.isEmpty
-                                    ? "Enter a valid address"
-                                    : null),
-                          ],
-                        ),
-                      ),
-                    ),
-
-                    // Step 2: Business Info
-                    Step(
-                      title: const Text("2"),
-                      isActive: _currentStep >= 1,
-                      content: Form(
-                        key: _businessFormKey,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            _buildRoundedTextField(
-                              "Business/Services Name *",
-                              businessController,
-                              (val) =>
-                                  val!.isEmpty ? "Enter business name" : null,
-                            ),
-                            const SizedBox(height: 20),
-
-                            const Text("Services Offered *"),
-                            const SizedBox(height: 10),
-                            Wrap(
-                              spacing: 10,
-                              runSpacing: 10,
-                              children: [
-                                _buildChip("Plumbing"),
-                                _buildChip("Carpentry"),
-                                _buildChip("Cleaning"),
-                                _buildChip("Landscaping"),
-                                _buildChip("Appliance Repair"),
-                                _buildChip("Electrical"),
-                                _buildChip("Painting"),
-                                _buildChip("HVAC"),
-                                _buildChip("Home Repair"),
-                                _buildChip("Interior Design"),
-                              ],
-                            ),
-                            const SizedBox(height: 20),
-
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: DropdownButtonFormField<String>(
-                                    decoration: const InputDecoration(
-                                      labelText: "Experience *",
-                                      border: OutlineInputBorder(),
-                                    ),
-                                    items: [
-                                      "1 year",
-                                      "2 years",
-                                      "3 years",
-                                      "5+ years",
-                                      "10+ years",
-                                    ].map((exp) {
-                                      return DropdownMenuItem(
-                                          value: exp, child: Text(exp));
-                                    }).toList(),
-                                    onChanged: (val) {},
-                                    validator: (val) =>
-                                        val == null ? "Select experience" : null,
-                                  ),
-                                ),
-                                const SizedBox(width: 10),
-                                Expanded(
-                                  child: TextFormField(
-                                    controller: hourlyRateController,
-                                    keyboardType: TextInputType.number,
-                                    decoration: const InputDecoration(
-                                      labelText: "Hourly Rate (NPR) *",
-                                      prefixText: "₨ ",
-                                      border: OutlineInputBorder(),
-                                    ),
-                                    validator: (val) =>
-                                        val!.isEmpty ? "Enter rate" : null,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 20),
-
-                            _buildRoundedTextField(
-                              "Specialization",
-                              specializationController,
-                              (val) => null,
-                            ),
-                            const SizedBox(height: 20),
-
-                            _buildRoundedTextField(
-                              "Service Area",
-                              serviceAreaController,
-                              (val) => null,
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-
-                    // Step 3: Verification
-                    Step(
-                      title: const Text("3"),
-                      isActive: _currentStep >= 2,
-                      content: Form(
-                        key: _verificationFormKey,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            DropdownButtonFormField<String>(
-                              decoration: InputDecoration(
-                                labelText: "KYC Document Type *",
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(20),
-                                ),
-                              ),
-                              initialValue: kycType,
-                              items: ["Passport", "ID Card", "Driving License"]
-                                  .map((e) =>
-                                      DropdownMenuItem(value: e, child: Text(e)))
-                                  .toList(),
-                              onChanged: (val) => setState(() => kycType = val),
-                              validator: (val) =>
-                                  val == null ? "Select document type" : null,
-                            ),
-                            const SizedBox(height: 20),
-
-                            Container(
-                              padding: const EdgeInsets.all(20),
-                              decoration: BoxDecoration(
-                                border: Border.all(
-                                    color: Colors.grey, style: BorderStyle.solid),
-                                borderRadius: BorderRadius.circular(15),
-                              ),
-                              child: Column(
-                                children: [
-                                  const Icon(Icons.upload_file,
-                                      size: 40, color: Colors.grey),
-                                  const SizedBox(height: 10),
-                                  const Text(
-                                    "Click to upload your KYC document",
-                                    style: TextStyle(color: Colors.black54),
-                                  ),
-                                  const Text(
-                                    "PDF, JPG, PNG (Max 10MB)",
-                                    style: TextStyle(
-                                        color: Colors.grey, fontSize: 12),
-                                  ),
-                                  const SizedBox(height: 10),
-                                  ElevatedButton(
-                                    onPressed: () {
-                                      // File upload logic here
-                                    },
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: Colors.red,
-                                      foregroundColor: Colors.white,
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(20),
-                                      ),
-                                    ),
-                                    child: const Text("Upload KYC Document"),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            const SizedBox(height: 20),
-
-                            const Text(
-                              "Portfolio Images (Optional)",
-                              style: TextStyle(fontWeight: FontWeight.bold),
-                            ),
-                            const SizedBox(height: 8),
-                            Row(
-                              children: [
-                                ElevatedButton(
-                                  onPressed: () {
-                                   
-                                  },
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: Colors.orange,
-                                    foregroundColor: Colors.white,
-                                  ),
-                                  child: const Text("Choose Files"),
-                                ),
-                                const SizedBox(width: 10),
-                                const Text("No file chosen"),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
+                child: const Text('Back to Home'),
               ),
             ),
           ],
         ),
       ),
-    );
-  }
-
-  Widget _buildRoundedTextField(String label,
-      TextEditingController controller, String? Function(String?) validator,
-      {TextInputType type = TextInputType.text}) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12.0),
-      child: TextFormField(
-        controller: controller,
-        keyboardType: type,
-        decoration: InputDecoration(
-          labelText: label,
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(20),
-          ),
-          enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(20),
-            borderSide: const BorderSide(color: Colors.grey),
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(20),
-            borderSide: const BorderSide(color: Colors.blue),
-          ),
-        ),
-        validator: validator,
-      ),
-    );
-  }
-
-  Widget _buildChip(String label) {
-    return StatefulBuilder(
-      builder: (context, setStateSB) {
-        final isSelected = selectedServices.contains(label);
-        return FilterChip(
-          label: Text(label),
-          selected: isSelected,
-          onSelected: (selected) {
-            setStateSB(() {
-              if (selected) {
-                selectedServices.add(label);
-              } else {
-                selectedServices.remove(label);
-              }
-            });
-          },
-        );
-      },
     );
   }
 }

@@ -1,5 +1,6 @@
 import 'package:HamroGharSewa/constants/app_colors.dart';
 import 'package:HamroGharSewa/providers/service_provider.dart';
+import 'package:HamroGharSewa/DashBoard/provider_dashboard_view.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -548,7 +549,7 @@ class ProviderApplicationSuccessPage extends StatelessWidget {
                 onPressed: () {
                    Navigator.pushAndRemoveUntil(
                     context,
-                    MaterialPageRoute(builder: (_) => const ProviderDashboard()),
+                    MaterialPageRoute(builder: (_) => ProviderDashboard()),
                     (route) => false,
                   );
                 },
@@ -558,7 +559,7 @@ class ProviderApplicationSuccessPage extends StatelessWidget {
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
                   elevation: 5,
                 ),
-                child: const Text('Go to Provider Dashboard (Demo)'),
+                child: const Text('Go to Provider Dashboard'),
               ),
             ),
             const SizedBox(height: 16),

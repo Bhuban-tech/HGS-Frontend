@@ -71,7 +71,7 @@ class MyApp extends StatelessWidget {
         title: 'HamroGharSewa',
         debugShowCheckedModeBanner: false,
         theme: AppTheme.lightTheme,
-        initialRoute: AppRoutes.login,
+        initialRoute: AppRoutes.landing,
         onGenerateRoute: AppRoutes.generateRoute,
       ),
     );

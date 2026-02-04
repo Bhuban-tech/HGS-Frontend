@@ -8,6 +8,7 @@ class ChatMessage {
   final DateTime timestamp;
   final bool isRead;
   final MessageType type;
+  final bool isHidden; // Hidden until booking is accepted
 
   ChatMessage({
     this.id,
@@ -19,6 +20,7 @@ class ChatMessage {
     required this.timestamp,
     this.isRead = false,
     this.type = MessageType.text,
+    this.isHidden = false, // Default to visible
   });
 
   factory ChatMessage.fromJson(Map<String, dynamic> json) {
@@ -34,6 +36,7 @@ class ChatMessage {
           : DateTime.now(),
       isRead: json['isRead'] ?? false,
       type: _parseMessageType(json['type']),
+      isHidden: json['isHidden'] ?? false,
     );
   }
 
@@ -48,6 +51,7 @@ class ChatMessage {
       'timestamp': timestamp.toIso8601String(),
       'isRead': isRead,
       'type': type.toString().split('.').last,
+      'isHidden': isHidden,
     };
   }
 
@@ -67,6 +71,16 @@ class ChatMessage {
   }
 
   bool isSentBy(String userId) => senderId == userId;
+
+  /// Check if message should be visible based on booking status
+  bool isVisibleForBookingStatus(String bookingStatus) {
+    // If booking is accepted, all messages are visible
+    if (bookingStatus == 'ACCEPTED' || bookingStatus == 'IN_PROGRESS' || bookingStatus == 'COMPLETED') {
+      return true;
+    }
+    // If booking is pending, only show non-hidden messages
+    return !isHidden;
+  }
 
   String getFormattedTime() {
     final now = DateTime.now();

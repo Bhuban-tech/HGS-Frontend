@@ -1,6 +1,7 @@
 import 'package:HamroGharSewa/constants/app_colors.dart';
 import 'package:HamroGharSewa/models/booking_model.dart';
 import 'package:HamroGharSewa/providers/booking_provider.dart';
+import 'package:HamroGharSewa/services/token_manager.dart';
 import 'package:HamroGharSewa/view/ChatPage/chatPage_view.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -14,7 +15,9 @@ class ProviderDashboard extends StatefulWidget {
 }
 
 class _ProviderDashboardState extends State<ProviderDashboard> {
+  final TokenManager _tokenManager = TokenManager();
   int _selectedIndex = 0;
+  String providerName = "Provider"; // Default fallback
 
   @override
   void initState() {
@@ -23,6 +26,17 @@ class _ProviderDashboardState extends State<ProviderDashboard> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Provider.of<BookingProvider>(context, listen: false).fetchProviderBookings();
     });
+    _loadProviderName(); // Load provider name
+  }
+
+  /// Load provider name from TokenManager
+  Future<void> _loadProviderName() async {
+    final userData = await _tokenManager.getUserData();
+    if (userData != null && mounted) {
+      setState(() {
+        providerName = userData['userName'] ?? 'Provider';
+      });
+    }
   }
 
   @override
@@ -95,25 +109,29 @@ class _ProviderDashboardState extends State<ProviderDashboard> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Provider Portal',
-                          style: TextStyle(
-                            color: Colors.white.withValues(alpha: 0.8),
-                            fontSize: 14,
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Provider Portal',
+                            style: TextStyle(
+                              color: Colors.white.withValues(alpha: 0.8),
+                              fontSize: 14,
+                            ),
                           ),
-                        ),
-                        const Text(
-                          'Dashboard',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
+                          Text(
+                            providerName,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                     Container(
                       padding: const EdgeInsets.all(2),
@@ -243,28 +261,33 @@ class _ProviderDashboardState extends State<ProviderDashboard> {
                       final job = jobs[index];
                       return Container(
                         margin: const EdgeInsets.only(bottom: 16),
-                        padding: const EdgeInsets.all(16),
+                        padding: const EdgeInsets.all(18),
                         decoration: BoxDecoration(
                           color: Colors.white,
-                          borderRadius: BorderRadius.circular(16),
+                          borderRadius: BorderRadius.circular(20),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.05),
-                              blurRadius: 10,
-                              offset: const Offset(0, 5),
+                              color: AppColors.success.withValues(alpha: 0.1),
+                              blurRadius: 15,
+                              offset: const Offset(0, 6),
                             ),
                           ],
                         ),
                         child: Row(
                           children: [
                             Container(
-                              padding: const EdgeInsets.all(12),
+                              padding: const EdgeInsets.all(14),
                               decoration: BoxDecoration(
-                                color: AppColors.success.withValues(alpha: 0.1),
-                                borderRadius: BorderRadius.circular(12),
+                                gradient: LinearGradient(
+                                  colors: [
+                                    AppColors.success.withValues(alpha: 0.15),
+                                    AppColors.success.withValues(alpha: 0.08),
+                                  ],
+                                ),
+                                borderRadius: BorderRadius.circular(14),
                               ),
-                              child: const Icon(Icons.check_circle,
-                                  color: AppColors.success),
+                              child: const Icon(Icons.check_circle_rounded,
+                                  color: AppColors.success, size: 26),
                             ),
                             const SizedBox(width: 16),
                             Expanded(
@@ -277,15 +300,23 @@ class _ProviderDashboardState extends State<ProviderDashboard> {
                                       fontWeight: FontWeight.bold,
                                       fontSize: 16,
                                       color: AppColors.textDark,
+                                      letterSpacing: -0.2,
                                     ),
                                   ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    DateFormat('MMM dd, yyyy').format(job.bookingDate),
-                                    style: const TextStyle(
-                                      color: AppColors.textLight,
-                                      fontSize: 12,
-                                    ),
+                                  const SizedBox(height: 6),
+                                  Row(
+                                    children: [
+                                      Icon(Icons.calendar_today_rounded, size: 13, color: AppColors.textLight),
+                                      const SizedBox(width: 6),
+                                      Text(
+                                        DateFormat('MMM dd, yyyy').format(job.bookingDate),
+                                        style: const TextStyle(
+                                          color: AppColors.textLight,
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ],
                               ),
@@ -293,24 +324,43 @@ class _ProviderDashboardState extends State<ProviderDashboard> {
                             Column(
                               crossAxisAlignment: CrossAxisAlignment.end,
                               children: [
-                                const Text(
-                                  'Rs. 500', // Mock price
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    color: AppColors.primaryPurple,
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                  decoration: BoxDecoration(
+                                    gradient: const LinearGradient(
+                                      colors: [AppColors.primaryPurple, AppColors.gradientPink],
+                                    ),
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  child: const Text(
+                                    'Rs. 500',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                      fontSize: 14,
+                                    ),
                                   ),
                                 ),
-                                const SizedBox(height: 4),
+                                const SizedBox(height: 6),
                                 Container(
                                   padding: const EdgeInsets.symmetric(
-                                      horizontal: 8, vertical: 4),
+                                      horizontal: 10, vertical: 5),
                                   decoration: BoxDecoration(
-                                    color: AppColors.lightGrey,
+                                    color: AppColors.success.withValues(alpha: 0.1),
                                     borderRadius: BorderRadius.circular(8),
                                   ),
-                                  child: const Text('Paid',
-                                      style: TextStyle(
-                                          fontSize: 10, color: AppColors.textMedium)),
+                                  child: const Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(Icons.verified, size: 11, color: AppColors.success),
+                                      SizedBox(width: 4),
+                                      Text('Paid',
+                                          style: TextStyle(
+                                              fontSize: 11,
+                                              fontWeight: FontWeight.bold,
+                                              color: AppColors.success)),
+                                    ],
+                                  ),
                                 ),
                               ],
                             ),
@@ -367,30 +417,41 @@ class _ProviderDashboardState extends State<ProviderDashboard> {
                           );
                         },
                         child: Container(
-                          margin: const EdgeInsets.only(bottom: 12),
-                          padding: const EdgeInsets.all(16),
+                          margin: const EdgeInsets.only(bottom: 14),
+                          padding: const EdgeInsets.all(18),
                           decoration: BoxDecoration(
                             color: Colors.white,
-                            borderRadius: BorderRadius.circular(16),
+                            borderRadius: BorderRadius.circular(18),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withValues(alpha: 0.03),
-                                blurRadius: 10,
-                                offset: const Offset(0, 4),
+                                color: AppColors.primaryPurple.withValues(alpha: 0.08),
+                                blurRadius: 15,
+                                offset: const Offset(0, 5),
                               ),
                             ],
                           ),
                           child: Row(
                             children: [
-                              CircleAvatar(
-                                radius: 24,
-                                backgroundColor:
-                                    AppColors.primaryPurple.withValues(alpha: 0.1),
-                                child: Text(
-                                  booking.userName.isNotEmpty ? booking.userName[0] : '?',
-                                  style: const TextStyle(
-                                      color: AppColors.primaryPurple,
-                                      fontWeight: FontWeight.bold),
+                              Container(
+                                width: 52,
+                                height: 52,
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                    colors: [
+                                      AppColors.primaryPurple.withValues(alpha: 0.15),
+                                      AppColors.gradientPink.withValues(alpha: 0.1),
+                                    ],
+                                  ),
+                                  borderRadius: BorderRadius.circular(14),
+                                ),
+                                child: Center(
+                                  child: Text(
+                                    booking.userName.isNotEmpty ? booking.userName[0] : '?',
+                                    style: const TextStyle(
+                                        color: AppColors.primaryPurple,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 20),
+                                  ),
                                 ),
                               ),
                               const SizedBox(width: 16),
@@ -408,30 +469,54 @@ class _ProviderDashboardState extends State<ProviderDashboard> {
                                             fontWeight: FontWeight.bold,
                                             fontSize: 16,
                                             color: AppColors.textDark,
+                                            letterSpacing: -0.2,
                                           ),
                                         ),
-                                        Text(
-                                          'Now', // Mock time
-                                          style: const TextStyle(
-                                            color: AppColors.textLight,
-                                            fontSize: 12,
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                          decoration: BoxDecoration(
+                                            color: AppColors.success.withValues(alpha: 0.1),
+                                            borderRadius: BorderRadius.circular(8),
+                                          ),
+                                          child: Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              Icon(Icons.circle, size: 6, color: AppColors.success),
+                                              const SizedBox(width: 4),
+                                              const Text(
+                                                'Active',
+                                                style: TextStyle(
+                                                  color: AppColors.success,
+                                                  fontSize: 11,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                              ),
+                                            ],
                                           ),
                                         ),
                                       ],
                                     ),
-                                    const SizedBox(height: 4),
-                                    const Text(
-                                      'Tap to chat...',
-                                      style: TextStyle(
-                                        color: AppColors.textMedium,
-                                        fontSize: 14,
-                                      ),
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
+                                    const SizedBox(height: 6),
+                                    Row(
+                                      children: [
+                                        const Icon(Icons.message_outlined, size: 14, color: AppColors.textMedium),
+                                        const SizedBox(width: 6),
+                                        const Text(
+                                          'Tap to start conversation',
+                                          style: TextStyle(
+                                            color: AppColors.textMedium,
+                                            fontSize: 13,
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ],
                                     ),
                                   ],
                                 ),
                               ),
+                              Icon(Icons.arrow_forward_ios_rounded, size: 16, color: AppColors.textLight),
                             ],
                           ),
                         ),
@@ -561,31 +646,55 @@ class _ProviderDashboardState extends State<ProviderDashboard> {
 
   Widget _buildStatCard(String title, String value, IconData icon) {
     return Container(
-      width: 120,
-      padding: const EdgeInsets.all(16),
+      width: 130,
+      padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.2),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.3)),
+        gradient: LinearGradient(
+          colors: [
+            Colors.white.withValues(alpha: 0.3),
+            Colors.white.withValues(alpha: 0.15),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.4), width: 1.5),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.1),
+            blurRadius: 15,
+            offset: const Offset(0, 6),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, color: Colors.white, size: 24),
-          const SizedBox(height: 12),
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.3),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(icon, color: Colors.white, size: 26),
+          ),
+          const SizedBox(height: 14),
           Text(
             value,
             style: const TextStyle(
               color: Colors.white,
-              fontSize: 20,
+              fontSize: 22,
               fontWeight: FontWeight.bold,
+              letterSpacing: -0.5,
             ),
           ),
+          const SizedBox(height: 4),
           Text(
             title,
             style: TextStyle(
-              color: Colors.white.withValues(alpha: 0.8),
+              color: Colors.white.withValues(alpha: 0.85),
               fontSize: 12,
+              fontWeight: FontWeight.w600,
             ),
           ),
         ],
@@ -596,15 +705,15 @@ class _ProviderDashboardState extends State<ProviderDashboard> {
   Widget _buildRequestCard(Booking req, BookingProvider provider) {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(22),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 5),
+            color: AppColors.primaryPurple.withValues(alpha: 0.1),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
           ),
         ],
       ),
@@ -614,96 +723,320 @@ class _ProviderDashboardState extends State<ProviderDashboard> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                decoration: BoxDecoration(
-                  color: AppColors.primaryPurple.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Text(
-                  req.serviceName,
-                  style: const TextStyle(
-                    color: AppColors.primaryPurple,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 12,
+              Flexible(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        AppColors.primaryPurple.withValues(alpha: 0.15),
+                        AppColors.primaryPurple.withValues(alpha: 0.08),
+                      ],
+                    ),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.work_outline_rounded,
+                        size: 14,
+                        color: AppColors.primaryPurple,
+                      ),
+                      const SizedBox(width: 6),
+                      Flexible(
+                        child: Text(
+                          req.serviceName,
+                          style: const TextStyle(
+                            color: AppColors.primaryPurple,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 13,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ),
-              Text(
-                DateFormat('MMM dd, hh:mm a').format(req.bookingDate),
-                style: const TextStyle(
-                    color: AppColors.textLight, fontSize: 12),
+              const SizedBox(width: 8),
+              Flexible(
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.access_time_rounded, size: 14, color: AppColors.textLight),
+                    const SizedBox(width: 4),
+                    Flexible(
+                      child: Text(
+                        DateFormat('MMM dd, hh:mm a').format(req.bookingDate),
+                        style: const TextStyle(color: AppColors.textLight, fontSize: 12, fontWeight: FontWeight.w600),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 14),
           Text(
             req.description ?? 'No Description provided',
             style: const TextStyle(
               color: AppColors.textDark,
-              fontSize: 14,
-              fontWeight: FontWeight.w500,
+              fontSize: 15,
+              fontWeight: FontWeight.w600,
+              height: 1.4,
+            ),
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
+          const SizedBox(height: 14),
+          Container(
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              color: AppColors.background,
+              borderRadius: BorderRadius.circular(14),
+            ),
+            child: Row(
+              children: [
+                Icon(Icons.location_on_rounded, size: 18, color: AppColors.primaryPurple),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    req.location ?? 'Unknown Location',
+                    style: const TextStyle(
+                      color: AppColors.textDark,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [AppColors.primaryPurple, AppColors.gradientPink],
+                    ),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: const Text(
+                    'Rs. 500',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 15,
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              const Icon(Icons.location_on_outlined,
-                  size: 16, color: AppColors.textLight),
-              const SizedBox(width: 4),
-              Text(
-                req.location ?? 'Unknown Location',
-                style: const TextStyle(
-                    color: AppColors.textMedium, fontSize: 13),
-              ),
-              const Spacer(),
-              const Text(
-                'Rs. 500', // Mock Price
-                style: TextStyle(
-                  color: AppColors.textDark,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 16,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 18),
           Row(
             children: [
               Expanded(
-                child: OutlinedButton(
-                  onPressed: () {
-                     provider.rejectBooking(req.id!);
-                  },
+                child: OutlinedButton.icon(
+                  onPressed: provider.isLoading
+                      ? null
+                      : () async {
+                          // Show confirmation dialog
+                          final confirmed = await _showRejectDialog(context);
+                          if (confirmed == true && context.mounted) {
+                            final success = await provider.rejectBooking(req.id!);
+                            if (success && context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('Request declined'),
+                                  backgroundColor: Colors.red,
+                                ),
+                              );
+                            } else if (!success && context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(provider.error ?? 'Failed to decline'),
+                                  backgroundColor: Colors.red,
+                                ),
+                              );
+                            }
+                          }
+                        },
+                  icon: provider.isLoading
+                      ? const SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Icon(Icons.close_rounded, size: 18),
+                  label: const Text('Decline'),
                   style: OutlinedButton.styleFrom(
                     foregroundColor: Colors.red,
-                    side: BorderSide(color: Colors.red.shade200),
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10)),
+                    side: BorderSide(color: Colors.red.shade200, width: 1.5),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                    padding: const EdgeInsets.symmetric(vertical: 14),
                   ),
-                  child: const Text('Decline'),
                 ),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: 14),
               Expanded(
-                child: ElevatedButton(
-                  onPressed: () {
-                     provider.acceptBooking(req.id!);
-                  },
+                child: ElevatedButton.icon(
+                  onPressed: provider.isLoading
+                      ? null
+                      : () async {
+                          // Validate booking data
+                          if (req.id == null || req.id!.isEmpty) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Invalid booking ID'),
+                                backgroundColor: Colors.red,
+                              ),
+                            );
+                            return;
+                          }
+
+                          // Show confirmation dialog
+                          final confirmed = await _showAcceptDialog(context, req);
+                          if (confirmed == true && context.mounted) {
+                            final success = await provider.acceptBooking(req.id!);
+                            if (success && context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('Request accepted! You can now chat with the customer.'),
+                                  backgroundColor: AppColors.success,
+                                  duration: Duration(seconds: 3),
+                                ),
+                              );
+                            } else if (!success && context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(provider.error ?? 'Failed to accept request'),
+                                  backgroundColor: Colors.red,
+                                ),
+                              );
+                            }
+                          }
+                        },
+                  icon: provider.isLoading
+                      ? const SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(
+                            color: Colors.white,
+                            strokeWidth: 2,
+                          ),
+                        )
+                      : const Icon(Icons.check_circle_rounded, size: 18),
+                  label: const Text('Accept'),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primaryPurple,
                     foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10)),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    elevation: 0,
+                    shadowColor: AppColors.primaryPurple.withValues(alpha: 0.3),
                   ),
-                  child: const Text('Accept'),
                 ),
               ),
             ],
           ),
         ],
       ),
+    );
+  }
+
+  /// Show confirmation dialog before accepting request
+  Future<bool?> _showAcceptDialog(BuildContext context, Booking req) {
+    return showDialog<bool>(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          title: const Row(
+            children: [
+              Icon(Icons.check_circle_outline, color: AppColors.success),
+              SizedBox(width: 12),
+              Text('Accept Request?'),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Service: ${req.serviceName}',
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 8),
+              Text('Customer: ${req.userName}'),
+              const SizedBox(height: 8),
+              Text('Location: ${req.location ?? "Not specified"}'),
+              const SizedBox(height: 8),
+              Text('Date: ${DateFormat('MMM dd, yyyy').format(req.bookingDate)}'),
+              const SizedBox(height: 16),
+              const Text(
+                'Once accepted, you can chat with the customer and all previous messages will be visible.',
+                style: TextStyle(
+                  fontSize: 13,
+                  color: AppColors.textMedium,
+                  fontStyle: FontStyle.italic,
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext, false),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.pop(dialogContext, true),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.success,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+              child: const Text('Accept Request'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  /// Show confirmation dialog before rejecting request
+  Future<bool?> _showRejectDialog(BuildContext context) {
+    return showDialog<bool>(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          title: const Row(
+            children: [
+              Icon(Icons.cancel_outlined, color: Colors.red),
+              SizedBox(width: 12),
+              Text('Decline Request?'),
+            ],
+          ),
+          content: const Text(
+            'Are you sure you want to decline this request? This action cannot be undone.',
+            style: TextStyle(fontSize: 14),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext, false),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.pop(dialogContext, true),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+              child: const Text('Decline'),
+            ),
+          ],
+        );
+      },
     );
   }
 }

@@ -31,11 +31,14 @@ class ApiConstants {
   static String categoryById(String id) => '/api/admin/categories/$id';
 
   // ==================== BOOKING ENDPOINTS ====================
-  static const String createBooking = '/api/booking';
-  static const String userBookings = '/api/booking/user';
-  static const String providerBookings = '/api/booking/provider';
-  static String bookingById(String id) => '/api/booking/$id';
-  static String updateBookingStatus(String id) => '/api/booking/$id/status';
+  static const String createBooking = '/api/bookings';
+  static const String userBookings = '/api/bookings/my-bookings';
+  static const String providerBookings = '/api/bookings/requests';
+  static String bookingById(String id) => '/api/bookings/$id';
+  static String acceptBooking(String id) => '/api/bookings/$id/accept';
+  static String rejectBooking(String id) => '/api/bookings/$id/reject';
+  static String cancelBooking(String id) => '/api/bookings/$id/cancel';
+  static String completeBooking(String id) => '/api/bookings/$id/complete';
 
   // ==================== SERVICE ENDPOINTS ====================
   static const String services = '/api/services';

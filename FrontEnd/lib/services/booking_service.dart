@@ -9,7 +9,7 @@ class BookingService {
 
   BookingService(this._dio);
 
-  /// Create a new booking
+  /// Create a new booking with validation
   Future<Booking> createBooking({
     required String providerId,
     required String serviceId,
@@ -17,6 +17,20 @@ class BookingService {
     String? description,
     String? location,
   }) async {
+    // Validate inputs
+    if (providerId.isEmpty) {
+      throw 'Provider ID is required';
+    }
+    if (serviceId.isEmpty) {
+      throw 'Service ID is required';
+    }
+    if (bookingDate.isBefore(DateTime.now())) {
+      throw 'Booking date must be in the future';
+    }
+    if (location == null || location.trim().isEmpty) {
+      throw 'Location is required';
+    }
+
     try {
       final token = await _tokenManager.getAccessToken();
       
@@ -26,8 +40,8 @@ class BookingService {
           'providerId': providerId,
           'serviceId': serviceId,
           'bookingDate': bookingDate.toIso8601String(),
-          if (description != null) 'description': description,
-          if (location != null) 'location': location,
+          'description': description?.trim() ?? '',
+          'location': location.trim(),
         },
         options: Options(
           headers: {'Authorization': 'Bearer $token'},
@@ -96,14 +110,68 @@ class BookingService {
     }
   }
 
-  /// Update booking status (ACCEPT/REJECT) - Provider only
-  Future<Booking> updateBookingStatus(String bookingId, String status) async {
+  /// Accept booking - Provider only
+  Future<Booking> acceptBooking(String bookingId) async {
     try {
       final token = await _tokenManager.getAccessToken();
       
-      final response = await _dio.put(
-        ApiConstants.updateBookingStatus(bookingId),
-        data: {'status': status},
+      final response = await _dio.patch(
+        ApiConstants.acceptBooking(bookingId),
+        options: Options(
+          headers: {'Authorization': 'Bearer $token'},
+        ),
+      );
+
+      return Booking.fromJson(response.data);
+    } on DioException catch (e) {
+      throw _handleError(e);
+    }
+  }
+
+  /// Reject booking - Provider only
+  Future<Booking> rejectBooking(String bookingId, {String? reason}) async {
+    try {
+      final token = await _tokenManager.getAccessToken();
+      
+      final response = await _dio.patch(
+        ApiConstants.rejectBooking(bookingId),
+        data: {'reason': reason ?? 'Provider declined'},
+        options: Options(
+          headers: {'Authorization': 'Bearer $token'},
+        ),
+      );
+
+      return Booking.fromJson(response.data);
+    } on DioException catch (e) {
+      throw _handleError(e);
+    }
+  }
+
+  /// Cancel booking - User only
+  Future<Booking> cancelBooking(String bookingId) async {
+    try {
+      final token = await _tokenManager.getAccessToken();
+      
+      final response = await _dio.patch(
+        ApiConstants.cancelBooking(bookingId),
+        options: Options(
+          headers: {'Authorization': 'Bearer $token'},
+        ),
+      );
+
+      return Booking.fromJson(response.data);
+    } on DioException catch (e) {
+      throw _handleError(e);
+    }
+  }
+
+  /// Complete booking
+  Future<Booking> completeBooking(String bookingId) async {
+    try {
+      final token = await _tokenManager.getAccessToken();
+      
+      final response = await _dio.patch(
+        ApiConstants.completeBooking(bookingId),
         options: Options(
           headers: {'Authorization': 'Bearer $token'},
         ),

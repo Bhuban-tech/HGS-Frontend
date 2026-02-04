@@ -19,8 +19,16 @@ class ChatProvider with ChangeNotifier {
   bool get isLoading => _isLoading;
   String? get error => _error;
 
-  List<ChatMessage> getChatMessages(String bookingId) {
-    return _chatHistory[bookingId] ?? [];
+  List<ChatMessage> getChatMessages(String bookingId, {String? bookingStatus}) {
+    final allMessages = _chatHistory[bookingId] ?? [];
+    
+    // If no booking status provided, return all messages
+    if (bookingStatus == null) {
+      return allMessages;
+    }
+    
+    // Filter messages based on booking status
+    return allMessages.where((msg) => msg.isVisibleForBookingStatus(bookingStatus)).toList();
   }
 
   /// Connect to WebSocket
@@ -43,17 +51,24 @@ class ChatProvider with ChangeNotifier {
     }
   }
 
-  /// Send a message
+  /// Send a message (will be hidden if booking not accepted)
   Future<bool> sendMessage({
     required String bookingId,
     required String receiverId,
     required String message,
+    String? bookingStatus, // Pass booking status
   }) async {
+    if (message.trim().isEmpty) {
+      _error = 'Message cannot be empty';
+      notifyListeners();
+      return false;
+    }
+
     try {
       await _chatService.sendMessage(
         bookingId: bookingId,
         receiverId: receiverId,
-        message: message,
+        message: message.trim(),
       );
       return true;
     } catch (e) {
@@ -103,6 +118,14 @@ class ChatProvider with ChangeNotifier {
   /// Disconnect
   void disconnect() {
     _chatService.disconnect();
+  }
+
+  /// Reveal all hidden messages for a booking (called when booking is accepted)
+  Future<void> revealMessagesForBooking(String bookingId) async {
+    if (_chatHistory.containsKey(bookingId)) {
+      // Trigger a reload to get updated message visibility from backend
+      await loadChatHistory(bookingId);
+    }
   }
 
   void clearError() {

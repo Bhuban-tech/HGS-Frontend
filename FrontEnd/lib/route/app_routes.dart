@@ -1,12 +1,14 @@
 import 'package:HamroGharSewa/DashBoard/AdminDashboard_view.dart';
 import 'package:HamroGharSewa/DashBoard/User.dart';
 import 'package:HamroGharSewa/DashBoard/provider_dashboard_view.dart';
+import 'package:HamroGharSewa/LandingPage/Hero.dart';
 import 'package:HamroGharSewa/view/Login/login_view.dart';
 import 'package:HamroGharSewa/view/forgetpassword/forgetpassword_view.dart';
 import 'package:HamroGharSewa/view/register/register_view.dart';
 import 'package:flutter/material.dart';
 
 class AppRoutes {
+  static const String landing = '/';
   static const String login = '/login';
   static const String signup = '/signup';
   static const String forgotPassword = '/forgot-password';
@@ -17,6 +19,9 @@ class AppRoutes {
 
   static Route<dynamic> generateRoute(RouteSettings settings) {
     switch (settings.name) {
+      case landing:
+        return MaterialPageRoute(builder: (_) => const HeroPage());
+
       case login:
         return MaterialPageRoute(builder: (_) => const LoginScreen());
       

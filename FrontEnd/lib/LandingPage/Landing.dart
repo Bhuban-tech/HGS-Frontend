@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:math' as math;
+import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 
 class LandingPage extends StatefulWidget {
   const LandingPage({Key? key}) : super(key: key);
@@ -174,27 +176,27 @@ class _LandingPageState extends State<LandingPage> with TickerProviderStateMixin
                   ),
                 ),
                 const SizedBox(height: 16),
-                const Text(
+                Text(
                   'Popular Services',
-                  style: TextStyle(
+                  style: GoogleFonts.outfit(
                     fontSize: 32,
                     fontWeight: FontWeight.bold,
-                    color: Color(0xFF2D3748),
+                    color: const Color(0xFF1E293B),
                     letterSpacing: -0.5,
                   ),
                 ),
                 const SizedBox(height: 8),
-                const Text(
+                Text(
                   'Professional services for every corner of your home',
-                  style: TextStyle(
+                  style: GoogleFonts.plusJakartaSans(
                     fontSize: 16,
-                    color: Color(0xFF718096),
+                    color: const Color(0xFF64748B),
                     height: 1.5,
                   ),
                 ),
               ],
             ),
-          ),
+          ).animate().fade().slideY(begin: 0.1),
 
           const SizedBox(height: 30),
 
@@ -241,7 +243,7 @@ class _LandingPageState extends State<LandingPage> with TickerProviderStateMixin
               borderRadius: BorderRadius.circular(24),
               boxShadow: [
                 BoxShadow(
-                  color: const Color(0xFF667eea).withValues(alpha: 0.3),
+                  color: const Color(0xFF667eea).withOpacity(0.3),
                   blurRadius: 30,
                   offset: const Offset(0, 15),
                 ),
@@ -250,9 +252,9 @@ class _LandingPageState extends State<LandingPage> with TickerProviderStateMixin
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
+                Text(
                   'Why Choose Us?',
-                  style: TextStyle(
+                  style: GoogleFonts.outfit(
                     fontSize: 28,
                     fontWeight: FontWeight.bold,
                     color: Colors.white,
@@ -294,12 +296,12 @@ class _LandingPageState extends State<LandingPage> with TickerProviderStateMixin
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
+                Text(
                   'What Our Customers Say',
-                  style: TextStyle(
+                  style: GoogleFonts.outfit(
                     fontSize: 28,
                     fontWeight: FontWeight.bold,
-                    color: Color(0xFF2D3748),
+                    color: const Color(0xFF1E293B),
                   ),
                 ),
                 const SizedBox(height: 20),
@@ -402,7 +404,7 @@ class _LandingPageState extends State<LandingPage> with TickerProviderStateMixin
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: colors[index].withValues(alpha: 0.2),
+            color: colors[index].withOpacity(0.2),
             blurRadius: 20,
             offset: const Offset(0, 10),
           ),
@@ -415,7 +417,7 @@ class _LandingPageState extends State<LandingPage> with TickerProviderStateMixin
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
               gradient: LinearGradient(
-                colors: [colors[index], colors[index].withValues(alpha: 0.7)],
+                colors: [colors[index], colors[index].withOpacity(0.7)],
               ),
               shape: BoxShape.circle,
             ),
@@ -424,7 +426,7 @@ class _LandingPageState extends State<LandingPage> with TickerProviderStateMixin
           const SizedBox(height: 12),
           Text(
             number,
-            style: TextStyle(
+            style: GoogleFonts.outfit(
               fontSize: 24,
               fontWeight: FontWeight.bold,
               color: colors[index],
@@ -433,10 +435,10 @@ class _LandingPageState extends State<LandingPage> with TickerProviderStateMixin
           const SizedBox(height: 4),
           Text(
             label,
-            style: const TextStyle(
+            style: GoogleFonts.plusJakartaSans(
               fontSize: 11,
-              color: Color(0xFF718096),
-              fontWeight: FontWeight.w500,
+              color: const Color(0xFF64748B),
+              fontWeight: FontWeight.w600,
             ),
             textAlign: TextAlign.center,
             maxLines: 2,
@@ -459,7 +461,7 @@ class _LandingPageState extends State<LandingPage> with TickerProviderStateMixin
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: color.withValues(alpha: 0.2),
+            color: color.withOpacity(0.2),
             blurRadius: 20,
             offset: const Offset(0, 10),
           ),
@@ -486,18 +488,18 @@ class _LandingPageState extends State<LandingPage> with TickerProviderStateMixin
                 const SizedBox(height: 16),
                 Text(
                   title,
-                  style: const TextStyle(
+                  style: GoogleFonts.outfit(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
-                    color: Color(0xFF2D3748),
+                    color: const Color(0xFF1E293B),
                   ),
                 ),
                 const SizedBox(height: 8),
                 Text(
                   description,
-                  style: const TextStyle(
+                  style: GoogleFonts.plusJakartaSans(
                     fontSize: 13,
-                    color: Color(0xFF718096),
+                    color: const Color(0xFF64748B),
                     height: 1.4,
                   ),
                   maxLines: 2,
@@ -518,7 +520,7 @@ class _LandingPageState extends State<LandingPage> with TickerProviderStateMixin
         Container(
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.2),
+            color: Colors.white.withOpacity(0.2),
             borderRadius: BorderRadius.circular(12),
           ),
           child: Icon(icon, color: Colors.white, size: 24),
@@ -541,7 +543,7 @@ class _LandingPageState extends State<LandingPage> with TickerProviderStateMixin
                 description,
                 style: TextStyle(
                   fontSize: 14,
-                  color: Colors.white.withValues(alpha: 0.8),
+                  color: Colors.white.withOpacity(0.8),
                   height: 1.4,
                 ),
               ),
@@ -562,7 +564,7 @@ class _LandingPageState extends State<LandingPage> with TickerProviderStateMixin
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
+            color: Colors.black.withOpacity(0.05),
             blurRadius: 20,
             offset: const Offset(0, 10),
           ),
@@ -638,10 +640,10 @@ class _LandingPageState extends State<LandingPage> with TickerProviderStateMixin
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.1),
+        color: Colors.white.withOpacity(0.1),
         shape: BoxShape.circle,
         border: Border.all(
-          color: Colors.white.withValues(alpha: 0.2),
+          color: Colors.white.withOpacity(0.2),
         ),
       ),
       child: Icon(icon, color: Colors.white, size: 20),

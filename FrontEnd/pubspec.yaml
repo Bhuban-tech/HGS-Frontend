@@ -44,6 +44,12 @@ dependencies:
 
   # WebSocket for real-time chat
   web_socket_channel: ^2.4.0
+  flutter_animate: ^4.5.2
+  google_fonts: ^8.0.0
+  lottie: ^3.3.2
+  animate_do: ^4.2.0
+  smooth_page_indicator: ^2.0.1
+  animated_text_kit: ^4.3.0
 
 dev_dependencies:
   flutter_test:

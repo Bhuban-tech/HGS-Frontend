@@ -92,8 +92,24 @@ class _ChatPageState extends State<ChatPage> {
                 
                 // If empty, show some dummy messages
                 final displayMessages = messages.isEmpty ? [
-                   ChatMessage(id: '1', bookingId: 'demo', senderId: 'other', message: 'Hello!', timestamp: DateTime.now().subtract(const Duration(minutes: 5))),
-                   ChatMessage(id: '2', bookingId: 'demo', senderId: 'me', message: 'Hi, how can I help?', timestamp: DateTime.now().subtract(const Duration(minutes: 2))),
+                   ChatMessage(
+                     id: '1',
+                     bookingId: 'demo',
+                     senderId: 'other',
+                     senderName: 'Demo User',
+                     receiverId: 'me',
+                     message: 'Hello!',
+                     timestamp: DateTime.now().subtract(const Duration(minutes: 5)),
+                   ),
+                   ChatMessage(
+                     id: '2',
+                     bookingId: 'demo',
+                     senderId: 'me',
+                     senderName: 'You',
+                     receiverId: 'other',
+                     message: 'Hi, how can I help?',
+                     timestamp: DateTime.now().subtract(const Duration(minutes: 2)),
+                   ),
                 ] : messages;
 
                 return ListView.builder(

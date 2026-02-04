@@ -1,9 +1,11 @@
 import 'package:flutter/foundation.dart';
 import 'package:HamroGharSewa/models/booking_model.dart';
 import 'package:HamroGharSewa/services/booking_service.dart';
+import 'package:HamroGharSewa/providers/chat_provider.dart';
 
 class BookingProvider with ChangeNotifier {
   final BookingService _bookingService;
+  ChatProvider? _chatProvider; // Optional chat provider reference
   
   List<Booking> _userBookings = [];
   List<Booking> _providerBookings = [];
@@ -11,6 +13,11 @@ class BookingProvider with ChangeNotifier {
   String? _error;
 
   BookingProvider(this._bookingService);
+
+  /// Set chat provider to enable message reveal on booking acceptance
+  void setChatProvider(ChatProvider chatProvider) {
+    _chatProvider = chatProvider;
+  }
 
   List<Booking> get userBookings => _userBookings;
   List<Booking> get providerBookings => _providerBookings;
@@ -123,12 +130,15 @@ class BookingProvider with ChangeNotifier {
     _error = null;
 
     try {
-      final updatedBooking = await _bookingService.updateBookingStatus(
-        bookingId,
-        'ACCEPTED',
-      );
+      final updatedBooking = await _bookingService.acceptBooking(bookingId);
 
       _updateBookingInList(updatedBooking);
+      
+      // Reveal all hidden messages for this booking
+      if (_chatProvider != null) {
+        await _chatProvider!.revealMessagesForBooking(bookingId);
+      }
+      
       _setLoading(false);
       notifyListeners();
       return true;
@@ -141,15 +151,12 @@ class BookingProvider with ChangeNotifier {
   }
 
   /// Reject a booking (Provider)
-  Future<bool> rejectBooking(String bookingId) async {
+  Future<bool> rejectBooking(String bookingId, {String? reason}) async {
     _setLoading(true);
     _error = null;
 
     try {
-      final updatedBooking = await _bookingService.updateBookingStatus(
-        bookingId,
-        'REJECTED',
-      );
+      final updatedBooking = await _bookingService.rejectBooking(bookingId, reason: reason);
 
       _updateBookingInList(updatedBooking);
       _setLoading(false);
@@ -169,10 +176,7 @@ class BookingProvider with ChangeNotifier {
     _error = null;
 
     try {
-      final updatedBooking = await _bookingService.updateBookingStatus(
-        bookingId,
-        'COMPLETED',
-      );
+      final updatedBooking = await _bookingService.completeBooking(bookingId);
 
       _updateBookingInList(updatedBooking);
       _setLoading(false);

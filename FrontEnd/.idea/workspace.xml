@@ -6,13 +6,6 @@
   <component name="ChangeListManager">
     <list default="true" id="f5bb15e7-3521-423f-888d-8c3a1d3f5a28" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/DashBoard/User.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/DashBoard/User.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/constants/api_constants.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/constants/api_constants.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/repositories/auth_repository.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/repositories/auth_repository.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/route/app_routes.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/route/app_routes.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/services/token_manager.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/services/token_manager.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/view/Login/login_view.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/view/Login/login_view.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/view/register/register_view.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/view/register/register_view.dart" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

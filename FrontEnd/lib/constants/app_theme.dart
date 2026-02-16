@@ -14,10 +14,10 @@ class AppTheme {
         background: AppColors.background,
         error: AppColors.error,
       ),
-      fontFamily: 'Inter', // Using a modern font if available, fallback to default
+      fontFamily: 'Inter',
       scaffoldBackgroundColor: AppColors.background,
       
-      // AppBar Theme
+
       appBarTheme: const AppBarTheme(
         backgroundColor: Colors.transparent,
         foregroundColor: AppColors.textDark,

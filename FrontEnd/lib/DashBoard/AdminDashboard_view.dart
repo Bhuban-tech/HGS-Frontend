@@ -1,8 +1,11 @@
+
+import 'package:HamroGharSewa/view/admin/AdminDrawer.dart';
 import 'package:flutter/material.dart';
 import 'package:HamroGharSewa/constants/app_colors.dart';
 import 'package:HamroGharSewa/models/service_provider.dart';
-import 'package:HamroGharSewa/services/api_service.dart'; 
+import 'package:HamroGharSewa/services/api_service.dart';
 import 'package:HamroGharSewa/services/token_manager.dart';
+
 
 class ServiceAdminApp extends StatefulWidget {
   const ServiceAdminApp({super.key});
@@ -14,9 +17,6 @@ class ServiceAdminApp extends StatefulWidget {
 class _ServiceAdminAppState extends State<ServiceAdminApp>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
-
-  final _categoryController = TextEditingController();
-  final _categoryDescriptionController = TextEditingController();
 
   final _apiService = ApiService(); // ← Use ApiService singleton
   final _tokenManager = TokenManager();
@@ -40,8 +40,6 @@ class _ServiceAdminAppState extends State<ServiceAdminApp>
   void dispose() {
     _tabController.removeListener(_onTabChanged);
     _tabController.dispose();
-    _categoryController.dispose();
-    _categoryDescriptionController.dispose();
     super.dispose();
   }
 
@@ -75,7 +73,9 @@ class _ServiceAdminAppState extends State<ServiceAdminApp>
 
       if (mounted) {
         setState(() {
-          _providers = data.map((json) => ServiceProvider.fromJson(json)).toList();
+          _providers = data
+              .map((json) => ServiceProvider.fromJson(json))
+              .toList();
           _isLoading = false;
         });
       }
@@ -86,32 +86,6 @@ class _ServiceAdminAppState extends State<ServiceAdminApp>
           _isLoading = false;
         });
       }
-    }
-  }
-
-  Future<void> _createCategory() async {
-    final name = _categoryController.text.trim();
-    if (name.isEmpty) {
-      _showSnackBar('Please enter a category name', isError: true);
-      return;
-    }
-
-    setState(() => _isLoading = true);
-
-    try {
-      await _apiService.createCategory(
-        name: name,
-        description: _categoryDescriptionController.text.trim(),
-        icon: 'category', // ← Default icon; replace with icon picker later
-      );
-
-      _showSnackBar('Category created successfully!');
-      _categoryController.clear();
-      _categoryDescriptionController.clear();
-    } catch (e) {
-      _showSnackBar('Error creating category: $e', isError: true);
-    } finally {
-      if (mounted) setState(() => _isLoading = false);
     }
   }
 
@@ -156,7 +130,9 @@ class _ServiceAdminAppState extends State<ServiceAdminApp>
 
     setState(() => _isLoading = true);
     try {
-      await _apiService.deactivateProvider(id); // Assumes method exists in ApiService
+      await _apiService.deactivateProvider(
+        id,
+      ); // Assumes method exists in ApiService
       _showSnackBar('Provider deactivated successfully!');
       await _loadProviders();
     } catch (e) {
@@ -206,13 +182,17 @@ class _ServiceAdminAppState extends State<ServiceAdminApp>
 
   Widget _card({required Widget child}) {
     return Container(
+      margin: const EdgeInsets.symmetric(
+        horizontal: 16,
+        vertical: 8,
+      ), // Added margin for better spacing
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
+            color: Colors.black.withOpacity(0.05),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -222,128 +202,96 @@ class _ServiceAdminAppState extends State<ServiceAdminApp>
     );
   }
 
-  @override
-  Widget build(BuildContext context) {
+      @override
+      Widget build(BuildContext context) {
     return Scaffold(
+    drawer: const AdminDrawer(),
+    appBar: AppBar(
+    title: const Text(
+    'Admin Dashboard',
+    style: TextStyle(
+    fontWeight: FontWeight.bold,
+    fontSize: 22,
+      color: Colors.white
+    ),
+    ),
+      backgroundColor: AppColors.primaryBlue,
+      foregroundColor: Colors.white,           // affects back button / other icons
+      iconTheme: const IconThemeData(
+        color: Colors.white,                    // ← makes hamburger (drawer) icon white
+      ),
+    elevation: 2,
+    actions: [
+    const SizedBox(width: 4),
+    PopupMenuButton<dynamic>(
+    offset: const Offset(0, 50),
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+    child: Container(
+    margin: const EdgeInsets.only(right: 16),
+    padding: const EdgeInsets.all(2),
+    decoration: BoxDecoration(
+    shape: BoxShape.circle,
+    border: Border.all(color: Colors.white, width: 2),
+    ),
+    child: CircleAvatar(
+    radius: 18,
+    backgroundColor: Colors.white,
+    child: Text(
+    _userData?['userName']?.isNotEmpty == true
+    ? _userData!['userName']![0].toUpperCase()
+        : 'A',
+    style: TextStyle(
+    color: AppColors.primaryBlue,
+    fontWeight: FontWeight.bold,
+    ),
+    ),
+    ),
+    ),
+    itemBuilder: (context) => <PopupMenuEntry<dynamic>>[
+    PopupMenuItem(
+    enabled: false,
+    child: Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+    Text(
+    _userData?['userName'] ?? 'Admin',
+    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+    ),
+    Text(
+    _userData?['email'] ?? '',
+    style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+    ),
+    ],
+    ),
+    ),
+    const PopupMenuDivider(),
+    PopupMenuItem(
+    child: const Row(
+    children: [
+    Icon(Icons.logout, size: 20),
+    SizedBox(width: 12),
+    Text('Logout'),
+    ],
+    ),
+    onTap: () async {
+    await Future.delayed(const Duration(milliseconds: 100));
+    if (mounted) {
+    await _tokenManager.logout(context);
+    }
+    },
+    ),
+    ],
+    ),
+    ],
+    ),
+
+      // Added separate drawer
       backgroundColor: Colors.blue[50],
       body: Stack(
         children: [
           Column(
             children: [
               // Header
-              Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [AppColors.primaryBlue, AppColors.primaryBlue.withValues(alpha: 0.8)],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: AppColors.primaryBlue.withValues(alpha: 0.3),
-                      blurRadius: 10,
-                      offset: const Offset(0, 5),
-                    ),
-                  ],
-                ),
-                child: SafeArea(
-                  bottom: false,
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 20, 20, 30),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.all(12),
-                              decoration: BoxDecoration(
-                                color: Colors.white.withValues(alpha: 0.2),
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: const Icon(Icons.admin_panel_settings, color: Colors.white, size: 28),
-                            ),
-                            const Spacer(),
-                            IconButton(
-                              icon: const Icon(Icons.notifications_outlined, color: Colors.white),
-                              onPressed: () => _showSnackBar('Notifications coming soon!'),
-                            ),
-                            const SizedBox(width: 8),
-                            PopupMenuButton<dynamic>(
-                              offset: const Offset(0, 50),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                              child: Container(
-                                padding: const EdgeInsets.all(2),
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  border: Border.all(color: Colors.white, width: 2),
-                                ),
-                                child: CircleAvatar(
-                                  radius: 18,
-                                  backgroundColor: Colors.white,
-                                  child: Text(
-                                    _userData?['userName']?.isNotEmpty == true
-                                        ? _userData!['userName']![0].toUpperCase()
-                                        : 'A',
-                                    style: TextStyle(
-                                      color: AppColors.primaryBlue,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              itemBuilder: (context) => <PopupMenuEntry<dynamic>>[
-                                PopupMenuItem(
-                                  enabled: false,
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        _userData?['userName'] ?? 'Admin',
-                                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                                      ),
-                                      Text(
-                                        _userData?['email'] ?? '',
-                                        style: TextStyle(fontSize: 12, color: Colors.grey[600]),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                const PopupMenuDivider(),
-                                PopupMenuItem(
-                                  child: const Row(
-                                    children: [
-                                      Icon(Icons.logout, size: 20),
-                                      SizedBox(width: 12),
-                                      Text('Logout'),
-                                    ],
-                                  ),
-                                  onTap: () async {
-                                    await Future.delayed(const Duration(milliseconds: 100));
-                                    if (mounted) {
-                                      await _tokenManager.logout(context);
-                                    }
-                                  },
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 20),
-                        const Text(
-                          'Admin Dashboard',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 28,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-
               // Tabs
               Container(
                 color: Colors.white,
@@ -366,10 +314,7 @@ class _ServiceAdminAppState extends State<ServiceAdminApp>
                   color: AppColors.primaryBlue,
                   child: TabBarView(
                     controller: _tabController,
-                    children: [
-                      _buildProvidersList(),
-                      _buildProvidersList(),
-                    ],
+                    children: [_buildProvidersList(), _buildProvidersList()],
                   ),
                 ),
               ),
@@ -390,9 +335,16 @@ class _ServiceAdminAppState extends State<ServiceAdminApp>
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      CircularProgressIndicator(valueColor: AlwaysStoppedAnimation<Color>(AppColors.primaryBlue)),
+                      CircularProgressIndicator(
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          AppColors.primaryBlue,
+                        ),
+                      ),
                       const SizedBox(height: 16),
-                      const Text('Processing...', style: TextStyle(fontWeight: FontWeight.w500)),
+                      const Text(
+                        'Processing...',
+                        style: TextStyle(fontWeight: FontWeight.w500),
+                      ),
                     ],
                   ),
                 ),
@@ -431,7 +383,12 @@ class _ServiceAdminAppState extends State<ServiceAdminApp>
                 children: [
                   Icon(Icons.error_outline, color: Colors.red[700]),
                   const SizedBox(width: 12),
-                  Expanded(child: Text(_errorMessage, style: TextStyle(color: Colors.red[700]))),
+                  Expanded(
+                    child: Text(
+                      _errorMessage,
+                      style: TextStyle(color: Colors.red[700]),
+                    ),
+                  ),
                   IconButton(
                     icon: Icon(Icons.close, color: Colors.red[700], size: 20),
                     onPressed: () => setState(() => _errorMessage = ''),
@@ -440,11 +397,7 @@ class _ServiceAdminAppState extends State<ServiceAdminApp>
               ),
             ),
 
-          // Create Category Card
-          _createCategoryCard(),
-          const SizedBox(height: 20),
-
-          // Service Providers Card
+          // Service Providers Card (removed category card)
           _serviceProvidersCard(filteredProviders),
         ],
       ),
@@ -458,104 +411,79 @@ class _ServiceAdminAppState extends State<ServiceAdminApp>
 
     return Row(
       children: [
-        Expanded(child: _buildStatCard(Icons.people, 'Total', '$total', AppColors.primaryBlue)),
+        Expanded(
+          child: _buildStatCard(
+            Icons.people,
+            'Total',
+            '$total',
+            AppColors.primaryBlue,
+          ),
+        ),
         const SizedBox(width: 12),
-        Expanded(child: _buildStatCard(Icons.check_circle, 'Active', '$active', Colors.green)),
+        Expanded(
+          child: _buildStatCard(
+            Icons.check_circle,
+            'Active',
+            '$active',
+            Colors.green,
+          ),
+        ),
         const SizedBox(width: 12),
-        Expanded(child: _buildStatCard(Icons.pending, 'Pending', '$pending', Colors.orange)),
+        Expanded(
+          child: _buildStatCard(
+            Icons.pending,
+            'Pending',
+            '$pending',
+            Colors.orange,
+          ),
+        ),
       ],
     );
   }
 
-  Widget _buildStatCard(IconData icon, String title, String value, Color color) {
+  Widget _buildStatCard(
+    IconData icon,
+    String title,
+    String value,
+    Color color,
+  ) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
-          BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, 2)),
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
         ],
       ),
       child: Column(
         children: [
           Container(
             padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(color: color.withValues(alpha: 0.1), shape: BoxShape.circle),
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.1),
+              shape: BoxShape.circle,
+            ),
             child: Icon(icon, color: color, size: 24),
           ),
           const SizedBox(height: 12),
-          Text(value, style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: color)),
+          Text(
+            value,
+            style: TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              color: color,
+            ),
+          ),
           const SizedBox(height: 4),
-          Text(title, style: TextStyle(fontSize: 12, color: Colors.grey[600]), textAlign: TextAlign.center),
-        ],
-      ),
-    );
-  }
-
-  Widget _createCategoryCard() {
-    return _card(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: AppColors.primaryBlue.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Icon(Icons.category, color: AppColors.primaryBlue, size: 20),
-              ),
-              const SizedBox(width: 12),
-              const Text("Create Service Category", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 17)),
-            ],
-          ),
-          const SizedBox(height: 20),
-          TextField(
-            controller: _categoryController,
-            decoration: InputDecoration(
-              labelText: "Category Name",
-              hintText: "e.g. Home Cleaning, Plumbing",
-              prefixIcon: Icon(Icons.edit, color: AppColors.primaryBlue),
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(color: AppColors.primaryBlue, width: 2),
-              ),
-            ),
-          ),
-          const SizedBox(height: 16),
-          TextField(
-            controller: _categoryDescriptionController,
-            maxLines: 3,
-            decoration: InputDecoration(
-              labelText: "Description (Optional)",
-              hintText: "Brief description...",
-              prefixIcon: Icon(Icons.description, color: AppColors.primaryBlue),
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(color: AppColors.primaryBlue, width: 2),
-              ),
-            ),
-          ),
-          const SizedBox(height: 16),
-          SizedBox(
-            width: double.infinity,
-            height: 50,
-            child: ElevatedButton.icon(
-              onPressed: _isLoading ? null : _createCategory,
-              icon: const Icon(Icons.add_circle_outline),
-              label: const Text("Create Category", style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primaryBlue,
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                elevation: 2,
-              ),
-            ),
+          Text(
+            title,
+            style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+            textAlign: TextAlign.center,
           ),
         ],
       ),
@@ -575,13 +503,20 @@ class _ServiceAdminAppState extends State<ServiceAdminApp>
                   Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: AppColors.primaryBlue.withValues(alpha: 0.1),
+                      color: AppColors.primaryBlue.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    child: Icon(Icons.people, color: AppColors.primaryBlue, size: 20),
+                    child: Icon(
+                      Icons.people,
+                      color: AppColors.primaryBlue,
+                      size: 20,
+                    ),
                   ),
                   const SizedBox(width: 12),
-                  const Text("Service Providers", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 17)),
+                  const Text(
+                    "Service Providers",
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 17),
+                  ),
                 ],
               ),
               IconButton(
@@ -599,9 +534,16 @@ class _ServiceAdminAppState extends State<ServiceAdminApp>
                 padding: const EdgeInsets.all(40),
                 child: Column(
                   children: [
-                    Icon(Icons.inbox_outlined, size: 64, color: Colors.grey[300]),
+                    Icon(
+                      Icons.inbox_outlined,
+                      size: 64,
+                      color: Colors.grey[300],
+                    ),
                     const SizedBox(height: 16),
-                    Text('No providers found', style: TextStyle(color: Colors.grey[600], fontSize: 16)),
+                    Text(
+                      'No providers found',
+                      style: TextStyle(color: Colors.grey[600], fontSize: 16),
+                    ),
                   ],
                 ),
               ),
@@ -621,7 +563,13 @@ class _ServiceAdminAppState extends State<ServiceAdminApp>
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: Colors.grey.shade200),
-        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 5, offset: const Offset(0, 2))],
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.03),
+            blurRadius: 5,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Column(
         children: [
@@ -632,15 +580,21 @@ class _ServiceAdminAppState extends State<ServiceAdminApp>
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   border: Border.all(
-                    color: provider.active ? Colors.green.withValues(alpha: 0.3) : Colors.orange,
+                    color: provider.active
+                        ? Colors.green.withOpacity(0.3)
+                        : Colors.orange,
                     width: 2,
                   ),
                 ),
                 child: CircleAvatar(
                   radius: 28,
-                  backgroundColor: provider.active ? Colors.green.withValues(alpha: 0.1) : Colors.orange.withValues(alpha: 0.1),
+                  backgroundColor: provider.active
+                      ? Colors.green.withOpacity(0.1)
+                      : Colors.orange.withOpacity(0.1),
                   child: Text(
-                    provider.userName.isNotEmpty ? provider.userName[0].toUpperCase() : '?',
+                    provider.userName.isNotEmpty
+                        ? provider.userName[0].toUpperCase()
+                        : '?',
                     style: TextStyle(
                       color: provider.active ? Colors.green : Colors.orange,
                       fontWeight: FontWeight.bold,
@@ -654,30 +608,63 @@ class _ServiceAdminAppState extends State<ServiceAdminApp>
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(provider.userName, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                    Text(
+                      provider.userName,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                    ),
                     const SizedBox(height: 4),
                     Row(
                       children: [
-                        Icon(Icons.email_outlined, size: 14, color: Colors.grey[600]),
+                        Icon(
+                          Icons.email_outlined,
+                          size: 14,
+                          color: Colors.grey[600],
+                        ),
                         const SizedBox(width: 6),
-                        Expanded(child: Text(provider.email, style: TextStyle(color: Colors.grey[600], fontSize: 13))),
+                        Expanded(
+                          child: Text(
+                            provider.email,
+                            style: TextStyle(
+                              color: Colors.grey[600],
+                              fontSize: 13,
+                            ),
+                          ),
+                        ),
                       ],
                     ),
                     const SizedBox(height: 4),
                     Row(
                       children: [
-                        Icon(Icons.phone_outlined, size: 14, color: Colors.grey[600]),
+                        Icon(
+                          Icons.phone_outlined,
+                          size: 14,
+                          color: Colors.grey[600],
+                        ),
                         const SizedBox(width: 6),
-                        Text(provider.phoneNumber, style: TextStyle(color: Colors.grey[600], fontSize: 13)),
+                        Text(
+                          provider.phoneNumber,
+                          style: TextStyle(
+                            color: Colors.grey[600],
+                            fontSize: 13,
+                          ),
+                        ),
                       ],
                     ),
                   ],
                 ),
               ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
+                ),
                 decoration: BoxDecoration(
-                  color: provider.active ? Colors.green.withValues(alpha: 0.1) : Colors.orange.withValues(alpha: 0.1),
+                  color: provider.active
+                      ? Colors.green.withOpacity(0.1)
+                      : Colors.orange.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(
@@ -699,42 +686,54 @@ class _ServiceAdminAppState extends State<ServiceAdminApp>
               if (!provider.active) ...[
                 Expanded(
                   child: OutlinedButton.icon(
-                    onPressed: _isLoading ? null : () => _approveProvider(provider.id),
+                    onPressed: _isLoading
+                        ? null
+                        : () => _approveProvider(provider.id),
                     icon: const Icon(Icons.check_circle_outline, size: 18),
                     label: const Text("Approve"),
                     style: OutlinedButton.styleFrom(
                       foregroundColor: Colors.green,
                       side: const BorderSide(color: Colors.green),
                       padding: const EdgeInsets.symmetric(vertical: 12),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
                     ),
                   ),
                 ),
                 const SizedBox(width: 8),
                 Expanded(
                   child: OutlinedButton.icon(
-                    onPressed: _isLoading ? null : () => _rejectProvider(provider.id),
+                    onPressed: _isLoading
+                        ? null
+                        : () => _rejectProvider(provider.id),
                     icon: const Icon(Icons.close, size: 18),
                     label: const Text("Reject"),
                     style: OutlinedButton.styleFrom(
                       foregroundColor: Colors.red,
                       side: const BorderSide(color: Colors.red),
                       padding: const EdgeInsets.symmetric(vertical: 12),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
                     ),
                   ),
                 ),
               ] else ...[
                 Expanded(
                   child: OutlinedButton.icon(
-                    onPressed: _isLoading ? null : () => _deactivateProvider(provider.id),
+                    onPressed: _isLoading
+                        ? null
+                        : () => _deactivateProvider(provider.id),
                     icon: const Icon(Icons.block, size: 18),
                     label: const Text("Deactivate"),
                     style: OutlinedButton.styleFrom(
                       foregroundColor: Colors.red,
                       side: const BorderSide(color: Colors.red),
                       padding: const EdgeInsets.symmetric(vertical: 12),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
                     ),
                   ),
                 ),

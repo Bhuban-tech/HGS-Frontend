@@ -1,6 +1,6 @@
 class ApiConstants {
   // Base URL: only host + port (no trailing /api)
-  static const String baseUrl = 'http://192.168.1.77:8080';
+  static const String baseUrl = 'http://192.168.110.191:8080';
 
   // All endpoints must be RELATIVE (start with /)
   static const String login = '/api/auth/login';
@@ -13,7 +13,8 @@ class ApiConstants {
 
   static const String adminUsers = '/api/admin/users';
   static const String adminProviders = '/api/admin/service-providers';
-  static const String adminPendingProviders = '/api/admin/service-providers/pending';
+  static const String adminPendingProviders =
+      '/api/admin/service-providers/pending';
 
   static String adminApproveProvider(String id) => '/api/admin/approve/$id';
   static String adminRejectProvider(String id) => '/api/admin/reject/$id';

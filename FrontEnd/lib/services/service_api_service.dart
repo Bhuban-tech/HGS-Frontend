@@ -9,7 +9,6 @@ class ServiceApiService {
 
   ServiceApiService(this._dio);
 
-  /// Get all available services
   Future<List<Service>> getAllServices() async {
     try {
       final token = await _tokenManager.getAccessToken();

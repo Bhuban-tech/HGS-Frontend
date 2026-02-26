@@ -33,7 +33,7 @@ class BookingService {
 
     try {
       final token = await _tokenManager.getAccessToken();
-      
+
       final response = await _dio.post(
         ApiConstants.createBooking,
         data: {
@@ -58,7 +58,7 @@ class BookingService {
   Future<List<Booking>> getUserBookings() async {
     try {
       final token = await _tokenManager.getAccessToken();
-      
+
       final response = await _dio.get(
         ApiConstants.userBookings,
         options: Options(
@@ -77,7 +77,7 @@ class BookingService {
   Future<List<Booking>> getProviderBookings() async {
     try {
       final token = await _tokenManager.getAccessToken();
-      
+
       final response = await _dio.get(
         ApiConstants.providerBookings,
         options: Options(
@@ -96,7 +96,7 @@ class BookingService {
   Future<Booking> getBookingById(String bookingId) async {
     try {
       final token = await _tokenManager.getAccessToken();
-      
+
       final response = await _dio.get(
         ApiConstants.bookingById(bookingId),
         options: Options(
@@ -114,7 +114,7 @@ class BookingService {
   Future<Booking> acceptBooking(String bookingId) async {
     try {
       final token = await _tokenManager.getAccessToken();
-      
+
       final response = await _dio.patch(
         ApiConstants.acceptBooking(bookingId),
         options: Options(
@@ -132,7 +132,7 @@ class BookingService {
   Future<Booking> rejectBooking(String bookingId, {String? reason}) async {
     try {
       final token = await _tokenManager.getAccessToken();
-      
+
       final response = await _dio.patch(
         ApiConstants.rejectBooking(bookingId),
         data: {'reason': reason ?? 'Provider declined'},
@@ -151,7 +151,7 @@ class BookingService {
   Future<Booking> cancelBooking(String bookingId) async {
     try {
       final token = await _tokenManager.getAccessToken();
-      
+
       final response = await _dio.patch(
         ApiConstants.cancelBooking(bookingId),
         options: Options(
@@ -169,7 +169,7 @@ class BookingService {
   Future<Booking> completeBooking(String bookingId) async {
     try {
       final token = await _tokenManager.getAccessToken();
-      
+
       final response = await _dio.patch(
         ApiConstants.completeBooking(bookingId),
         options: Options(

@@ -5,12 +5,28 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="f5bb15e7-3521-423f-888d-8c3a1d3f5a28" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Dart_Packages.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/libraries/Dart_Packages.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/lib/view/admin/AdminProfileScreen.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/lib/view/admin/ManageProvidersScreen.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/lib/view/admin/ManageUsersScreen.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/libraries/Flutter_Plugins.xml" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/API_QUICK_REFERENCE.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/ARCHITECTURE_DIAGRAMS.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/CHAT_VISIBILITY_GUIDE.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/FIXES_AND_FEATURES.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/FrontEnd.code-workspace" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/IMPLEMENTATION_GUIDE.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/IMPLEMENTATION_SUMMARY.md" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/lib/DashBoard/AdminDashboard_view.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/DashBoard/AdminDashboard_view.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lib/constants/api_constants.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/constants/api_constants.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lib/constants/app_theme.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/constants/app_theme.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/services/api_service.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/services/api_service.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/services/api_client.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/services/api_client.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/services/booking_service.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/services/booking_service.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/services/service_api_service.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/services/service_api_service.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/services/token_manager.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/services/token_manager.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/view/admin/AdminDrawer.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/view/admin/AdminDrawer.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/view/admin/CreateCategoryScreen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/view/admin/CreateCategoryScreen.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pubspec.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/pubspec.yaml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -28,6 +44,11 @@
     </option>
   </component>
   <component name="Git.Settings">
+    <option name="RECENT_BRANCH_BY_REPOSITORY">
+      <map>
+        <entry key="$PROJECT_DIR$/.." value="himal/frontend" />
+      </map>
+    </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
   </component>
   <component name="ProjectColorInfo">{

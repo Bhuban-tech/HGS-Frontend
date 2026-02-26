@@ -1,7 +1,7 @@
 name: HamroGharSewa
 description: "A Flutter authentication application with JWT token management"
 
-# Prevent publishing to pub.dev (since this is private)
+
 publish_to: 'none'
 
 version: 1.0.0+1

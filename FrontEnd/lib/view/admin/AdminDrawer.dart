@@ -1,15 +1,11 @@
-// lib/widgets/admin_drawer.dart
-// This drawer contains admin actions: Dashboard (home), Create Category (navigates to the new screen),
-// Manage Providers (could navigate to a dedicated providers screen if needed, but for now assumes dashboard is providers),
-// Settings (placeholder), Logout.
-// Assumes TokenManager is available for logout.
-// Use Navigator to push to other screens (e.g., CreateCategoryScreen).
-// Import necessary packages and screens.
-
 import 'package:HamroGharSewa/view/admin/CreateCategoryScreen.dart';
+import 'package:HamroGharSewa/view/admin/ManageUsersScreen.dart';
 import 'package:flutter/material.dart';
-import 'package:HamroGharSewa/constants/app_colors.dart';// Import the extracted screen
+import 'package:HamroGharSewa/constants/app_colors.dart';
 import 'package:HamroGharSewa/services/token_manager.dart';
+
+import 'AdminProfileScreen.dart';
+import 'ManageProvidersScreen.dart';
 
 class AdminDrawer extends StatelessWidget {
   const AdminDrawer({super.key});
@@ -35,7 +31,7 @@ class AdminDrawer extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
                 Text(
-                  'Admin Controls',
+                  'HGS',
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 24,
@@ -57,7 +53,7 @@ class AdminDrawer extends StatelessWidget {
             leading: const Icon(Icons.dashboard, color: AppColors.primaryBlue),
             title: const Text('Dashboard'),
             onTap: () {
-              Navigator.pop(context); // Close drawer and stay on current (dashboard)
+              Navigator.pop(context);
             },
           ),
           ListTile(
@@ -76,16 +72,34 @@ class AdminDrawer extends StatelessWidget {
             title: const Text('Manage Providers'),
             onTap: () {
               Navigator.pop(context);
-              // If you extract providers to a separate screen later, navigate there.
-              // For now, assume dashboard handles it.
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const ManageProvidersScreen()),
+              );
             },
           ),
+
           ListTile(
-            leading: const Icon(Icons.settings, color: AppColors.primaryBlue),
-            title: const Text('Settings'),
+            leading: const Icon(Icons.manage_accounts, color: AppColors.primaryBlue),
+            title: const Text('Manage Users'),
             onTap: () {
               Navigator.pop(context);
-              // Navigate to settings screen (implement if needed)
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const ManageUsersScreen()),
+              );
+            },
+          ),
+
+          ListTile(
+            leading: const Icon(Icons.person, color: AppColors.primaryBlue),
+            title: const Text('My Profile'),
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const AdminProfileScreen()),
+              );
             },
           ),
           const Divider(),
@@ -96,8 +110,11 @@ class AdminDrawer extends StatelessWidget {
               await _tokenManager.logout(context);
             },
           ),
+          // In AdminDrawer — add this ListTile before Dashboard
+
         ],
       ),
+
     );
   }
 }

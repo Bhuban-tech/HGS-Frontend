@@ -1,6 +1,5 @@
 class ApiConstants {
-  // Base URL: only host + port (no trailing /api)
-  static const String baseUrl = 'http://192.168.110.191:8080';
+  static const String baseUrl = 'http://192.168.100.99:8080';
 
   // All endpoints must be RELATIVE (start with /)
   static const String login = '/api/auth/login';
@@ -31,7 +30,6 @@ class ApiConstants {
   static String adminDeleteCategory(String id) => '/api/admin/categories/$id';
   static String categoryById(String id) => '/api/admin/categories/$id';
 
-  // ==================== BOOKING ENDPOINTS ====================
   static const String createBooking = '/api/bookings';
   static const String userBookings = '/api/bookings/my-bookings';
   static const String providerBookings = '/api/bookings/requests';
@@ -58,6 +56,9 @@ class ApiConstants {
   static String chatSend = '/app/chat';
 
   // ==================== USER PROFILE ENDPOINTS ====================
-  static const String userProfile = '/api/user/profile';
-  static const String updateProfile = '/api/user/profile';
+  static const String userProfile = '/api/users/me';          // @GetMapping("/me")
+  static const String updateProfile = '/api/users/profile';
+
+  static const String requestEmailChange = '/api/users/request-email-change';
+  static const String confirmEmailChange = '/api/users/confirm-email-change';
 }

@@ -1,6 +1,7 @@
 import 'package:HamroGharSewa/constants/app_colors.dart';
 import 'package:HamroGharSewa/route/app_routes.dart';
 import 'package:HamroGharSewa/services/auth_service.dart';
+import 'package:HamroGharSewa/services/token_manager.dart';
 import 'package:flutter/material.dart';
 
 class OTPVerificationScreen extends StatefulWidget {
@@ -51,11 +52,8 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
           ),
         );
 
-        Navigator.pushNamedAndRemoveUntil(
-          context,
-          AppRoutes.login,
-          (route) => false,
-        );
+        // Auto-redirect to dashboard based on role instead of login page
+        await TokenManager().redirectBasedOnRole(context);
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(

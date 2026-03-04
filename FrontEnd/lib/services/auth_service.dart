@@ -44,12 +44,20 @@ class AuthService {
     required String email,
     required String phone,
     required String password,
+    String? role,
+    String? address,
+    String? category,
+    String? experience,
   }) {
     return _ensureRepository.register(
       name: name,
       email: email,
       phone: phone,
       password: password,
+      role: role ?? 'USER',
+      address: address,
+      category: category,
+      experience: experience,
     );
   }
 

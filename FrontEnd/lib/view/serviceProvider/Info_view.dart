@@ -1,6 +1,7 @@
 import 'package:HamroGharSewa/constants/app_colors.dart';
 import 'package:HamroGharSewa/providers/service_provider.dart';
 import 'package:HamroGharSewa/DashBoard/provider_dashboard_view.dart';
+import 'package:HamroGharSewa/DashBoard/User.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -25,16 +26,18 @@ class _BecomeProviderPageState extends State<BecomeProviderPage> {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _phoneController = TextEditingController();
   final TextEditingController _addressController = TextEditingController();
-  
-  final TextEditingController _categoryController = TextEditingController(); // Should be dropdown
   final TextEditingController _experienceController = TextEditingController();
   final TextEditingController _skillsController = TextEditingController();
-  
   final TextEditingController _citizenshipController = TextEditingController();
 
-  String _selectedCategory = 'Plumbing'; // Default
+  String _selectedCategory = 'Plumbing';
   final List<String> _categories = [
-    'Plumbing', 'Electrical', 'Painting', 'Cleaning', 'Carpentry', 'Gardening'
+    'Plumbing',
+    'Electrical',
+    'Painting',
+    'Cleaning',
+    'Carpentry',
+    'Gardening',
   ];
 
   @override
@@ -43,7 +46,6 @@ class _BecomeProviderPageState extends State<BecomeProviderPage> {
     _nameController.dispose();
     _phoneController.dispose();
     _addressController.dispose();
-    _categoryController.dispose();
     _experienceController.dispose();
     _skillsController.dispose();
     _citizenshipController.dispose();
@@ -58,7 +60,7 @@ class _BecomeProviderPageState extends State<BecomeProviderPage> {
     } else if (_currentStep == 2) {
       if (!_verificationFormKey.currentState!.validate()) return;
       _submitApplication();
-      return; 
+      return;
     }
 
     if (_currentStep < _totalSteps - 1) {
@@ -86,28 +88,31 @@ class _BecomeProviderPageState extends State<BecomeProviderPage> {
 
   Future<void> _submitApplication() async {
     final provider = Provider.of<ServiceProvider>(context, listen: false);
-    
+
     final data = {
-      'name': _nameController.text,
-      'phone': _phoneController.text,
-      'address': _addressController.text,
+      'name': _nameController.text.trim(),
+      'phone': _phoneController.text.trim(),
+      'address': _addressController.text.trim(),
       'category': _selectedCategory,
-      'experience': _experienceController.text,
-      'skills': _skillsController.text,
-      'citizenship': _citizenshipController.text,
+      'experience': _experienceController.text.trim(),
+      'skills': _skillsController.text.trim(),
+      'citizenship': _citizenshipController.text.trim(),
     };
 
     final success = await provider.submitProviderApplication(data);
 
     if (success && mounted) {
-      // Show Success Screen
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (_) => const ProviderApplicationSuccessPage()),
+        MaterialPageRoute(
+          builder: (_) => const ProviderApplicationSuccessPage(),
+        ),
       );
-    } else {
+    } else if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Failed to submit application. Please try again.')),
+        const SnackBar(
+          content: Text('Failed to submit application. Please try again.'),
+        ),
       );
     }
   }
@@ -123,11 +128,11 @@ class _BecomeProviderPageState extends State<BecomeProviderPage> {
             Expanded(
               child: PageView(
                 controller: _pageController,
-                physics: const NeverScrollableScrollPhysics(), // Disable swipe
+                physics: const NeverScrollableScrollPhysics(),
                 children: [
-                   _buildStep1Personal(),
-                   _buildStep2Professional(),
-                   _buildStep3Verification(),
+                  _buildStep1Personal(),
+                  _buildStep2Professional(),
+                  _buildStep3Verification(),
                 ],
               ),
             ),
@@ -164,7 +169,6 @@ class _BecomeProviderPageState extends State<BecomeProviderPage> {
             ],
           ),
           const SizedBox(height: 20),
-          // Progress Bar
           Stack(
             children: [
               Container(
@@ -179,7 +183,9 @@ class _BecomeProviderPageState extends State<BecomeProviderPage> {
                 duration: const Duration(milliseconds: 600),
                 curve: Curves.easeInOut,
                 height: 6,
-                width: MediaQuery.of(context).size.width * ((_currentStep + 1) / (_totalSteps)),
+                width:
+                MediaQuery.of(context).size.width *
+                    ((_currentStep + 1) / _totalSteps),
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
                     colors: [AppColors.gradientStart, AppColors.gradientEnd],
@@ -250,7 +256,10 @@ class _BecomeProviderPageState extends State<BecomeProviderPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const SizedBox(height: 20),
-            _buildSectionTitle('Professional Info', 'What services do you provide?'),
+            _buildSectionTitle(
+              'Professional Info',
+              'What services do you provide?',
+            ),
             const SizedBox(height: 32),
             _buildDropdown(
               label: 'Service Category',
@@ -325,10 +334,7 @@ class _BecomeProviderPageState extends State<BecomeProviderPage> {
         const SizedBox(height: 8),
         Text(
           subtitle,
-          style: const TextStyle(
-            fontSize: 16,
-            color: AppColors.textLight,
-          ),
+          style: const TextStyle(fontSize: 16, color: AppColors.textLight),
         ),
       ],
     );
@@ -372,7 +378,7 @@ class _BecomeProviderPageState extends State<BecomeProviderPage> {
             borderSide: BorderSide.none,
           ),
           filled: true,
-          fillColor: Colors.transparent, // handled by container
+          fillColor: Colors.transparent,
           contentPadding: const EdgeInsets.all(20),
         ),
       ),
@@ -403,7 +409,10 @@ class _BecomeProviderPageState extends State<BecomeProviderPage> {
         decoration: InputDecoration(
           labelText: label,
           labelStyle: const TextStyle(color: AppColors.textLight),
-          prefixIcon: const Icon(Icons.category_outlined, color: AppColors.primaryBlue),
+          prefixIcon: const Icon(
+            Icons.category_outlined,
+            color: AppColors.primaryBlue,
+          ),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(20),
             borderSide: BorderSide.none,
@@ -412,7 +421,10 @@ class _BecomeProviderPageState extends State<BecomeProviderPage> {
           fillColor: Colors.transparent,
           contentPadding: const EdgeInsets.all(20),
         ),
-        items: items.map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
+        items:
+        items
+            .map((e) => DropdownMenuItem(value: e, child: Text(e)))
+            .toList(),
       ),
     );
   }
@@ -435,7 +447,11 @@ class _BecomeProviderPageState extends State<BecomeProviderPage> {
       ),
       child: Column(
         children: [
-          Icon(Icons.cloud_upload_outlined, size: 32, color: AppColors.primaryBlue.withValues(alpha: 0.6)),
+          Icon(
+            Icons.cloud_upload_outlined,
+            size: 32,
+            color: AppColors.primaryBlue.withValues(alpha: 0.6),
+          ),
           const SizedBox(height: 12),
           Text(
             title,
@@ -448,10 +464,7 @@ class _BecomeProviderPageState extends State<BecomeProviderPage> {
           const SizedBox(height: 4),
           const Text(
             'Tap to upload',
-            style: TextStyle(
-              color: AppColors.textLight,
-              fontSize: 12,
-            ),
+            style: TextStyle(color: AppColors.textLight, fontSize: 12),
           ),
         ],
       ),
@@ -469,31 +482,46 @@ class _BecomeProviderPageState extends State<BecomeProviderPage> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primaryBlue,
                 foregroundColor: Colors.white,
+                minimumSize: const Size(double.infinity, 60),
                 padding: const EdgeInsets.symmetric(vertical: 20),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                ),
                 elevation: 8,
                 shadowColor: AppColors.primaryBlue.withValues(alpha: 0.4),
               ),
-              child: provider.isLoading
+              child:
+              provider.isLoading
                   ? const SizedBox(
-                      height: 24,
-                      width: 24,
-                      child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
-                    )
+                height: 24,
+                width: 24,
+                child: CircularProgressIndicator(
+                  color: Colors.white,
+                  strokeWidth: 2,
+                ),
+              )
                   : Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          _currentStep == _totalSteps - 1 ? 'Submit & Review' : 'Next Step',
-                          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                        ),
-                        if (_currentStep < _totalSteps - 1)
-                          const Padding(
-                            padding: EdgeInsets.only(left: 8.0),
-                            child: Icon(Icons.arrow_forward_rounded, size: 20),
-                          ),
-                      ],
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    _currentStep == _totalSteps - 1
+                        ? 'Submit & Review'
+                        : 'Next Step',
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
                     ),
+                  ),
+                  if (_currentStep < _totalSteps - 1)
+                    const Padding(
+                      padding: EdgeInsets.only(left: 8.0),
+                      child: Icon(
+                        Icons.arrow_forward_rounded,
+                        size: 20,
+                      ),
+                    ),
+                ],
+              ),
             );
           },
         ),
@@ -501,6 +529,10 @@ class _BecomeProviderPageState extends State<BecomeProviderPage> {
     );
   }
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Success Page
+// ─────────────────────────────────────────────────────────────────────────────
 
 class ProviderApplicationSuccessPage extends StatelessWidget {
   const ProviderApplicationSuccessPage({Key? key}) : super(key: key);
@@ -520,7 +552,11 @@ class ProviderApplicationSuccessPage extends StatelessWidget {
                 color: AppColors.success.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.check_rounded, color: AppColors.success, size: 64),
+              child: const Icon(
+                Icons.check_rounded,
+                color: AppColors.success,
+                size: 64,
+              ),
             ),
             const SizedBox(height: 32),
             const Text(
@@ -534,7 +570,7 @@ class ProviderApplicationSuccessPage extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             const Text(
-              'Your application is under review by our Admin team. You will be notified once verified.',
+              'Your application is under review. Our team will verify your details and activate your profile soon.',
               style: TextStyle(
                 fontSize: 16,
                 color: AppColors.textMedium,
@@ -549,30 +585,60 @@ class ProviderApplicationSuccessPage extends StatelessWidget {
                 onPressed: () {
                    Navigator.pushAndRemoveUntil(
                     context,
-                    MaterialPageRoute(builder: (_) => ProviderDashboard()),
+                    MaterialPageRoute(builder: (_) => const ProviderDashboard()),
                     (route) => false,
                   );
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primaryBlue,
                   padding: const EdgeInsets.symmetric(vertical: 20),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                  ),
                   elevation: 5,
                 ),
-                child: const Text('Go to Provider Dashboard'),
+                child: const Text(
+                  'Enter Provider Dashboard',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
               ),
+            ),
+            const SizedBox(height: 12),
+            const Text(
+              'Tip: If you don\'t see the new dashboard, please Log out and Log in again to refresh your account.',
+              style: TextStyle(fontSize: 12, color: AppColors.textLight, fontStyle: FontStyle.italic),
+              textAlign: TextAlign.center,
             ),
             const SizedBox(height: 16),
             SizedBox(
               width: double.infinity,
               child: OutlinedButton(
-                onPressed: () => Navigator.pop(context),
+                onPressed: () {
+                   Navigator.pushAndRemoveUntil(
+                    context,
+                    MaterialPageRoute(builder: (_) => const UserDashboard()),
+                        (route) => false,
+                  );
+                },
                 style: OutlinedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 20),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                  ),
                   side: const BorderSide(color: AppColors.primaryBlue),
                 ),
-                child: const Text('Back to Home'),
+                child: const Text(
+                  'Check Application Status',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.primaryBlue,
+                  ),
+                ),
               ),
             ),
           ],

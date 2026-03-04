@@ -8,7 +8,7 @@ class ChatMessage {
   final DateTime timestamp;
   final bool isRead;
   final MessageType type;
-  final bool isHidden; // Hidden until booking is accepted
+  final bool isHidden;
 
   ChatMessage({
     this.id,

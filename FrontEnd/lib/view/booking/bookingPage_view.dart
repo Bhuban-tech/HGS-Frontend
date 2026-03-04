@@ -1,9 +1,13 @@
-import 'package:HamroGharSewa/Booking/Confirm-Booking.dart';
+
 import 'package:HamroGharSewa/constants/app_colors.dart';
 import 'package:flutter/material.dart';
 
+import '../../Booking/ChatPage.dart';
+import '../../Booking/Confirm-Booking.dart';
+
 class BookingPage extends StatefulWidget {
-  const BookingPage({super.key});
+  final Map<String, dynamic> providerData;
+  const BookingPage({super.key, required this.providerData});
 
   @override
   State<BookingPage> createState() => _BookingPageState();
@@ -31,6 +35,8 @@ class _BookingPageState extends State<BookingPage> {
 
   @override
   Widget build(BuildContext context) {
+    final provider = widget.providerData;
+    
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
@@ -55,7 +61,7 @@ class _BookingPageState extends State<BookingPage> {
                       gradient: LinearGradient(
                         colors: [
                           Colors.white,
-                          AppColors.primaryBlue.withValues(alpha: 0.02),
+                          AppColors.primaryBlue.withOpacity(0.02),
                         ],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
@@ -63,20 +69,20 @@ class _BookingPageState extends State<BookingPage> {
                       borderRadius: BorderRadius.circular(26),
                       boxShadow: [
                         BoxShadow(
-                          color: AppColors.primaryBlue.withValues(alpha: 0.12),
+                          color: AppColors.primaryBlue.withOpacity(0.12),
                           blurRadius: 25,
                           offset: const Offset(0, 12),
                         ),
                       ],
                       border: Border.all(
-                        color: AppColors.primaryBlue.withValues(alpha: 0.08),
+                        color: AppColors.primaryBlue.withOpacity(0.08),
                         width: 1,
                       ),
                     ),
                     child: Row(
                       children: [
                         Hero(
-                          tag: 'provider_image',
+                          tag: 'provider_${provider['id']}',
                           child: Container(
                             width: 90,
                             height: 90,
@@ -84,13 +90,13 @@ class _BookingPageState extends State<BookingPage> {
                               borderRadius: BorderRadius.circular(22),
                               gradient: LinearGradient(
                                 colors: [
-                                  AppColors.primaryBlue.withValues(alpha: 0.15),
-                                  AppColors.primaryPurple.withValues(alpha: 0.15),
+                                  AppColors.primaryBlue.withOpacity(0.15),
+                                  AppColors.primaryPurple.withOpacity(0.15),
                                 ],
                               ),
                               boxShadow: [
                                 BoxShadow(
-                                  color: AppColors.primaryBlue.withValues(alpha: 0.2),
+                                  color: AppColors.primaryBlue.withOpacity(0.2),
                                   blurRadius: 12,
                                   offset: const Offset(0, 6),
                                 ),
@@ -109,8 +115,8 @@ class _BookingPageState extends State<BookingPage> {
                                 decoration: BoxDecoration(
                                   gradient: LinearGradient(
                                     colors: [
-                                      AppColors.primaryBlue.withValues(alpha: 0.15),
-                                      AppColors.primaryBlue.withValues(alpha: 0.08),
+                                      AppColors.primaryBlue.withOpacity(0.15),
+                                      AppColors.primaryBlue.withOpacity(0.08),
                                     ],
                                   ),
                                   borderRadius: BorderRadius.circular(10),
@@ -118,11 +124,11 @@ class _BookingPageState extends State<BookingPage> {
                                 child: Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    Icon(Icons.verified_rounded, size: 13, color: AppColors.primaryBlue),
+                                    const Icon(Icons.verified_rounded, size: 13, color: AppColors.primaryBlue),
                                     const SizedBox(width: 5),
-                                    const Text(
-                                      "Plumbing Expert",
-                                      style: TextStyle(
+                                    Text(
+                                      provider['service'] ?? "Plumbing Expert",
+                                      style: const TextStyle(
                                         color: AppColors.primaryBlue,
                                         fontSize: 12,
                                         fontWeight: FontWeight.bold,
@@ -132,9 +138,9 @@ class _BookingPageState extends State<BookingPage> {
                                 ),
                               ),
                               const SizedBox(height: 10),
-                              const Text(
-                                "Bhuban Bhandari",
-                                style: TextStyle(
+                              Text(
+                                provider['name'] ?? "Bhuban Bhandari",
+                                style: const TextStyle(
                                   fontSize: 19,
                                   fontWeight: FontWeight.bold,
                                   color: AppColors.textDark,
@@ -147,7 +153,7 @@ class _BookingPageState extends State<BookingPage> {
                                   Container(
                                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                                     decoration: BoxDecoration(
-                                      color: AppColors.warning.withValues(alpha: 0.15),
+                                      color: AppColors.warning.withOpacity(0.15),
                                       borderRadius: BorderRadius.circular(8),
                                     ),
                                     child: Row(
@@ -155,9 +161,9 @@ class _BookingPageState extends State<BookingPage> {
                                       children: [
                                         const Icon(Icons.star_rounded, color: AppColors.warning, size: 16),
                                         const SizedBox(width: 4),
-                                        const Text(
-                                          "4.8",
-                                          style: TextStyle(
+                                        Text(
+                                          provider['rating']?.toString() ?? "4.8",
+                                          style: const TextStyle(
                                             fontWeight: FontWeight.bold,
                                             fontSize: 13,
                                             color: AppColors.textDark,
@@ -167,12 +173,16 @@ class _BookingPageState extends State<BookingPage> {
                                     ),
                                   ),
                                   const SizedBox(width: 8),
-                                  Text(
-                                    "(120 reviews)",
-                                    style: TextStyle(
-                                      color: Colors.grey[600],
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w600,
+                                  Flexible(
+                                    child: Text(
+                                      "(${provider['reviews'] ?? '120'} reviews)",
+                                      style: TextStyle(
+                                        color: Colors.grey[600],
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
                                     ),
                                   ),
                                 ],
@@ -182,17 +192,42 @@ class _BookingPageState extends State<BookingPage> {
                                 children: [
                                   const Icon(Icons.location_on_rounded, color: AppColors.primaryBlue, size: 15),
                                   const SizedBox(width: 4),
-                                  Text(
-                                    "Kathmandu, Nepal",
-                                    style: TextStyle(
-                                      color: Colors.grey[700],
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.w600,
+                                  Flexible(
+                                    child: Text(
+                                      provider['location'] ?? "Kathmandu, Nepal",
+                                      style: TextStyle(
+                                        color: Colors.grey[700],
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
                                     ),
                                   ),
                                 ],
                               ),
                             ],
+                          ),
+                        ),
+                        // Chat Button
+                        IconButton(
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => ChatPage(
+                                  name: provider['name'] ?? "Provider",
+                                ),
+                              ),
+                            );
+                          },
+                          icon: Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: AppColors.primaryBlue.withOpacity(0.1),
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(Icons.chat_bubble_outline_rounded, color: AppColors.primaryBlue, size: 24),
                           ),
                         ),
                       ],
@@ -209,8 +244,8 @@ class _BookingPageState extends State<BookingPage> {
                         decoration: BoxDecoration(
                           gradient: LinearGradient(
                             colors: [
-                              AppColors.primaryBlue.withValues(alpha: 0.15),
-                              AppColors.primaryBlue.withValues(alpha: 0.08),
+                              AppColors.primaryBlue.withOpacity(0.15),
+                              AppColors.primaryBlue.withOpacity(0.08),
                             ],
                           ),
                           borderRadius: BorderRadius.circular(12),
@@ -255,14 +290,14 @@ class _BookingPageState extends State<BookingPage> {
                               boxShadow: isSelected
                                   ? [
                                       BoxShadow(
-                                        color: AppColors.primaryBlue.withValues(alpha: 0.35),
+                                        color: AppColors.primaryBlue.withOpacity(0.35),
                                         blurRadius: 15,
                                         offset: const Offset(0, 8),
                                       )
                                     ]
                                   : [
                                       BoxShadow(
-                                        color: Colors.black.withValues(alpha: 0.04),
+                                        color: Colors.black.withOpacity(0.04),
                                         blurRadius: 8,
                                         offset: const Offset(0, 3),
                                       )
@@ -277,7 +312,7 @@ class _BookingPageState extends State<BookingPage> {
                                 Text(
                                   dates[index]['day']!,
                                   style: TextStyle(
-                                    color: isSelected ? Colors.white.withValues(alpha: 0.8) : AppColors.textMedium,
+                                    color: isSelected ? Colors.white.withOpacity(0.8) : AppColors.textMedium,
                                     fontSize: 13,
                                     fontWeight: FontWeight.w600,
                                   ),
@@ -309,8 +344,8 @@ class _BookingPageState extends State<BookingPage> {
                         decoration: BoxDecoration(
                           gradient: LinearGradient(
                             colors: [
-                              AppColors.primaryBlue.withValues(alpha: 0.15),
-                              AppColors.primaryBlue.withValues(alpha: 0.08),
+                              AppColors.primaryBlue.withOpacity(0.15),
+                              AppColors.primaryBlue.withOpacity(0.08),
                             ],
                           ),
                           borderRadius: BorderRadius.circular(12),
@@ -408,7 +443,7 @@ class _BookingPageState extends State<BookingPage> {
               ),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.08),
+                  color: Colors.black.withOpacity(0.08),
                   blurRadius: 25,
                   offset: const Offset(0, -8),
                 ),
@@ -427,7 +462,7 @@ class _BookingPageState extends State<BookingPage> {
                       ? null
                       : [
                           BoxShadow(
-                            color: AppColors.primaryBlue.withValues(alpha: 0.4),
+                            color: AppColors.primaryBlue.withOpacity(0.4),
                             blurRadius: 20,
                             offset: const Offset(0, 10),
                           ),
@@ -437,10 +472,35 @@ class _BookingPageState extends State<BookingPage> {
                   onPressed: selectedTimeIndex == -1
                       ? null
                       : () {
+                          // Calculate the selected date
+                          final now = DateTime.now();
+                          final selectedDate = now.add(Duration(days: selectedDateIndex));
+                          
+                          // Parse the time slot
+                          final timeStr = timeSlots[selectedTimeIndex]; // e.g., "09:00 AM"
+                          final parts = timeStr.split(' ');
+                          final timeParts = parts[0].split(':');
+                          int hour = int.parse(timeParts[0]);
+                          int minute = int.parse(timeParts[1]);
+                          
+                          if (parts[1] == 'PM' && hour != 12) hour += 12;
+                          if (parts[1] == 'AM' && hour == 12) hour = 0;
+
+                          final finalDateTime = DateTime(
+                            selectedDate.year,
+                            selectedDate.month,
+                            selectedDate.day,
+                            hour,
+                            minute,
+                          );
+
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => ConfirmPage(),
+                              builder: (context) => ConfirmPage(
+                                providerData: widget.providerData,
+                                selectedDateTime: finalDateTime,
+                              ),
                             ),
                           );
                         },

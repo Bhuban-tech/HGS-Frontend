@@ -1,11 +1,20 @@
 import 'package:HamroGharSewa/Booking/HistoryPage.dart';
+import 'package:HamroGharSewa/Booking/ChatPage.dart';
 import 'package:HamroGharSewa/constants/app_colors.dart';
 import 'package:HamroGharSewa/providers/booking_provider.dart';
+import 'package:HamroGharSewa/services/token_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 class ConfirmPage extends StatefulWidget {
-  const ConfirmPage({super.key});
+  final Map<String, dynamic> providerData;
+  final DateTime selectedDateTime;
+
+  const ConfirmPage({
+    super.key,
+    required this.providerData,
+    required this.selectedDateTime,
+  });
 
   @override
   State<ConfirmPage> createState() => _ConfirmPageState();
@@ -15,7 +24,23 @@ class _ConfirmPageState extends State<ConfirmPage> {
   final TextEditingController nameController = TextEditingController();
   final TextEditingController numberController = TextEditingController();
   final TextEditingController addressController = TextEditingController();
+  final _tokenManager = TokenManager();
   final _formKey = GlobalKey<FormState>();
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserData();
+  }
+
+  Future<void> _loadUserData() async {
+    final userData = await _tokenManager.getUserData();
+    if (userData != null) {
+      setState(() {
+        nameController.text = userData['userName'] ?? '';
+      });
+    }
+  }
 
   @override
   void dispose() {
@@ -39,9 +64,9 @@ class _ConfirmPageState extends State<ConfirmPage> {
     if (value == null || value.trim().isEmpty) {
       return 'Please enter phone number';
     }
-    final phoneRegex = RegExp(r'^9[78]\d{8}$');
+    final phoneRegex = RegExp(r'^\d{10}$'); // Generic 10 digit check
     if (!phoneRegex.hasMatch(value.trim())) {
-      return 'Enter valid Nepali phone (98XXXXXXXX)';
+      return 'Enter valid phone (10 digits)';
     }
     return null;
   }
@@ -58,7 +83,6 @@ class _ConfirmPageState extends State<ConfirmPage> {
 
   @override
   Widget build(BuildContext context) {
-
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
@@ -83,7 +107,7 @@ class _ConfirmPageState extends State<ConfirmPage> {
                   gradient: LinearGradient(
                     colors: [
                       Colors.white,
-                      AppColors.primaryBlue.withValues(alpha: 0.02),
+                      AppColors.primaryBlue.withOpacity(0.02),
                     ],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
@@ -91,13 +115,13 @@ class _ConfirmPageState extends State<ConfirmPage> {
                   borderRadius: BorderRadius.circular(24),
                   boxShadow: [
                     BoxShadow(
-                      color: AppColors.primaryBlue.withValues(alpha: 0.12),
+                      color: AppColors.primaryBlue.withOpacity(0.12),
                       blurRadius: 25,
                       offset: const Offset(0, 10),
                     ),
                   ],
                   border: Border.all(
-                    color: AppColors.primaryBlue.withValues(alpha: 0.08),
+                    color: AppColors.primaryBlue.withOpacity(0.08),
                     width: 1,
                   ),
                 ),
@@ -111,8 +135,8 @@ class _ConfirmPageState extends State<ConfirmPage> {
                           decoration: BoxDecoration(
                             gradient: LinearGradient(
                               colors: [
-                                AppColors.primaryBlue.withValues(alpha: 0.15),
-                                AppColors.primaryBlue.withValues(alpha: 0.08),
+                                AppColors.primaryBlue.withOpacity(0.15),
+                                AppColors.primaryBlue.withOpacity(0.08),
                               ],
                             ),
                             borderRadius: BorderRadius.circular(14),
@@ -127,6 +151,28 @@ class _ConfirmPageState extends State<ConfirmPage> {
                             fontWeight: FontWeight.bold,
                             color: AppColors.textDark,
                             letterSpacing: -0.3,
+                          ),
+                        ),
+                        const Spacer(),
+                        IconButton(
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => ChatPage(
+                                  name: widget.providerData['name'] ?? "Provider",
+                                ),
+                              ),
+                            );
+                          },
+                          icon: Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: AppColors.primaryBlue.withOpacity(0.1),
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(Icons.chat_bubble_outline_rounded,
+                                color: AppColors.primaryBlue, size: 22),
                           ),
                         ),
                       ],
@@ -148,7 +194,7 @@ class _ConfirmPageState extends State<ConfirmPage> {
                       keyboardType: TextInputType.phone,
                       decoration: const InputDecoration(
                         labelText: "Phone Number",
-                        hintText: "98XXXXXXXX",
+                        hintText: "Enter 10 digit number",
                         prefixIcon: Icon(Icons.phone_outlined),
                       ),
                     ),
@@ -183,7 +229,7 @@ class _ConfirmPageState extends State<ConfirmPage> {
                         ? null
                         : [
                             BoxShadow(
-                              color: AppColors.primaryBlue.withValues(alpha: 0.4),
+                              color: AppColors.primaryBlue.withOpacity(0.4),
                               blurRadius: 20,
                               offset: const Offset(0, 10),
                             ),
@@ -206,10 +252,10 @@ class _ConfirmPageState extends State<ConfirmPage> {
     
                             // Create Booking using Provider
                             final success = await provider.createBooking(
-                              providerId: 'provider_demo',
-                              serviceId: 'service_demo',
-                              bookingDate: DateTime.now().add(const Duration(days: 1)),
-                              description: 'Service Request',
+                              providerId: widget.providerData['id']?.toString() ?? 'provider_demo',
+                              serviceId: widget.providerData['serviceCategoryId']?.toString() ?? '1',
+                              bookingDate: widget.selectedDateTime,
+                              description: 'Service Request from ${nameController.text.trim()}',
                               location: addressController.text.trim(),
                             );
     
@@ -286,14 +332,14 @@ class _ConfirmPageState extends State<ConfirmPage> {
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: [
-                      AppColors.success.withValues(alpha: 0.15),
-                      AppColors.success.withValues(alpha: 0.08),
+                      AppColors.success.withOpacity(0.15),
+                      AppColors.success.withOpacity(0.08),
                     ],
                   ),
                   shape: BoxShape.circle,
                   boxShadow: [
                     BoxShadow(
-                      color: AppColors.success.withValues(alpha: 0.3),
+                      color: AppColors.success.withOpacity(0.3),
                       blurRadius: 20,
                       offset: const Offset(0, 8),
                     ),
@@ -335,7 +381,7 @@ class _ConfirmPageState extends State<ConfirmPage> {
                   borderRadius: BorderRadius.circular(16),
                   boxShadow: [
                     BoxShadow(
-                      color: AppColors.success.withValues(alpha: 0.4),
+                      color: AppColors.success.withOpacity(0.4),
                       blurRadius: 15,
                       offset: const Offset(0, 8),
                     ),

@@ -4,11 +4,16 @@ import 'package:HamroGharSewa/services/service_api_service.dart';
 
 class ServiceProvider with ChangeNotifier {
   final ServiceApiService _serviceApiService;
-  
+
   List<models.Service> _services = [];
   List<models.Category> _categories = [];
   bool _isLoading = false;
   String? _error;
+
+  // ── Provider data from server ──────────────────────────────────────────
+  List<dynamic> _registeredProviders = [];
+  List<dynamic> get registeredProviders =>
+      List.unmodifiable(_registeredProviders);
 
   ServiceProvider(this._serviceApiService);
 
@@ -22,7 +27,6 @@ class ServiceProvider with ChangeNotifier {
     _isLoading = true;
     _error = null;
     notifyListeners();
-
     try {
       _services = await _serviceApiService.getAllServices();
       _isLoading = false;
@@ -39,7 +43,6 @@ class ServiceProvider with ChangeNotifier {
     _isLoading = true;
     _error = null;
     notifyListeners();
-
     try {
       _categories = await _serviceApiService.getAllCategories();
       _isLoading = false;
@@ -56,7 +59,6 @@ class ServiceProvider with ChangeNotifier {
     _isLoading = true;
     _error = null;
     notifyListeners();
-
     try {
       _services = await _serviceApiService.getServicesByCategory(categoryId);
       _isLoading = false;
@@ -71,12 +73,11 @@ class ServiceProvider with ChangeNotifier {
   /// Search services
   List<models.Service> searchServices(String query) {
     if (query.isEmpty) return _services;
-    
     final lowerQuery = query.toLowerCase();
     return _services.where((service) {
       return service.name.toLowerCase().contains(lowerQuery) ||
-             service.description.toLowerCase().contains(lowerQuery) ||
-             service.categoryName.toLowerCase().contains(lowerQuery);
+          service.description.toLowerCase().contains(lowerQuery) ||
+          service.categoryName.toLowerCase().contains(lowerQuery);
     }).toList();
   }
 
@@ -89,14 +90,12 @@ class ServiceProvider with ChangeNotifier {
     _isLoading = true;
     _error = null;
     notifyListeners();
-
     try {
       final category = await _serviceApiService.createCategory(
         name: name,
         description: description,
         iconName: iconName,
       );
-      
       _categories.add(category);
       _isLoading = false;
       notifyListeners();
@@ -119,7 +118,6 @@ class ServiceProvider with ChangeNotifier {
     _isLoading = true;
     _error = null;
     notifyListeners();
-
     try {
       final updatedCategory = await _serviceApiService.updateCategory(
         categoryId: categoryId,
@@ -127,12 +125,10 @@ class ServiceProvider with ChangeNotifier {
         description: description,
         iconName: iconName,
       );
-      
       final index = _categories.indexWhere((c) => c.id == categoryId);
       if (index != -1) {
         _categories[index] = updatedCategory;
       }
-      
       _isLoading = false;
       notifyListeners();
       return true;
@@ -149,10 +145,27 @@ class ServiceProvider with ChangeNotifier {
     _isLoading = true;
     _error = null;
     notifyListeners();
-
     try {
       await _serviceApiService.deleteCategory(categoryId);
       _categories.removeWhere((c) => c.id == categoryId);
+      _isLoading = false;
+      notifyListeners();
+      return true;
+    } catch (e) {
+      _error = e.toString();
+      _isLoading = false;
+      notifyListeners();
+      return false;
+    }
+  }
+
+  // ── Submit Provider Application — calls real API ──────
+  Future<bool> submitProviderApplication(Map<String, dynamic> data) async {
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+    try {
+      await _serviceApiService.becomeProvider(data);
       
       _isLoading = false;
       notifyListeners();
@@ -163,6 +176,44 @@ class ServiceProvider with ChangeNotifier {
       notifyListeners();
       return false;
     }
+  }
+
+  /// Fetch all active providers from server
+  Future<void> fetchProviders() async {
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+    try {
+      _registeredProviders = await _serviceApiService.getAllProviders();
+      _isLoading = false;
+      notifyListeners();
+    } catch (e) {
+      _error = e.toString();
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  /// Check Provider Status (Mock)
+  Future<String> checkProviderStatus() async {
+    await Future.delayed(const Duration(milliseconds: 500));
+    return 'NONE'; // 'NONE' | 'PENDING' | 'APPROVED' | 'REJECTED'
+  }
+
+  /// Toggle a provider's availability
+  void toggleProviderStatus(int index) {
+    if (index < 0 || index >= _registeredProviders.length) return;
+    final current = _registeredProviders[index]['status'];
+    _registeredProviders[index]['status'] =
+    current == 'Available' ? 'Busy' : 'Available';
+    notifyListeners();
+  }
+
+  /// Remove a provider from local list
+  void removeProvider(int index) {
+    if (index < 0 || index >= _registeredProviders.length) return;
+    _registeredProviders.removeAt(index);
+    notifyListeners();
   }
 
   void clearError() {
@@ -173,39 +224,9 @@ class ServiceProvider with ChangeNotifier {
   void reset() {
     _services = [];
     _categories = [];
+    _registeredProviders.clear();
     _isLoading = false;
     _error = null;
     notifyListeners();
-  }
-  /// Submit Provider Application (Mock)
-  Future<bool> submitProviderApplication(Map<String, dynamic> data) async {
-    _isLoading = true;
-    _error = null;
-    notifyListeners();
-
-    try {
-      // Simulate API call delay
-      await Future.delayed(const Duration(seconds: 2));
-      
-      // In a real app, you would call:
-      // await _serviceApiService.submitProviderApplication(data);
-      
-      _isLoading = false;
-      notifyListeners();
-      return true;
-    } catch (e) {
-      _error = e.toString();
-      _isLoading = false;
-      notifyListeners();
-      return false;
-    }
-  }
-
-  /// Check Provider Status (Mock)
-  Future<String> checkProviderStatus() async {
-     // Simulate API call
-     await Future.delayed(const Duration(milliseconds: 500));
-     // Return 'NONE', 'PENDING', 'APPROVED', 'REJECTED'
-     return 'NONE'; 
   }
 }

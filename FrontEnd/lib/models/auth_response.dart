@@ -31,8 +31,8 @@ class AuthResponse {
       success: json['success'] == true,
       message: message,
       accessToken: data?['token']?.toString(),
-      user: data?['user'] != null
-          ? UserData.fromJson(Map<String, dynamic>.from(data!['user']))
+      user: data != null && data.containsKey('id')
+          ? UserData.fromJson(data)
           : null,
     );
   }

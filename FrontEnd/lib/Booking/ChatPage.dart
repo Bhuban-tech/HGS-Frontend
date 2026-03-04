@@ -76,7 +76,7 @@ class _ChatPageState extends State<ChatPage> {
                       ),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.05),
+                          color: Colors.black.withOpacity(0.05),
                           blurRadius: 5,
                           offset: const Offset(0, 2),
                         ),
@@ -102,7 +102,7 @@ class _ChatPageState extends State<ChatPage> {
               borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.05),
+                  color: Colors.black.withOpacity(0.05),
                   blurRadius: 20,
                   offset: const Offset(0, -5),
                 ),

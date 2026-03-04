@@ -6,7 +6,7 @@ class Service {
   final String categoryName;
   final String? imageUrl;
   final double? basePrice;
-  final String? priceUnit; // per hour, per day, fixed
+  final String? priceUnit;
   final bool isActive;
   final DateTime? createdAt;
 

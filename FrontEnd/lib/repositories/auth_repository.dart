@@ -67,6 +67,10 @@ class AuthRepository {
     required String email,
     required String phone,
     required String password,
+    String? role,
+    String? address,
+    String? category,
+    String? experience,
   }) async {
     try {
       final response = await _dio.post(
@@ -76,6 +80,10 @@ class AuthRepository {
           'email': email,
           'phoneNumber': phone,
           'password': password,
+          'role': role ?? 'USER',
+          if (address != null) 'address': address,
+          if (category != null) 'category': category,
+          if (experience != null) 'experience': experience,
         },
       );
 

@@ -20,6 +20,11 @@ class _SignUpScreenState extends State<SignUpScreen> with SingleTickerProviderSt
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
 
+  final _addressController = TextEditingController();
+  final _experienceController = TextEditingController();
+  String _selectedCategory = 'Plumbing';
+
+  bool _isProvider = false;
   bool _isLoading = false;
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
@@ -46,6 +51,8 @@ class _SignUpScreenState extends State<SignUpScreen> with SingleTickerProviderSt
     _phoneController.dispose();
     _passwordController.dispose();
     _confirmPasswordController.dispose();
+    _addressController.dispose();
+    _experienceController.dispose();
     _animController.dispose();
     super.dispose();
   }
@@ -61,6 +68,10 @@ class _SignUpScreenState extends State<SignUpScreen> with SingleTickerProviderSt
         email: _emailController.text.trim(),
         phone: _phoneController.text.trim(),
         password: _passwordController.text.trim(),
+        role: _isProvider ? 'PROVIDER' : 'USER',
+        address: _isProvider ? _addressController.text.trim() : null,
+        category: _isProvider ? _selectedCategory : null,
+        experience: _isProvider ? _experienceController.text.trim() : null,
       );
 
       if (!mounted) return;
@@ -114,15 +125,13 @@ class _SignUpScreenState extends State<SignUpScreen> with SingleTickerProviderSt
         children: [
           // Background Gradient
           Container(
-            decoration: const BoxDecoration(
+            decoration: BoxDecoration(
               gradient: LinearGradient(
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
-                colors: [
-                  AppColors.primaryBlue,
-                  AppColors.primaryPurple,
-                  AppColors.gradientPink,
-                ],
+                colors: _isProvider
+                    ? [const Color(0xFF1E293B), const Color(0xFF0F172A)]
+                    : [const Color(0xFF6366F1), const Color(0xFF8B5CF6), const Color(0xFFD946EF)],
               ),
             ),
           ),
@@ -136,7 +145,7 @@ class _SignUpScreenState extends State<SignUpScreen> with SingleTickerProviderSt
               height: 300,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: Colors.white.withValues(alpha: 0.1),
+                color: Colors.white.withOpacity(0.1),
               ),
             ),
           ),
@@ -148,7 +157,7 @@ class _SignUpScreenState extends State<SignUpScreen> with SingleTickerProviderSt
               height: 200,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: Colors.white.withValues(alpha: 0.1),
+                color: Colors.white.withOpacity(0.1),
               ),
             ),
           ),
@@ -168,7 +177,7 @@ class _SignUpScreenState extends State<SignUpScreen> with SingleTickerProviderSt
                         onPressed: () => Navigator.pop(context),
                         icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white),
                         style: IconButton.styleFrom(
-                          backgroundColor: Colors.white.withValues(alpha: 0.2),
+                          backgroundColor: Colors.white.withOpacity(0.2),
                           padding: const EdgeInsets.all(12),
                         ),
                       ),
@@ -179,19 +188,27 @@ class _SignUpScreenState extends State<SignUpScreen> with SingleTickerProviderSt
                     // Header
                     Column(
                       children: [
-                        Container(
-                          padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.2),
-                            shape: BoxShape.circle,
-                            border: Border.all(color: Colors.white.withValues(alpha: 0.3)),
+                        AnimatedSwitcher(
+                          duration: const Duration(milliseconds: 500),
+                          child: Container(
+                            key: ValueKey<bool>(_isProvider),
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.2),
+                              shape: BoxShape.circle,
+                              border: Border.all(color: Colors.white.withOpacity(0.3)),
+                            ),
+                            child: Icon(
+                              _isProvider ? Icons.engineering_rounded : Icons.person_add_rounded,
+                              size: 40,
+                              color: Colors.white,
+                            ),
                           ),
-                          child: const Icon(Icons.person_add_rounded, size: 40, color: Colors.white),
                         ),
                         const SizedBox(height: 16),
-                        const Text(
-                          'Create Account',
-                          style: TextStyle(
+                        Text(
+                          _isProvider ? 'Join as Provider' : 'Create Account',
+                          style: const TextStyle(
                             fontSize: 32,
                             fontWeight: FontWeight.bold,
                             color: Colors.white,
@@ -200,10 +217,12 @@ class _SignUpScreenState extends State<SignUpScreen> with SingleTickerProviderSt
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          'Join our community today',
+                          _isProvider
+                              ? 'Start growing your business'
+                              : 'Join our community today',
                           style: TextStyle(
                             fontSize: 16,
-                            color: Colors.white.withValues(alpha: 0.8),
+                            color: Colors.white.withOpacity(0.8),
                           ),
                         ),
                       ],
@@ -219,11 +238,11 @@ class _SignUpScreenState extends State<SignUpScreen> with SingleTickerProviderSt
                         child: Container(
                           padding: const EdgeInsets.all(32),
                           decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.9),
+                            color: Colors.white.withOpacity(0.9),
                             borderRadius: BorderRadius.circular(24),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withValues(alpha: 0.1),
+                                color: Colors.black.withOpacity(0.1),
                                 blurRadius: 20,
                                 offset: const Offset(0, 10),
                               ),
@@ -233,6 +252,37 @@ class _SignUpScreenState extends State<SignUpScreen> with SingleTickerProviderSt
                             key: _formKey,
                             child: Column(
                               children: [
+                                // Role Toggle
+                                Container(
+                                  padding: const EdgeInsets.all(4),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.lightGrey.withOpacity(0.5),
+                                    borderRadius: BorderRadius.circular(14),
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      _buildToggleItem('User', !_isProvider, () {
+                                        if (_isProvider) {
+                                          setState(() => _isProvider = false);
+                                          _emailController.clear();
+                                          _passwordController.clear();
+                                          _phoneController.clear();
+                                          _nameController.clear();
+                                        }
+                                      }),
+                                      _buildToggleItem('Provider', _isProvider, () {
+                                        if (!_isProvider) {
+                                          setState(() => _isProvider = true);
+                                          _emailController.clear();
+                                          _passwordController.clear();
+                                          _phoneController.clear();
+                                          _nameController.clear();
+                                        }
+                                      }),
+                                    ],
+                                  ),
+                                ),
+                                const SizedBox(height: 24),
                                 CustomTextField(
                                   controller: _nameController,
                                   hint: 'Full Name',
@@ -280,31 +330,80 @@ class _SignUpScreenState extends State<SignUpScreen> with SingleTickerProviderSt
                                   ),
                                   validator: (v) {
                                     if (v!.isEmpty) return 'Required';
-                                    if (v.length < 6) return 'Min 6 chars';
+                                    if (v.length < 8) return 'Min 8 characters';
+                                    if (!RegExp(r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-{}\[\]().,<>/?]).+$')
+                                        .hasMatch(v)) {
+                                      return 'Must include A-Z, a-z, 0-9 & special char';
+                                    }
                                     return null;
                                   },
                                 ),
                                 const SizedBox(height: 16),
-                                CustomTextField(
-                                  controller: _confirmPasswordController,
-                                  hint: 'Confirm Password',
-                                  label: 'Confirm Password',
-                                  prefixIcon: Icons.lock_clock_outlined,
-                                  obscureText: _obscureConfirmPassword,
-                                  suffixIcon: IconButton(
-                                    icon: Icon(
-                                      _obscureConfirmPassword ? Icons.visibility_off_outlined : Icons.visibility_outlined,
-                                      color: AppColors.textLight,
+                                  CustomTextField(
+                                    controller: _confirmPasswordController,
+                                    hint: 'Confirm Password',
+                                    label: 'Confirm Password',
+                                    prefixIcon: Icons.lock_clock_outlined,
+                                    obscureText: _obscureConfirmPassword,
+                                    suffixIcon: IconButton(
+                                      icon: Icon(
+                                        _obscureConfirmPassword ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+                                        color: AppColors.textLight,
+                                      ),
+                                      onPressed: () => setState(() => _obscureConfirmPassword = !_obscureConfirmPassword),
                                     ),
-                                    onPressed: () => setState(() => _obscureConfirmPassword = !_obscureConfirmPassword),
+                                    validator: (v) {
+                                      if (v!.isEmpty) return 'Required';
+                                      if (v != _passwordController.text) return 'Mismatch';
+                                      return null;
+                                    },
                                   ),
-                                  validator: (v) {
-                                    if (v!.isEmpty) return 'Required';
-                                    if (v != _passwordController.text) return 'Mismatch';
-                                    return null;
-                                  },
-                                ),
-                                const SizedBox(height: 32),
+                                  
+                                  // Provider-specific professional fields
+                                  if (_isProvider) ...[
+                                    const SizedBox(height: 16),
+                                    Container(
+                                      decoration: BoxDecoration(
+                                        color: AppColors.background.withOpacity(0.5),
+                                        borderRadius: BorderRadius.circular(16),
+                                      ),
+                                      child: DropdownButtonFormField<String>(
+                                        value: _selectedCategory,
+                                        decoration: InputDecoration(
+                                          labelText: 'Service Category',
+                                          prefixIcon: const Icon(Icons.category_outlined, color: AppColors.primaryBlue),
+                                          border: OutlineInputBorder(
+                                            borderRadius: BorderRadius.circular(16),
+                                            borderSide: BorderSide.none,
+                                          ),
+                                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                        ),
+                                        items: ['Plumbing', 'Electrical', 'Painting', 'Cleaning', 'Carpentry', 'Gardening']
+                                            .map((e) => DropdownMenuItem(value: e, child: Text(e)))
+                                            .toList(),
+                                        onChanged: (v) => setState(() => _selectedCategory = v!),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 16),
+                                    CustomTextField(
+                                      controller: _addressController,
+                                      hint: 'Service Location / Address',
+                                      label: 'Address',
+                                      prefixIcon: Icons.location_on_outlined,
+                                      validator: (v) => v!.isEmpty ? 'Required' : null,
+                                    ),
+                                    const SizedBox(height: 16),
+                                    CustomTextField(
+                                      controller: _experienceController,
+                                      hint: 'Years of Experience',
+                                      label: 'Experience',
+                                      prefixIcon: Icons.work_history_outlined,
+                                      keyboardType: TextInputType.number,
+                                      validator: (v) => v!.isEmpty ? 'Required' : null,
+                                    ),
+                                  ],
+                                  
+                                  const SizedBox(height: 32),
                                 ElevatedButton(
                                   onPressed: _isLoading ? null : _handleSignUp,
                                   style: ElevatedButton.styleFrom(
@@ -315,7 +414,7 @@ class _SignUpScreenState extends State<SignUpScreen> with SingleTickerProviderSt
                                       borderRadius: BorderRadius.circular(16),
                                     ),
                                     elevation: 8,
-                                    shadowColor: AppColors.primaryBlue.withValues(alpha: 0.5),
+                                    shadowColor: AppColors.primaryBlue.withOpacity(0.5),
                                   ),
                                   child: _isLoading
                                       ? const SizedBox(
@@ -326,9 +425,9 @@ class _SignUpScreenState extends State<SignUpScreen> with SingleTickerProviderSt
                                             strokeWidth: 2,
                                           ),
                                         )
-                                      : const Text(
-                                          'SIGN UP',
-                                          style: TextStyle(
+                                      : Text(
+                                          _isProvider ? 'REGISTER AS PROVIDER' : 'SIGN UP AS USER',
+                                          style: const TextStyle(
                                             fontSize: 16,
                                             fontWeight: FontWeight.bold,
                                             letterSpacing: 1,
@@ -341,47 +440,61 @@ class _SignUpScreenState extends State<SignUpScreen> with SingleTickerProviderSt
                         ),
                       ),
                     ),
-                    
                     const SizedBox(height: 30),
-                    
-                    // Login Link
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Text(
+                        const Text(
                           'Already have an account? ',
-                          style: TextStyle(
-                            color: Colors.white.withValues(alpha: 0.9),
-                            fontSize: 15,
-                            fontWeight: FontWeight.w500,
-                          ),
+                          style: TextStyle(color: Colors.white, fontSize: 16),
                         ),
-                        GestureDetector(
-                          onTap: () => Navigator.pop(context),
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                            decoration: BoxDecoration(
-                              color: Colors.white.withValues(alpha: 0.2),
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            child: const Text(
-                              'Login',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 15,
-                                fontWeight: FontWeight.bold,
-                              ),
+                        TextButton(
+                          onPressed: () => Navigator.pop(context),
+                          child: const Text(
+                            'Login',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              decoration: TextDecoration.underline,
                             ),
                           ),
                         ),
                       ],
                     ),
+                    const SizedBox(height: 20),
                   ],
                 ),
               ),
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildToggleItem(String label, bool isSelected, VoidCallback onTap) {
+    return Expanded(
+      child: GestureDetector(
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 12),
+          decoration: BoxDecoration(
+            color: isSelected ? Colors.white : Colors.transparent,
+            borderRadius: BorderRadius.circular(10),
+            boxShadow: isSelected
+                ? [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 4, offset: const Offset(0, 2))]
+                : null,
+          ),
+          child: Text(
+            label,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: isSelected ? AppColors.textDark : AppColors.textLight,
+              fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+            ),
+          ),
+        ),
       ),
     );
   }

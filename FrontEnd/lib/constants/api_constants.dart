@@ -1,6 +1,6 @@
 class ApiConstants {
   // Base URL: only host + port (no trailing /api)
-  static const String baseUrl = 'http://192.168.1.77:8080';
+  static const String baseUrl = 'http://192.168.1.179:8080';
 
   // All endpoints must be RELATIVE (start with /)
   static const String login = '/api/auth/login';
@@ -46,9 +46,9 @@ class ApiConstants {
   static const String servicesByCategory = '/api/services/category';
 
   // ==================== PROVIDER ENDPOINTS ====================
-  static const String providers = '/api/providers';
-  static String providerById(String id) => '/api/providers/$id';
-  static const String becomeProvider = '/api/providers/register';
+  static const String providers = '/api/users/providers';
+  static String providerById(String id) => '/api/users/providers/$id';
+  static const String becomeProvider = '/api/users/become-provider';
 
   // ==================== CHAT ENDPOINTS ====================
   static const String chatWebSocket = '/ws-chat';

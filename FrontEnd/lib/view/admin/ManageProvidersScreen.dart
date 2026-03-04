@@ -23,7 +23,7 @@ class _ManageProvidersScreenState extends State<ManageProvidersScreen>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
+    _tabController = TabController(length: 4, vsync: this);
     _fetchData();
   }
 
@@ -46,8 +46,6 @@ class _ManageProvidersScreenState extends State<ManageProvidersScreen>
 
       final providersRes = results[0];
       final categoriesRes = results[1];
-      final decodedProviders = jsonDecode(providersRes.body);
-      print('PROVIDERS RESPONSE: ${providersRes.body}'); // ✅ add this
 
       if (providersRes.statusCode == 200 && categoriesRes.statusCode == 200) {
         final decodedProviders = jsonDecode(providersRes.body);
@@ -76,15 +74,11 @@ class _ManageProvidersScreenState extends State<ManageProvidersScreen>
   }
 
   String _getCategoryName(String? categoryId) {
-    print('Looking for categoryId: $categoryId');
-    print('Available categories: $_categories');
-
     if (categoryId == null) return 'Not Assigned';
     final category = _categories.firstWhere(
           (c) => c['id'] == categoryId,
       orElse: () => null,
     );
-    print('Found category: $category');
     return category?['name'] ?? 'Unknown Category';
   }
 
@@ -124,11 +118,47 @@ class _ManageProvidersScreenState extends State<ManageProvidersScreen>
     }
   }
 
+  Future<void> _approveProvider(String id) async {
+    try {
+      final response =
+      await _apiClient.patch(ApiConstants.adminApproveProvider(id), null);
+      if (response.statusCode == 200) {
+        _showSnackBar('Provider approved successfully');
+        _fetchData();
+      } else {
+        _showSnackBar('Failed to approve provider', isError: true);
+      }
+    } catch (e) {
+      _showSnackBar('Error: $e', isError: true);
+    }
+  }
+
+  Future<void> _rejectProvider(String id) async {
+    final confirmed = await _showConfirmDialog(
+      'Reject Provider',
+      'Are you sure you want to reject this provider?',
+      confirmColor: Colors.red,
+    );
+    if (confirmed != true) return;
+    try {
+      final response =
+      await _apiClient.patch(ApiConstants.adminRejectProvider(id), null);
+      if (response.statusCode == 200) {
+        _showSnackBar('Provider rejected');
+        _fetchData();
+      } else {
+        _showSnackBar('Failed to reject provider', isError: true);
+      }
+    } catch (e) {
+      _showSnackBar('Error: $e', isError: true);
+    }
+  }
+
   Future<void> _removeProvider(String id) async {
     final confirmed = await _showConfirmDialog(
       'Remove Provider',
       'This will permanently delete this provider. This action cannot be undone.',
-      confirmColor: Colors.blue,
+      confirmColor: Colors.red,
     );
     if (confirmed != true) return;
     try {
@@ -146,6 +176,7 @@ class _ManageProvidersScreenState extends State<ManageProvidersScreen>
 
   void _showProviderDetails(Map<String, dynamic> provider) {
     final bool isActive = provider['active'] ?? false;
+    final bool isApproved = provider['approved'] ?? false;
     final String role = provider['role'] ?? 'SERVICE_PROVIDER';
     final String categoryName =
     _getCategoryName(provider['serviceCategoryId']);
@@ -157,9 +188,9 @@ class _ManageProvidersScreenState extends State<ManageProvidersScreen>
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (_) => DraggableScrollableSheet(
-        initialChildSize: 0.65,
+        initialChildSize: 0.7,
         minChildSize: 0.4,
-        maxChildSize: 0.9,
+        maxChildSize: 0.95,
         expand: false,
         builder: (_, scrollController) => SingleChildScrollView(
           controller: scrollController,
@@ -180,7 +211,7 @@ class _ManageProvidersScreenState extends State<ManageProvidersScreen>
               ),
               const SizedBox(height: 20),
 
-              // Avatar + name + status
+              // Avatar + name + status badges
               Center(
                 child: Column(
                   children: [
@@ -203,31 +234,65 @@ class _ManageProvidersScreenState extends State<ManageProvidersScreen>
                       style: const TextStyle(
                           fontSize: 20, fontWeight: FontWeight.bold),
                     ),
-                    const SizedBox(height: 6),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 12, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: isActive
-                            ? Colors.green.shade50
-                            : Colors.red.shade50,
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(
-                          color: isActive
-                              ? Colors.green.shade300
-                              : Colors.red.shade300,
+                    const SizedBox(height: 8),
+                    // Status badges row
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        // Active/Inactive badge
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 10, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: isActive
+                                ? Colors.green.shade50
+                                : Colors.red.shade50,
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(
+                              color: isActive
+                                  ? Colors.green.shade300
+                                  : Colors.red.shade300,
+                            ),
+                          ),
+                          child: Text(
+                            isActive ? '● Active' : '● Inactive',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                              color: isActive
+                                  ? Colors.green.shade700
+                                  : Colors.red.shade700,
+                            ),
+                          ),
                         ),
-                      ),
-                      child: Text(
-                        isActive ? '● Active' : '● Inactive',
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                          color: isActive
-                              ? Colors.green.shade700
-                              : Colors.red.shade700,
+                        const SizedBox(width: 8),
+                        // Approved/Pending badge
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 10, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: isApproved
+                                ? Colors.blue.shade50
+                                : Colors.orange.shade50,
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(
+                              color: isApproved
+                                  ? Colors.blue.shade300
+                                  : Colors.orange.shade300,
+                            ),
+                          ),
+                          child: Text(
+                            isApproved ? '✓ Approved' : '⏳ Pending',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                              color: isApproved
+                                  ? Colors.blue.shade700
+                                  : Colors.orange.shade700,
+                            ),
+                          ),
                         ),
-                      ),
+                      ],
                     ),
                   ],
                 ),
@@ -241,15 +306,18 @@ class _ManageProvidersScreenState extends State<ManageProvidersScreen>
               _detailRow(
                   Icons.phone, 'Phone', provider['phoneNumber'] ?? 'N/A'),
               _detailRow(Icons.badge, 'Role', role),
-
-              // ✅ Service category
               _detailRow(
                 Icons.home_repair_service,
                 'Service',
                 categoryName,
                 valueColor: AppColors.primaryBlue,
               ),
-
+              _detailRow(
+                Icons.verified,
+                'Approval',
+                isApproved ? 'Approved' : 'Pending Approval',
+                valueColor: isApproved ? Colors.blue : Colors.orange,
+              ),
               _detailRow(
                 Icons.circle,
                 'Status',
@@ -261,58 +329,26 @@ class _ManageProvidersScreenState extends State<ManageProvidersScreen>
               const Divider(),
               const SizedBox(height: 12),
 
-              // ✅ Action buttons — side by side in a Row
-              if (isActive) ...[
-                Row(
-                  children: [
-                    Expanded(
-                      child: ElevatedButton.icon(
-                        onPressed: () {
-                          Navigator.pop(context);
-                          _deactivateProvider(provider['id'].toString());
-                        },
-                        icon: const Icon(Icons.block, size: 18),
-                        label: const Text('Deactivate'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.orange,
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12)),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: ElevatedButton.icon(
-                        onPressed: () {
-                          Navigator.pop(context);
-                          _removeProvider(provider['id'].toString());
-                        },
-                        icon: const Icon(Icons.delete_forever, size: 18),
-                        label: const Text('Remove'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.blue,
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12)),
-                        ),
-                      ),
-                    ),
-                  ],
+              // ✅ Approve/Reject if pending
+              if (!isApproved) ...[
+                const Text(
+                  'Approval Actions',
+                  style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
+                      color: Colors.black54),
                 ),
-              ] else ...[
+                const SizedBox(height: 10),
                 Row(
                   children: [
                     Expanded(
                       child: ElevatedButton.icon(
                         onPressed: () {
                           Navigator.pop(context);
-                          _activateProvider(provider['id'].toString());
+                          _approveProvider(provider['id'].toString());
                         },
                         icon: const Icon(Icons.check_circle, size: 18),
-                        label: const Text('Activate'),
+                        label: const Text('Approve'),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.green,
                           foregroundColor: Colors.white,
@@ -327,10 +363,10 @@ class _ManageProvidersScreenState extends State<ManageProvidersScreen>
                       child: ElevatedButton.icon(
                         onPressed: () {
                           Navigator.pop(context);
-                          _removeProvider(provider['id'].toString());
+                          _rejectProvider(provider['id'].toString());
                         },
-                        icon: const Icon(Icons.delete_forever, size: 18),
-                        label: const Text('Remove'),
+                        icon: const Icon(Icons.cancel, size: 18),
+                        label: const Text('Reject'),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.red,
                           foregroundColor: Colors.white,
@@ -342,7 +378,62 @@ class _ManageProvidersScreenState extends State<ManageProvidersScreen>
                     ),
                   ],
                 ),
+                const SizedBox(height: 12),
               ],
+
+              // ✅ Activate/Deactivate + Remove
+              const Text(
+                'Account Actions',
+                style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                    color: Colors.black54),
+              ),
+              const SizedBox(height: 10),
+              Row(
+                children: [
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      onPressed: () {
+                        Navigator.pop(context);
+                        isActive
+                            ? _deactivateProvider(provider['id'].toString())
+                            : _activateProvider(provider['id'].toString());
+                      },
+                      icon: Icon(
+                          isActive ? Icons.block : Icons.check_circle,
+                          size: 18),
+                      label: Text(isActive ? 'Deactivate' : 'Activate'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor:
+                        isActive ? Colors.orange : Colors.green,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12)),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      onPressed: () {
+                        Navigator.pop(context);
+                        _removeProvider(provider['id'].toString());
+                      },
+                      icon: const Icon(Icons.delete_forever, size: 18),
+                      label: const Text('Remove'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.red,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12)),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ],
           ),
         ),
@@ -444,11 +535,17 @@ class _ManageProvidersScreenState extends State<ManageProvidersScreen>
   List<dynamic> get _inactiveProviders =>
       _providers.where((p) => p['active'] == false).toList();
 
+  List<dynamic> get _pendingProviders =>
+      _providers.where((p) => p['approved'] == false).toList();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Manage Providers'),
+        title: const Text(
+          'Manage Providers',
+          style: TextStyle(color: Colors.white),
+        ),
         backgroundColor: AppColors.primaryBlue,
         foregroundColor: Colors.white,
         actions: [
@@ -462,10 +559,34 @@ class _ManageProvidersScreenState extends State<ManageProvidersScreen>
           indicatorColor: Colors.white,
           labelColor: Colors.white,
           unselectedLabelColor: Colors.white60,
+          isScrollable: true,
           tabs: [
             Tab(text: 'All (${_providers.length})'),
             Tab(text: 'Active (${_activeProviders.length})'),
             Tab(text: 'Inactive (${_inactiveProviders.length})'),
+            Tab(
+              child: Row(
+                children: [
+                  const Text('Pending'),
+                  if (_pendingProviders.isNotEmpty) ...[
+                    const SizedBox(width: 6),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: Colors.orange,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Text(
+                        '${_pendingProviders.length}',
+                        style: const TextStyle(
+                            fontSize: 11, fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
           ],
         ),
       ),
@@ -496,6 +617,7 @@ class _ManageProvidersScreenState extends State<ManageProvidersScreen>
           _buildProviderList(_providers),
           _buildProviderList(_activeProviders),
           _buildProviderList(_inactiveProviders),
+          _buildProviderList(_pendingProviders),
         ],
       ),
     );
@@ -526,6 +648,7 @@ class _ManageProvidersScreenState extends State<ManageProvidersScreen>
         itemBuilder: (context, index) {
           final provider = providers[index];
           final bool isActive = provider['active'] ?? false;
+          final bool isApproved = provider['approved'] ?? false;
 
           return Card(
             margin: const EdgeInsets.only(bottom: 10),
@@ -553,7 +676,6 @@ class _ManageProvidersScreenState extends State<ManageProvidersScreen>
                 children: [
                   Text(provider['email'] ?? ''),
                   const SizedBox(height: 2),
-                  // ✅ show category in list
                   Row(
                     children: [
                       Icon(Icons.home_repair_service,
@@ -569,22 +691,24 @@ class _ManageProvidersScreenState extends State<ManageProvidersScreen>
                 ],
               ),
               isThreeLine: true,
-              trailing: Row(
-                mainAxisSize: MainAxisSize.min,
+              trailing: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
+                  // Active badge
                   Container(
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 8, vertical: 4),
+                        horizontal: 8, vertical: 3),
                     decoration: BoxDecoration(
                       color: isActive
                           ? Colors.green.shade50
                           : Colors.red.shade50,
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(8),
                     ),
                     child: Text(
                       isActive ? 'Active' : 'Inactive',
                       style: TextStyle(
-                        fontSize: 11,
+                        fontSize: 10,
                         fontWeight: FontWeight.w600,
                         color: isActive
                             ? Colors.green.shade700
@@ -592,8 +716,25 @@ class _ManageProvidersScreenState extends State<ManageProvidersScreen>
                       ),
                     ),
                   ),
-                  const SizedBox(width: 4),
-                  const Icon(Icons.chevron_right, color: Colors.grey),
+                  const SizedBox(height: 4),
+                  // Pending badge
+                  if (!isApproved)
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 3),
+                      decoration: BoxDecoration(
+                        color: Colors.orange.shade50,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        'Pending',
+                        style: TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.orange.shade700,
+                        ),
+                      ),
+                    ),
                 ],
               ),
             ),

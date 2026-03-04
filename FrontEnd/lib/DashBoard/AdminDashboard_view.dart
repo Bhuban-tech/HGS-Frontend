@@ -76,7 +76,6 @@ class _ServiceAdminAppState extends State<ServiceAdminApp> {
 
     setState(() => _isLoading = true);
     try {
-      // ✅ use DELETE method instead of PATCH
       final response = await _apiClient.delete(
         ApiConstants.adminDeleteCategory(id), // DELETE /api/admin/categories/{id}
       );

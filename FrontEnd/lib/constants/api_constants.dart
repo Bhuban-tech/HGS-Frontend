@@ -1,5 +1,5 @@
 class ApiConstants {
-  static const String baseUrl = 'http://192.168.100.99:8080';
+  static const String baseUrl = 'http://192.168.111.192:8080';
 
   // All endpoints must be RELATIVE (start with /)
   static const String login = '/api/auth/login';
@@ -56,7 +56,7 @@ class ApiConstants {
   static String chatSend = '/app/chat';
 
   // ==================== USER PROFILE ENDPOINTS ====================
-  static const String userProfile = '/api/users/me';          // @GetMapping("/me")
+  static const String userProfile = '/api/users/me';
   static const String updateProfile = '/api/users/profile';
 
   static const String requestEmailChange = '/api/users/request-email-change';

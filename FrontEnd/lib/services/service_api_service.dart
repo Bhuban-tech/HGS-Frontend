@@ -20,8 +20,54 @@ class ServiceApiService {
         ),
       );
 
-      final List<dynamic> data = response.data;
+      final dynamic responseData = response.data;
+      final List<dynamic> data = (responseData is Map && responseData['data'] != null) 
+          ? responseData['data'] 
+          : responseData;
       return data.map((json) => Service.fromJson(json)).toList();
+    } on DioException catch (e) {
+      throw _handleError(e);
+    }
+  }
+
+  /// Get all registered providers (approved)
+  Future<List<dynamic>> getAllProviders() async {
+    try {
+      final token = await _tokenManager.getAccessToken();
+      
+      final response = await _dio.get(
+        ApiConstants.providers,
+        options: Options(
+          headers: {'Authorization': 'Bearer $token'},
+        ),
+      );
+
+      final dynamic responseData = response.data;
+      List<dynamic> rawList;
+      if (responseData is Map && responseData['data'] != null) {
+        rawList = responseData['data'] as List<dynamic>;
+      } else if (responseData is List) {
+        rawList = responseData;
+      } else {
+        rawList = [];
+      }
+
+      // Map backend fields to frontend expected fields
+      return rawList.map((p) {
+        return {
+          'id': p['id'] ?? '',
+          'name': p['userName'] ?? p['name'] ?? 'Unknown',
+          'service': p['serviceCategoryName'] ?? p['categoryName'] ?? p['serviceCategory'] ?? 'Service Provider',
+          'location': p['address'] ?? p['location'] ?? 'Location not set',
+          'status': (p['active'] == true) ? 'Available' : 'Busy',
+          'rate': p['experienceYears'] != null ? '${p['experienceYears']} yrs exp' : 'Contact for rate',
+          'email': p['email'] ?? '',
+          'phone': p['phoneNumber'] ?? '',
+          'serviceCategoryId': p['serviceCategoryId'] ?? '',
+          'active': p['active'] ?? false,
+          'approved': p['approved'] ?? false,
+        };
+      }).toList();
     } on DioException catch (e) {
       throw _handleError(e);
     }
@@ -39,7 +85,11 @@ class ServiceApiService {
         ),
       );
 
-      return Service.fromJson(response.data);
+      final dynamic responseData = response.data;
+      final Map<String, dynamic> data = (responseData is Map && responseData['data'] != null)
+          ? responseData['data'] as Map<String, dynamic>
+          : responseData as Map<String, dynamic>;
+      return Service.fromJson(data);
     } on DioException catch (e) {
       throw _handleError(e);
     }
@@ -58,7 +108,10 @@ class ServiceApiService {
         ),
       );
 
-      final List<dynamic> data = response.data;
+      final dynamic responseData = response.data;
+      final List<dynamic> data = (responseData is Map && responseData['data'] != null) 
+          ? responseData['data'] 
+          : responseData;
       return data.map((json) => Service.fromJson(json)).toList();
     } on DioException catch (e) {
       throw _handleError(e);
@@ -77,7 +130,10 @@ class ServiceApiService {
         ),
       );
 
-      final List<dynamic> data = response.data;
+      final dynamic responseData = response.data;
+      final List<dynamic> data = (responseData is Map && responseData['data'] != null) 
+          ? responseData['data'] 
+          : responseData;
       return data.map((json) => Category.fromJson(json)).toList();
     } on DioException catch (e) {
       throw _handleError(e);
@@ -105,7 +161,11 @@ class ServiceApiService {
         ),
       );
 
-      return Category.fromJson(response.data);
+      final dynamic responseData = response.data;
+      final Map<String, dynamic> data = (responseData is Map && responseData['data'] != null)
+          ? responseData['data'] as Map<String, dynamic>
+          : responseData as Map<String, dynamic>;
+      return Category.fromJson(data);
     } on DioException catch (e) {
       throw _handleError(e);
     }
@@ -133,7 +193,11 @@ class ServiceApiService {
         ),
       );
 
-      return Category.fromJson(response.data);
+      final dynamic responseData = response.data;
+      final Map<String, dynamic> data = (responseData is Map && responseData['data'] != null)
+          ? responseData['data'] as Map<String, dynamic>
+          : responseData as Map<String, dynamic>;
+      return Category.fromJson(data);
     } on DioException catch (e) {
       throw _handleError(e);
     }
@@ -146,6 +210,23 @@ class ServiceApiService {
       
       await _dio.delete(
         ApiConstants.adminDeleteCategory(categoryId),
+        options: Options(
+          headers: {'Authorization': 'Bearer $token'},
+        ),
+      );
+    } on DioException catch (e) {
+      throw _handleError(e);
+    }
+  }
+
+  /// Submit provider registration application
+  Future<void> becomeProvider(Map<String, dynamic> data) async {
+    try {
+      final token = await _tokenManager.getAccessToken();
+      
+      await _dio.patch(
+        ApiConstants.becomeProvider,
+        data: data,
         options: Options(
           headers: {'Authorization': 'Bearer $token'},
         ),

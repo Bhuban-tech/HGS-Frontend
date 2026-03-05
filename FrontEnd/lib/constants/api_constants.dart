@@ -1,7 +1,7 @@
 class ApiConstants {
-  static const String baseUrl = 'http://192.168.111.192:8080';
 
-  // All endpoints must be RELATIVE (start with /)
+  static const String baseUrl = 'http://192.168.100.108:8080';
+
   static const String login = '/api/auth/login';
   static const String register = '/api/auth/register';
   static const String verifyOtp = '/api/auth/register/verify-otp';
@@ -22,10 +22,12 @@ class ApiConstants {
 
   static const String adminCategories = '/api/admin/categories';
   static const String categories = '/api/categories';
-
-  static Duration? get connectionTimeout => null;
-
-  static Duration? get receiveTimeout => null;
+  
+  // Timeout configurations
+  static const Duration? connectionTimeout = Duration(seconds: 30);
+  static const Duration? receiveTimeout = Duration(seconds: 30);
+  
+  // Admin category management endpoints
   static String adminUpdateCategory(String id) => '/api/admin/categories/$id';
   static String adminDeleteCategory(String id) => '/api/admin/categories/$id';
   static String categoryById(String id) => '/api/admin/categories/$id';
@@ -45,9 +47,9 @@ class ApiConstants {
   static const String servicesByCategory = '/api/services/category';
 
   // ==================== PROVIDER ENDPOINTS ====================
-  static const String providers = '/api/providers';
-  static String providerById(String id) => '/api/providers/$id';
-  static const String becomeProvider = '/api/providers/register';
+  static const String providers = '/api/users/providers';
+  static String providerById(String id) => '/api/users/providers/$id';
+  static const String becomeProvider = '/api/users/become-provider';
 
   // ==================== CHAT ENDPOINTS ====================
   static const String chatWebSocket = '/ws-chat';

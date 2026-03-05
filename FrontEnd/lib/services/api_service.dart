@@ -65,11 +65,11 @@ class ApiService {
       final data = jsonDecode(response.body);
       // Save tokens (adjust keys based on your backend)
       await TokenManager().saveTokens(
-        accessToken: data['accessToken'] ?? data['token'],
+        accessToken: data['token'] ?? data['accessToken'],
         refreshToken: data['refreshToken'],
-        userId: data['userId'] ?? '',
-        email: email,
-        userName: data['username'] ?? '',
+        userId: data['id']?.toString() ?? '',
+        email: data['email'] ?? email,
+        userName: data['userName'] ?? '',
       );
       return data;
     } else {

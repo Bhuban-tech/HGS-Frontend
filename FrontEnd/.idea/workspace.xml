@@ -5,10 +5,44 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="f5bb15e7-3521-423f-888d-8c3a1d3f5a28" name="Changes" comment="">
+<<<<<<< HEAD
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lib/DashBoard/AdminDashboard_view.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/DashBoard/AdminDashboard_view.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lib/constants/api_constants.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/constants/api_constants.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lib/view/admin/ManageProvidersScreen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/view/admin/ManageProvidersScreen.dart" afterDir="false" />
+=======
+      <change beforePath="$PROJECT_DIR$/.idea/libraries/Dart_Packages.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/libraries/Dart_Packages.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/libraries/Flutter_Plugins.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/libraries/Flutter_Plugins.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/API_QUICK_REFERENCE.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/ARCHITECTURE_DIAGRAMS.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/CHAT_VISIBILITY_GUIDE.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/FIXES_AND_FEATURES.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/FrontEnd.code-workspace" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/IMPLEMENTATION_GUIDE.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/IMPLEMENTATION_SUMMARY.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/Booking/ChatPage.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/Booking/ChatPage.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/Booking/Confirm-Booking.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/Booking/Confirm-Booking.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/Booking/HistoryPage.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/Booking/HistoryPage.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/DashBoard/User.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/DashBoard/User.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/DashBoard/provider_dashboard_view.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/DashBoard/provider_dashboard_view.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/constants/api_constants.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/constants/api_constants.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/models/auth_response.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/models/auth_response.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/models/chat_message_model.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/models/chat_message_model.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/models/service_model.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/models/service_model.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/providers/service_provider.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/providers/service_provider.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/repositories/auth_repository.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/repositories/auth_repository.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/route/app_routes.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/route/app_routes.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/services/api_service.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/services/api_service.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/services/auth_service.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/services/auth_service.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/services/service_api_service.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/services/service_api_service.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/view/ChatPage/chatPage_view.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/view/ChatPage/chatPage_view.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/view/Login/login_view.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/view/Login/login_view.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/view/booking/bookingPage_view.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/view/booking/bookingPage_view.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/view/register/register_view.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/view/register/register_view.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/view/serviceProvider/Info_view.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/view/serviceProvider/Info_view.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/view/verifyotpscreen/verifyotpscreen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/view/verifyotpscreen/verifyotpscreen.dart" afterDir="false" />
+>>>>>>> bd23d980d73b4bba3fae990548e2f1cf48338dfa
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -56,10 +90,17 @@
     &quot;cidr.known.project.marker&quot;: &quot;true&quot;,
     &quot;com.google.services.firebase.aqiPopupShown&quot;: &quot;true&quot;,
     &quot;dart.analysis.tool.window.visible&quot;: &quot;false&quot;,
+<<<<<<< HEAD
     &quot;git-widget-placeholder&quot;: &quot;admin-dash&quot;,
     &quot;io.flutter.project.isFirstOpen&quot;: &quot;true&quot;,
     &quot;io.flutter.reload.alreadyRun&quot;: &quot;true&quot;,
     &quot;last_opened_file_path&quot;: &quot;/home/bhuban/HamroGharSewa/FrontEnd&quot;,
+=======
+    &quot;git-widget-placeholder&quot;: &quot;hgs-frontend&quot;,
+    &quot;io.flutter.project.isFirstOpen&quot;: &quot;true&quot;,
+    &quot;io.flutter.reload.alreadyRun&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/home/bhuban/HGS-Frontend/FrontEnd&quot;,
+>>>>>>> bd23d980d73b4bba3fae990548e2f1cf48338dfa
     &quot;settings.editor.selected.configurable&quot;: &quot;dart.settings&quot;,
     &quot;show.migrate.to.gradle.popup&quot;: &quot;false&quot;
   }

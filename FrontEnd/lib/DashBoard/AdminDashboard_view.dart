@@ -18,6 +18,7 @@ class _ServiceAdminAppState extends State<ServiceAdminApp> {
   final TokenManager _tokenManager = TokenManager();
 
   List<dynamic> _categories = [];
+  List<dynamic> _pendingProviders = [];
   bool _isLoading = false;
   String _errorMessage = '';
   Map<String, String>? _userData;
@@ -26,7 +27,7 @@ class _ServiceAdminAppState extends State<ServiceAdminApp> {
   void initState() {
     super.initState();
     _loadUserData();
-    _loadCategories();
+    _loadDashboardData();
   }
 
   Future<void> _loadUserData() async {
@@ -34,7 +35,7 @@ class _ServiceAdminAppState extends State<ServiceAdminApp> {
     if (mounted) setState(() => _userData = data);
   }
 
-  Future<void> _loadCategories() async {
+  Future<void> _loadDashboardData() async {
     if (!mounted) return;
     setState(() {
       _isLoading = true;
@@ -42,29 +43,146 @@ class _ServiceAdminAppState extends State<ServiceAdminApp> {
     });
 
     try {
-      // ✅ use public /api/categories instead of /api/admin/categories
-      final response = await _apiClient.get(ApiConstants.categories);
+      final results = await Future.wait([
+        _apiClient.get(ApiConstants.categories),
+        _apiClient.get(ApiConstants.adminPendingProviders),
+      ]);
 
-      if (response.statusCode == 200) {
-        final decoded = jsonDecode(response.body);
-        setState(() {
-          _categories = ((decoded['data'] ?? []) as List)
-              .where((c) => c != null)
-              .toList();
-          _isLoading = false;
-        });
-      } else {
-        setState(() {
-          _errorMessage = 'Failed to load categories (${response.statusCode})';
-          _isLoading = false;
-        });
+      final categoriesRes = results[0];
+      final pendingRes = results[1];
+
+      if (categoriesRes.statusCode == 200) {
+        final decoded = jsonDecode(categoriesRes.body);
+        _categories = ((decoded['data'] ?? []) as List)
+            .where((c) => c != null)
+            .toList();
       }
+
+      if (pendingRes.statusCode == 200) {
+        final decoded = jsonDecode(pendingRes.body);
+        _pendingProviders = ((decoded['data'] ?? []) as List)
+            .where((p) => p != null)
+            .toList();
+      }
+
+      setState(() => _isLoading = false);
     } catch (e) {
       setState(() {
-        _errorMessage = 'Error loading categories: $e';
+        _errorMessage = 'Error loading dashboard data: $e';
         _isLoading = false;
       });
     }
+  }
+
+  Future<void> _approveProvider(String id) async {
+    setState(() => _isLoading = true);
+    try {
+      final response = await _apiClient.patch(ApiConstants.adminApproveProvider(id), null);
+      if (response.statusCode == 200) {
+        _showSnackBar('Provider approved successfully');
+        _loadDashboardData();
+      } else {
+        _showSnackBar('Failed to approve provider', isError: true);
+      }
+    } catch (e) {
+      _showSnackBar('Error: $e', isError: true);
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _rejectProvider(String id) async {
+    final confirmed = await _showConfirmDialog(
+      'Reject Provider',
+      'Are you sure you want to reject this provider?',
+    );
+    if (confirmed != true) return;
+
+    setState(() => _isLoading = true);
+    try {
+      final response = await _apiClient.patch(ApiConstants.adminRejectProvider(id), null);
+      if (response.statusCode == 200) {
+        _showSnackBar('Provider rejected');
+        _loadDashboardData();
+      } else {
+        _showSnackBar('Failed to reject provider', isError: true);
+      }
+    } catch (e) {
+      _showSnackBar('Error: $e', isError: true);
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  void _showProviderDetails(Map<String, dynamic> provider) {
+    final String categoryName = _getCategoryName(provider['serviceCategoryId']);
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Row(
+          children: [
+            CircleAvatar(
+              radius: 22,
+              backgroundColor: AppColors.primaryBlue.withOpacity(0.1),
+              child: Text(
+                (provider['userName'] ?? 'P')[0].toUpperCase(),
+                style: const TextStyle(color: AppColors.primaryBlue, fontWeight: FontWeight.bold),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    provider['userName'] ?? 'Unknown',
+                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                  Text(
+                    provider['email'] ?? '',
+                    style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Divider(),
+              _detailRow(Icons.email, 'Email', provider['email'] ?? 'N/A'),
+              _detailRow(Icons.phone, 'Phone', provider['phoneNumber'] ?? 'N/A'),
+              _detailRow(Icons.badge, 'Role', provider['role'] ?? 'SERVICE_PROVIDER'),
+              _detailRow(
+                Icons.home_repair_service,
+                'Service Category',
+                categoryName,
+                valueColor: categoryName == 'Not Assigned' ? Colors.red : AppColors.primaryBlue,
+              ),
+              if (provider['address'] != null && provider['address'].toString().isNotEmpty)
+                _detailRow(Icons.location_on, 'Address', provider['address']),
+              if (provider['experienceYears'] != null)
+                _detailRow(Icons.work_history, 'Experience', '${provider['experienceYears']} years'),
+              const SizedBox(height: 16),
+              const Text(
+                'Note: This provider is pending approval. Approve to activate their account.',
+                style: TextStyle(fontSize: 12, color: Colors.orange, fontStyle: FontStyle.italic),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Close'),
+          ),
+        ],
+      ),
+    );
   }
 
   Future<void> _deleteCategory(String id) async {
@@ -81,7 +199,7 @@ class _ServiceAdminAppState extends State<ServiceAdminApp> {
       );
       if (response.statusCode == 200) {
         _showSnackBar('Category deleted successfully!');
-        _loadCategories();
+        _loadDashboardData();
       } else {
         _showSnackBar('Failed to delete category (${response.statusCode})', isError: true);
       }
@@ -89,6 +207,56 @@ class _ServiceAdminAppState extends State<ServiceAdminApp> {
       _showSnackBar('Error: $e', isError: true);
     } finally {
       if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _toggleCategoryStatus(String id, bool setActive) async {
+    try {
+      // First, find the current category data
+      final categoryToToggle = _categories.firstWhere(
+        (c) => c['id'].toString() == id,
+        orElse: () => null,
+      );
+      
+      if (categoryToToggle == null) {
+        _showSnackBar('Category not found', isError: true);
+        return;
+      }
+
+      // Use PUT to update with all fields plus the new isActive status
+      final response = await _apiClient.put(
+        ApiConstants.adminUpdateCategory(id),
+        {
+          'name': categoryToToggle['name'],
+          'description': categoryToToggle['description'] ?? '',
+          'iconName': categoryToToggle['iconName'] ?? categoryToToggle['icon'] ?? '',
+          'isActive': setActive,
+        },
+      );
+      
+      print('Toggle Response Status: ${response.statusCode}');
+      print('Toggle Request Data: {"name": "${categoryToToggle['name']}", "description": "${categoryToToggle['description'] ?? ''}", "iconName": "${categoryToToggle['iconName'] ?? categoryToToggle['icon'] ?? ''}", "isActive": $setActive}');
+      print('Toggle Response Body: ${response.body}');
+      
+      if (response.statusCode == 200) {
+        final decoded = jsonDecode(response.body);
+        print('Decoded response: $decoded');
+        
+        // Check for success in response
+        bool success = decoded['success'] == true || decoded['status'] == 'success';
+        
+        if (success || response.statusCode == 200) {
+          _showSnackBar('Category ${setActive ? 'activated' : 'deactivated'}');
+          _loadDashboardData();
+        } else {
+          _showSnackBar(decoded['message'] ?? 'Failed to update category', isError: true);
+        }
+      } else {
+        _showSnackBar('Failed to update category (${response.statusCode})', isError: true);
+      }
+    } catch (e) {
+      print('Toggle Error: $e');
+      _showSnackBar('Error: $e', isError: true);
     }
   }
 
@@ -101,6 +269,39 @@ class _ServiceAdminAppState extends State<ServiceAdminApp> {
         duration: const Duration(seconds: 3),
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      ),
+    );
+  }
+
+  Widget _detailRow(IconData icon, String label, String value, {Color? valueColor}) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, size: 20, color: Colors.grey),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: const TextStyle(fontSize: 11, color: Colors.grey, fontWeight: FontWeight.w500),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  value,
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: valueColor ?? Colors.black87,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -153,6 +354,15 @@ class _ServiceAdminAppState extends State<ServiceAdminApp> {
       ),
     );
   }
+
+  String _getCategoryName(String? categoryId) {
+    if (categoryId == null) return 'N/A';
+    final category = _categories.firstWhere(
+      (c) => c != null && c['id'].toString() == categoryId,
+      orElse: () => null,
+    );
+    return category?['name'] ?? 'Unknown';
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -167,16 +377,32 @@ class _ServiceAdminAppState extends State<ServiceAdminApp> {
         ),
         centerTitle: true,
         actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh, color: Colors.white),
-            onPressed: _isLoading ? null : _loadCategories,
+          GestureDetector(
+            onTap: () {
+              Navigator.pushNamed(context, '/admin-profile');
+            },
+            child: Container(
+              margin: const EdgeInsets.only(right: 12),
+              child: CircleAvatar(
+                radius: 18,
+                backgroundColor: Colors.white,
+                child: Text(
+                  (_userData?['userName'] ?? 'A')[0].toUpperCase(),
+                  style: const TextStyle(
+                    color: AppColors.primaryBlue,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
+                ),
+              ),
+            ),
           ),
         ],
       ),
       body: Stack(
         children: [
           RefreshIndicator(
-            onRefresh: _loadCategories,
+            onRefresh: _loadDashboardData,
             color: AppColors.primaryBlue,
             child: SingleChildScrollView(
               padding: const EdgeInsets.all(16),
@@ -221,6 +447,10 @@ class _ServiceAdminAppState extends State<ServiceAdminApp> {
                         ],
                       ),
                     ),
+
+                  // Pending Providers section
+                  _buildPendingProvidersSection(),
+                  const SizedBox(height: 20),
 
                   // Categories section
                   _buildCategoriesSection(),
@@ -291,23 +521,25 @@ class _ServiceAdminAppState extends State<ServiceAdminApp> {
                 color: Colors.white, size: 28),
           ),
           const SizedBox(width: 16),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Welcome back, $name!',
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Welcome, $name!',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 4),
-              const Text(
-                'Manage your platform from here',
-                style: TextStyle(color: Colors.white70, fontSize: 13),
-              ),
-            ],
+                const SizedBox(height: 4),
+                const Text(
+                  'Manage your platform from here',
+                  style: TextStyle(color: Colors.white70, fontSize: 13),
+                ),
+              ],
+            ),
           ),
         ],
       ),
@@ -352,6 +584,181 @@ class _ServiceAdminAppState extends State<ServiceAdminApp> {
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildPendingProvidersSection() {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 10,
+              offset: const Offset(0, 4)),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: Colors.orange.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: const Icon(Icons.pending_actions,
+                        color: Colors.orange, size: 20),
+                  ),
+                  const SizedBox(width: 12),
+                  const Text("Pending Provider Requests",
+                      style: TextStyle(
+                          fontWeight: FontWeight.bold, fontSize: 17)),
+                ],
+              ),
+              if (_pendingProviders.isNotEmpty)
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: Colors.orange,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Text(
+                    '${_pendingProviders.length}',
+                    style: const TextStyle(
+                        color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
+                  ),
+                ),
+            ],
+          ),
+          const SizedBox(height: 16),
+
+          if (_pendingProviders.isEmpty && !_isLoading)
+            const Center(
+              child: Padding(
+                padding: EdgeInsets.all(20),
+                child: Text('No pending requests',
+                    style: TextStyle(color: Colors.grey, fontSize: 14)),
+              ),
+            )
+          else
+            ListView.separated(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: _pendingProviders.length,
+              separatorBuilder: (_, __) => const Divider(height: 24),
+              itemBuilder: (context, index) {
+                final provider = _pendingProviders[index];
+                return Column(
+                  children: [
+                    ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      leading: CircleAvatar(
+                        backgroundColor: AppColors.primaryBlue.withOpacity(0.1),
+                        child: Text(
+                          (provider['userName'] ?? 'P')[0].toUpperCase(),
+                          style: TextStyle(color: AppColors.primaryBlue, fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                      title: Text(
+                        provider['userName'] ?? 'Unknown',
+                        style: const TextStyle(fontWeight: FontWeight.w600),
+                      ),
+                      subtitle: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(provider['email'] ?? ''),
+                          const SizedBox(height: 4),
+                          Wrap(
+                            spacing: 8,
+                            runSpacing: 4,
+                            children: [
+                              _buildInfoChip(Icons.home_repair_service, _getCategoryName(provider['serviceCategoryId']), Colors.blue),
+                              if (provider['experienceYears'] != null)
+                                _buildInfoChip(Icons.work_history, "${provider['experienceYears']} yr exp", Colors.orange),
+                              if (provider['address'] != null && provider['address'].toString().isNotEmpty)
+                                _buildInfoChip(Icons.location_on, provider['address'], Colors.red),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: OutlinedButton.icon(
+                            onPressed: () => _showProviderDetails(provider),
+                            icon: const Icon(Icons.info_outline, size: 16),
+                            label: const Text('View Details'),
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: AppColors.primaryBlue,
+                              side: const BorderSide(color: AppColors.primaryBlue),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: ElevatedButton.icon(
+                            onPressed: () => _approveProvider(provider['id'].toString()),
+                            icon: const Icon(Icons.check, size: 16),
+                            label: const Text('Approve'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.green,
+                              foregroundColor: Colors.white,
+                              elevation: 0,
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: OutlinedButton.icon(
+                            onPressed: () => _rejectProvider(provider['id'].toString()),
+                            icon: const Icon(Icons.close, size: 16),
+                            label: const Text('Reject'),
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: Colors.red,
+                              side: const BorderSide(color: Colors.red),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                );
+              },
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInfoChip(IconData icon, String label, Color color) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(color: color.withOpacity(0.2)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 10, color: color),
+          const SizedBox(width: 4),
+          Text(label, style: TextStyle(fontSize: 10, color: color, fontWeight: FontWeight.w500)),
+        ],
+      ),
     );
   }
 
@@ -465,7 +872,6 @@ class _ServiceAdminAppState extends State<ServiceAdminApp> {
               separatorBuilder: (_, __) => const SizedBox(height: 10),
               itemBuilder: (context, index) {
                 final category = _categories[index];
-                final bool isActive = category['active'] ?? true;
 
                 return Container(
                   padding: const EdgeInsets.all(14),
@@ -515,29 +921,6 @@ class _ServiceAdminAppState extends State<ServiceAdminApp> {
                           ],
                         ),
                       ),
-
-                      // Active badge
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 8, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: isActive
-                              ? Colors.green.shade50
-                              : Colors.red.shade50,
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Text(
-                          isActive ? 'Active' : 'Inactive',
-                          style: TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w600,
-                            color: isActive
-                                ? Colors.green.shade700
-                                : Colors.red.shade700,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
 
                       // Delete button
                       IconButton(

@@ -18,8 +18,8 @@ class ApiClient {
     };
   }
 
-  Future<http.Response> get(String endpoint) async {
-    final token = await TokenManager().getAccessToken();
+  Future<http.Response> get(String endpoint, {bool requireAuth = true}) async {
+    final token = requireAuth ? await TokenManager().getAccessToken() : null;
     final url = Uri.parse('$_baseUrl$endpoint');
     return await http.get(url, headers: _getHeaders(token));
   }

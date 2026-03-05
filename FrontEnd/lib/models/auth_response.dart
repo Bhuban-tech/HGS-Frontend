@@ -30,9 +30,9 @@ class AuthResponse {
     return AuthResponse(
       success: json['success'] == true,
       message: message,
-      accessToken: data?['token']?.toString(),
-      user: data?['user'] != null
-          ? UserData.fromJson(Map<String, dynamic>.from(data!['user']))
+      accessToken: (data?['token'] ?? data?['accessToken'])?.toString(),
+      user: data != null && (data.containsKey('id') || data.containsKey('user'))
+          ? UserData.fromJson(data['user'] ?? data)
           : null,
     );
   }

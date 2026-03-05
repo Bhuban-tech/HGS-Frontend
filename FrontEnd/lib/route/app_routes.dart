@@ -5,6 +5,9 @@ import 'package:HamroGharSewa/LandingPage/Hero.dart';
 import 'package:HamroGharSewa/view/Login/login_view.dart';
 import 'package:HamroGharSewa/view/forgetpassword/forgetpassword_view.dart';
 import 'package:HamroGharSewa/view/register/register_view.dart';
+import 'package:HamroGharSewa/Booking/HistoryPage.dart';
+import 'package:HamroGharSewa/Booking/ChatPage.dart';
+import 'package:HamroGharSewa/view/admin/AdminProfileScreen.dart';
 import 'package:flutter/material.dart';
 
 class AppRoutes {
@@ -15,6 +18,10 @@ class AppRoutes {
   static const String userDashboard = '/user-dashboard';
   static const String providerDashboard = '/provider-dashboard';
   static const String adminDashboard = '/admin-dashboard';
+  static const String history = '/history';
+  static const String chat = '/chat';
+  static const String profile = '/profile';
+  static const String adminProfile = '/admin-profile';
 
 
   static Route<dynamic> generateRoute(RouteSettings settings) {
@@ -39,6 +46,21 @@ class AppRoutes {
 
       case adminDashboard:
         return MaterialPageRoute(builder: (_) => const ServiceAdminApp());
+      
+      case history:
+        // History page requires specific data? usually not.
+        return MaterialPageRoute(builder: (_) => const HistoryPage());
+        
+      case chat:
+        // Chat page usually needs a name or bookingId, adding a placeholder for now
+        return MaterialPageRoute(builder: (_) => const ChatPage(name: "Support Chat"));
+
+      case profile:
+        // Navigate to UserDashboard for now (can be enhanced to show actual profile)
+        return MaterialPageRoute(builder: (_) => const UserDashboard());
+      
+      case adminProfile:
+        return MaterialPageRoute(builder: (_) => const AdminProfileScreen());
       
       default:
         return MaterialPageRoute(

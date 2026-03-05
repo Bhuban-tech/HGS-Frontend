@@ -170,6 +170,13 @@
             </list>
           </value>
         </entry>
+        <entry key="flutter_animate">
+          <value>
+            <list>
+              <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/flutter_animate-4.5.2/lib" />
+            </list>
+          </value>
+        </entry>
         <entry key="flutter_launcher_icons">
           <value>
             <list>
@@ -580,6 +587,13 @@
           <value>
             <list>
               <option value="$USER_HOME$/snap/flutter/common/flutter/bin/cache/pkg/sky_engine/lib" />
+            </list>
+          </value>
+        </entry>
+        <entry key="smooth_page_indicator">
+          <value>
+            <list>
+              <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/smooth_page_indicator-2.0.1/lib" />
             </list>
           </value>
         </entry>

@@ -5,6 +5,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="f5bb15e7-3521-423f-888d-8c3a1d3f5a28" name="Changes" comment="">
+<<<<<<< HEAD
       <change beforePath="$PROJECT_DIR$/.idea/libraries/Dart_Packages.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/libraries/Dart_Packages.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/libraries/Flutter_Plugins.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/libraries/Flutter_Plugins.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
@@ -36,6 +37,12 @@
       <change beforePath="$PROJECT_DIR$/lib/view/register/register_view.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/view/register/register_view.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lib/view/serviceProvider/Info_view.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/view/serviceProvider/Info_view.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lib/view/verifyotpscreen/verifyotpscreen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/view/verifyotpscreen/verifyotpscreen.dart" afterDir="false" />
+=======
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/DashBoard/AdminDashboard_view.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/DashBoard/AdminDashboard_view.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/constants/api_constants.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/constants/api_constants.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/view/admin/ManageProvidersScreen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/view/admin/ManageProvidersScreen.dart" afterDir="false" />
+>>>>>>> ba1d0bb4c6808a192616d5644931d5e04077be75
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -53,6 +60,11 @@
     </option>
   </component>
   <component name="Git.Settings">
+    <option name="RECENT_BRANCH_BY_REPOSITORY">
+      <map>
+        <entry key="$PROJECT_DIR$/.." value="himal/frontend" />
+      </map>
+    </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
   </component>
   <component name="ProjectColorInfo">{
@@ -78,10 +90,17 @@
     &quot;cidr.known.project.marker&quot;: &quot;true&quot;,
     &quot;com.google.services.firebase.aqiPopupShown&quot;: &quot;true&quot;,
     &quot;dart.analysis.tool.window.visible&quot;: &quot;false&quot;,
+<<<<<<< HEAD
     &quot;git-widget-placeholder&quot;: &quot;hgs-frontend&quot;,
     &quot;io.flutter.project.isFirstOpen&quot;: &quot;true&quot;,
     &quot;io.flutter.reload.alreadyRun&quot;: &quot;true&quot;,
     &quot;last_opened_file_path&quot;: &quot;/home/bhuban/HGS-Frontend/FrontEnd&quot;,
+=======
+    &quot;git-widget-placeholder&quot;: &quot;admin-dash&quot;,
+    &quot;io.flutter.project.isFirstOpen&quot;: &quot;true&quot;,
+    &quot;io.flutter.reload.alreadyRun&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/home/bhuban/HamroGharSewa/FrontEnd&quot;,
+>>>>>>> ba1d0bb4c6808a192616d5644931d5e04077be75
     &quot;settings.editor.selected.configurable&quot;: &quot;dart.settings&quot;,
     &quot;show.migrate.to.gradle.popup&quot;: &quot;false&quot;
   }

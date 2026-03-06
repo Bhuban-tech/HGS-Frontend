@@ -240,7 +240,7 @@ class _UserDashboardState extends State<UserDashboard>
 
           const SizedBox(height: 48),
 
-          // ── Scrollable body ─────────────────────────────────────────────
+
           Expanded(
             child: SingleChildScrollView(
               physics: const BouncingScrollPhysics(),
@@ -457,7 +457,7 @@ class _UserDashboardState extends State<UserDashboard>
     );
   }
 
-  // ── Empty state ───────────────────────────────────────────────────────────
+
   Widget _buildEmptyState(String? selectedCategory) {
     final bool isFiltered = selectedCategory != null;
     return Padding(
@@ -527,7 +527,7 @@ class _UserDashboardState extends State<UserDashboard>
     );
   }
 
-  // ── Category chip ─────────────────────────────────────────────────────────
+
   Widget _buildCategoryItem(Map<String, dynamic> service) {
     final title = service['title'] as String;
     final color = service['color'] as Color;
@@ -896,7 +896,7 @@ class _UserDashboardState extends State<UserDashboard>
     return Icons.person_rounded;
   }
 
-  // ── Bottom navigation bar ─────────────────────────────────────────────────
+
   Widget _buildBottomNav() {
     return Container(
       decoration: BoxDecoration(

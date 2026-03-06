@@ -77,7 +77,6 @@ class ApiService {
     }
   }
 
-  // ------------------- ADMIN METHODS -------------------
 
   /// Get all users (admin only)
   Future<List<dynamic>> getAllUsers() async {

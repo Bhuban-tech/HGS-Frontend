@@ -1,6 +1,5 @@
 class ApiConstants {
-  // Base URL: only host + port (no trailing /api)
-  static const String baseUrl = 'http://192.168.1.179:8080';
+  static const String baseUrl = 'http://192.168.111.192:8080';
 
   // All endpoints must be RELATIVE (start with /)
   static const String login = '/api/auth/login';
@@ -13,7 +12,8 @@ class ApiConstants {
 
   static const String adminUsers = '/api/admin/users';
   static const String adminProviders = '/api/admin/service-providers';
-  static const String adminPendingProviders = '/api/admin/service-providers/pending';
+  static const String adminPendingProviders =
+      '/api/admin/service-providers/pending';
 
   static String adminApproveProvider(String id) => '/api/admin/approve/$id';
   static String adminRejectProvider(String id) => '/api/admin/reject/$id';
@@ -30,7 +30,6 @@ class ApiConstants {
   static String adminDeleteCategory(String id) => '/api/admin/categories/$id';
   static String categoryById(String id) => '/api/admin/categories/$id';
 
-  // ==================== BOOKING ENDPOINTS ====================
   static const String createBooking = '/api/bookings';
   static const String userBookings = '/api/bookings/my-bookings';
   static const String providerBookings = '/api/bookings/requests';
@@ -46,9 +45,9 @@ class ApiConstants {
   static const String servicesByCategory = '/api/services/category';
 
   // ==================== PROVIDER ENDPOINTS ====================
-  static const String providers = '/api/users/providers';
-  static String providerById(String id) => '/api/users/providers/$id';
-  static const String becomeProvider = '/api/users/become-provider';
+  static const String providers = '/api/providers';
+  static String providerById(String id) => '/api/providers/$id';
+  static const String becomeProvider = '/api/providers/register';
 
   // ==================== CHAT ENDPOINTS ====================
   static const String chatWebSocket = '/ws-chat';
@@ -57,6 +56,9 @@ class ApiConstants {
   static String chatSend = '/app/chat';
 
   // ==================== USER PROFILE ENDPOINTS ====================
-  static const String userProfile = '/api/user/profile';
-  static const String updateProfile = '/api/user/profile';
+  static const String userProfile = '/api/users/me';
+  static const String updateProfile = '/api/users/profile';
+
+  static const String requestEmailChange = '/api/users/request-email-change';
+  static const String confirmEmailChange = '/api/users/confirm-email-change';
 }

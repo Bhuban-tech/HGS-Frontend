@@ -10,7 +10,7 @@ class ServiceProvider with ChangeNotifier {
   bool _isLoading = false;
   String? _error;
 
-  // ── Provider data from server ──────────────────────────────────────────
+
   List<dynamic> _registeredProviders = [];
   List<dynamic> get registeredProviders =>
       List.unmodifiable(_registeredProviders);
@@ -70,7 +70,7 @@ class ServiceProvider with ChangeNotifier {
     }
   }
 
-  /// Search services
+
   List<models.Service> searchServices(String query) {
     if (query.isEmpty) return _services;
     final lowerQuery = query.toLowerCase();
@@ -108,7 +108,7 @@ class ServiceProvider with ChangeNotifier {
     }
   }
 
-  /// Admin: Update category
+
   Future<bool> updateCategory({
     required String categoryId,
     required String name,

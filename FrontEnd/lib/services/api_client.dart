@@ -44,4 +44,18 @@ class ApiClient {
       body: body != null ? json.encode(body) : json.encode({}), // sends '{}'
     );
   }
+  Future<http.Response> delete(String endpoint) async {
+    final token = await TokenManager().getAccessToken();
+    final url = Uri.parse('$_baseUrl$endpoint');
+    return await http.delete(url, headers: _getHeaders(token));
+  }
+  Future<http.Response> put(String endpoint, Map<String, dynamic>? body) async {
+    final token = await TokenManager().getAccessToken();
+    final url = Uri.parse('$_baseUrl$endpoint');
+    return await http.put(
+      url,
+      headers: _getHeaders(token),
+      body: body != null ? json.encode(body) : null,
+    );
+  }
 }

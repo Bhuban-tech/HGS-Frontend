@@ -133,8 +133,7 @@ class BookingProvider with ChangeNotifier {
       final updatedBooking = await _bookingService.acceptBooking(bookingId);
 
       _updateBookingInList(updatedBooking);
-      
-      // Reveal all hidden messages for this booking
+
       if (_chatProvider != null) {
         await _chatProvider!.revealMessagesForBooking(bookingId);
       }

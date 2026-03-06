@@ -6,7 +6,8 @@ class Booking {
   final String serviceName;
   final String providerName;
   final String userName;
-  final String status; // PENDING, ACCEPTED, REJECTED, COMPLETED
+  final String status; // PENDING, ACCEPTED, REJECTED, COMPLETED, CANCELLED
+  final bool chatEnabled; // NEW FIELD from backend
   final DateTime bookingDate;
   final String? description;
   final String? location;
@@ -22,6 +23,7 @@ class Booking {
     required this.providerName,
     required this.userName,
     required this.status,
+    this.chatEnabled = false, // Default to false
     required this.bookingDate,
     this.description,
     this.location,
@@ -33,17 +35,18 @@ class Booking {
     return Booking(
       id: json['id']?.toString(),
       userId: json['userId']?.toString() ?? '',
-      providerId: json['providerId']?.toString() ?? '',
+      providerId: json['providerId']?.toString() ?? json['serviceProviderId']?.toString() ?? '',
       serviceId: json['serviceId']?.toString() ?? '',
       serviceName: json['serviceName'] ?? '',
       providerName: json['providerName'] ?? '',
       userName: json['userName'] ?? '',
       status: json['status'] ?? 'PENDING',
+      chatEnabled: json['chatEnabled'] ?? false, // NEW FIELD
       bookingDate: json['bookingDate'] != null
           ? DateTime.parse(json['bookingDate'])
           : DateTime.now(),
       description: json['description'],
-      location: json['location'],
+      location: json['location'] ?? json['address'],
       createdAt: json['createdAt'] != null
           ? DateTime.parse(json['createdAt'])
           : null,
@@ -63,6 +66,7 @@ class Booking {
       'providerName': providerName,
       'userName': userName,
       'status': status,
+      'chatEnabled': chatEnabled,
       'bookingDate': bookingDate.toIso8601String(),
       if (description != null) 'description': description,
       if (location != null) 'location': location,
@@ -80,6 +84,7 @@ class Booking {
     String? providerName,
     String? userName,
     String? status,
+    bool? chatEnabled,
     DateTime? bookingDate,
     String? description,
     String? location,
@@ -95,6 +100,7 @@ class Booking {
       providerName: providerName ?? this.providerName,
       userName: userName ?? this.userName,
       status: status ?? this.status,
+      chatEnabled: chatEnabled ?? this.chatEnabled,
       bookingDate: bookingDate ?? this.bookingDate,
       description: description ?? this.description,
       location: location ?? this.location,
@@ -107,5 +113,9 @@ class Booking {
   bool get isAccepted => status == 'ACCEPTED';
   bool get isRejected => status == 'REJECTED';
   bool get isCompleted => status == 'COMPLETED';
-  bool get canChat => isAccepted || isCompleted;
+  bool get isCancelled => status == 'CANCELLED';
+  
+  // Use chatEnabled field from backend
+  bool get canChat => chatEnabled;
+  bool get canCancel => isPending; // Only pending bookings can be cancelled
 }

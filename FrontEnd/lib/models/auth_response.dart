@@ -30,9 +30,9 @@ class AuthResponse {
     return AuthResponse(
       success: json['success'] == true,
       message: message,
-      accessToken: data?['token']?.toString(),
-      user: data != null && data.containsKey('id')
-          ? UserData.fromJson(data)
+      accessToken: (data?['token'] ?? data?['accessToken'])?.toString(),
+      user: data != null && (data.containsKey('id') || data.containsKey('user'))
+          ? UserData.fromJson(data['user'] ?? data)
           : null,
     );
   }

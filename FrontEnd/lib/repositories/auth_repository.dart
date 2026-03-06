@@ -39,7 +39,7 @@ class AuthRepository {
       final response = await _dio.post(
         ApiConstants.login,
         data: {
-          'email': email,
+          'email': email.trim().toLowerCase(),
           'password': password,
         },
       );
@@ -77,13 +77,14 @@ class AuthRepository {
         ApiConstants.register,
         data: {
           'userName': name,
-          'email': email,
+          'username': name, // Added for compatibility
+          'email': email.toLowerCase(), // Ensure lowercase
           'phoneNumber': phone,
           'password': password,
           'role': role ?? 'USER',
           if (address != null) 'address': address,
-          if (category != null) 'category': category,
-          if (experience != null) 'experience': experience,
+          if (category != null) 'serviceCategoryId': category,
+          if (experience != null) 'experienceYears': int.tryParse(experience),
         },
       );
 
@@ -186,7 +187,6 @@ class AuthRepository {
     }
   }
 
-  // Helper: Handle Dio errors gracefully
   AuthResponse _handleDioError(DioException e, String fallbackMessage) {
     String message = fallbackMessage;
 
@@ -215,7 +215,7 @@ class AuthRepository {
           message = message.isEmpty ? "Account suspended or access denied" : message;
           break;
         case 404:
-          message = message.isEmpty ? "User not found" : message;
+          message = message.isEmpty ? "User not found (404)" : "Not Found: $message";
           break;
         case 409:
           message = message.isEmpty ? "User already exists" : message;
@@ -226,7 +226,7 @@ class AuthRepository {
         case 500:
         case 502:
         case 503:
-          message = "Server error. Please try again later";
+          message = "Server error ($message)";
           break;
       }
     } else if (e.type == DioExceptionType.connectionTimeout ||

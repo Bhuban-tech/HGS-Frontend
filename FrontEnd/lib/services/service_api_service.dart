@@ -43,10 +43,31 @@ class ServiceApiService {
       );
 
       final dynamic responseData = response.data;
+      List<dynamic> rawList;
       if (responseData is Map && responseData['data'] != null) {
-        return responseData['data'] as List<dynamic>;
+        rawList = responseData['data'] as List<dynamic>;
+      } else if (responseData is List) {
+        rawList = responseData;
+      } else {
+        rawList = [];
       }
-      return responseData as List<dynamic>;
+
+      // Map backend fields to frontend expected fields
+      return rawList.map((p) {
+        return {
+          'id': p['id'] ?? '',
+          'name': p['userName'] ?? p['name'] ?? 'Unknown',
+          'service': p['serviceCategoryName'] ?? p['categoryName'] ?? p['serviceCategory'] ?? 'Service Provider',
+          'location': p['address'] ?? p['location'] ?? 'Location not set',
+          'status': (p['active'] == true) ? 'Available' : 'Busy',
+          'rate': p['experienceYears'] != null ? '${p['experienceYears']} yrs exp' : 'Contact for rate',
+          'email': p['email'] ?? '',
+          'phone': p['phoneNumber'] ?? '',
+          'serviceCategoryId': p['serviceCategoryId'] ?? '',
+          'active': p['active'] ?? false,
+          'approved': p['approved'] ?? false,
+        };
+      }).toList();
     } on DioException catch (e) {
       throw _handleError(e);
     }

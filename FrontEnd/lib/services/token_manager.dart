@@ -141,6 +141,23 @@ class TokenManager {
     _goToLogin(context);
   }
 
+  /// Get the correct dashboard route based on user role
+  Future<String> getDashboardRoute() async {
+    final userData = await getUserData();
+    final role = userData?['role']?.toUpperCase() ?? '';
+    
+    switch (role) {
+      case 'SUPERADMIN':
+        return AppRoutes.adminDashboard;
+      case 'SERVICE_PROVIDER':
+      case 'PROVIDER':
+        return AppRoutes.providerDashboard;
+      case 'USER':
+      default:
+        return AppRoutes.userDashboard;
+    }
+  }
+
   /// ================= CLEAR STORAGE =================
   Future<void> clearAll() async {
     final prefs = await SharedPreferences.getInstance();

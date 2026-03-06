@@ -1,6 +1,8 @@
 import 'package:HamroGharSewa/Booking/ChatPage.dart';
 import 'package:HamroGharSewa/constants/app_colors.dart';
 import 'package:HamroGharSewa/providers/booking_provider.dart';
+import 'package:HamroGharSewa/services/token_manager.dart';
+import 'package:HamroGharSewa/route/app_routes.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
@@ -15,14 +17,38 @@ class HistoryPage extends StatefulWidget {
 class _HistoryPageState extends State<HistoryPage>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
+  final TokenManager _tokenManager = TokenManager();
+  bool _isProvider = false;
+  String _currentUserId = '';
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
+    _loadUserRole();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      Provider.of<BookingProvider>(context, listen: false).fetchUserBookings();
+      _fetchBookings();
     });
+  }
+
+  Future<void> _loadUserRole() async {
+    final userData = await _tokenManager.getUserData();
+    if (mounted) {
+      setState(() {
+        final role = userData?['role']?.toUpperCase() ?? '';
+        _isProvider = role == 'SERVICE_PROVIDER' || role == 'PROVIDER';
+        _currentUserId = userData?['id'] ?? '';
+      });
+    }
+  }
+
+  Future<void> _fetchBookings() async {
+    final provider = Provider.of<BookingProvider>(context, listen: false);
+    if (_isProvider) {
+      await provider.fetchProviderBookings();
+    } else {
+      await provider.fetchUserBookings();
+    }
   }
 
   @override
@@ -37,13 +63,18 @@ class _HistoryPageState extends State<HistoryPage>
       backgroundColor: AppColors.background,
       body: Consumer<BookingProvider>(
         builder: (context, provider, _) {
+          // ── Get bookings based on role ──────────
+          final allBookings = _isProvider 
+              ? [...provider.pendingBookings, ...provider.acceptedBookings, ...provider.completedBookings]
+              : provider.userBookings;
+          
           // ── Split by status using real Booking model getters ──────────
-          final upcoming  = provider.userBookings
+          final upcoming  = allBookings
               .where((b) => b.isPending || b.isAccepted).toList();
-          final completed = provider.userBookings
+          final completed = allBookings
               .where((b) => b.isCompleted).toList();
-          final cancelled = provider.userBookings
-              .where((b) => b.isRejected).toList();
+          final cancelled = allBookings
+              .where((b) => b.isRejected || b.isCancelled).toList();
 
           return Column(
             children: [
@@ -70,9 +101,9 @@ class _HistoryPageState extends State<HistoryPage>
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      'My Bookings',
-                      style: TextStyle(
+                    Text(
+                      _isProvider ? 'My Service Requests' : 'My Bookings',
+                      style: const TextStyle(
                         color: Colors.white,
                         fontSize: 28,
                         fontWeight: FontWeight.bold,
@@ -80,7 +111,7 @@ class _HistoryPageState extends State<HistoryPage>
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      '${provider.userBookings.length} total bookings',
+                      '${allBookings.length} total ${_isProvider ? "requests" : "bookings"}',
                       style: TextStyle(
                         color: Colors.white.withValues(alpha: 0.75),
                         fontSize: 14,
@@ -128,6 +159,142 @@ class _HistoryPageState extends State<HistoryPage>
             ],
           );
         },
+      ),
+      bottomNavigationBar: _buildBottomNav(),
+    );
+  }
+
+  int _currentNavIndex = 1; // Bookings tab selected by default
+
+  Widget _buildBottomNav() {
+    return Container(
+      decoration: BoxDecoration(
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 20,
+            offset: const Offset(0, -5),
+          ),
+        ],
+      ),
+      child: BottomNavigationBar(
+        currentIndex: _currentNavIndex,
+        onTap: (index) async {
+          setState(() => _currentNavIndex = index);
+          
+          switch (index) {
+            case 0:
+              // Navigate to correct dashboard based on role
+              final dashboardRoute = await _tokenManager.getDashboardRoute();
+              
+              if (mounted) {
+                Navigator.pushNamedAndRemoveUntil(context, dashboardRoute, (route) => false);
+              }
+              break;
+            case 1:
+              break; // Already on bookings
+            case 2:
+              // Show profile menu
+              _showProfileMenu();
+              break;
+          }
+        },
+        selectedItemColor: AppColors.primaryBlue,
+        unselectedItemColor: AppColors.textLight,
+        showUnselectedLabels: true,
+        type: BottomNavigationBarType.fixed,
+        backgroundColor: Colors.white,
+        elevation: 0,
+        items: const [
+          BottomNavigationBarItem(
+            icon: Padding(
+              padding: EdgeInsets.only(bottom: 4),
+              child: Icon(Icons.home_rounded, size: 26),
+            ),
+            label: 'Home',
+          ),
+          BottomNavigationBarItem(
+            icon: Padding(
+              padding: EdgeInsets.only(bottom: 4),
+              child: Icon(Icons.calendar_today_rounded, size: 24),
+            ),
+            label: 'Bookings',
+          ),
+          BottomNavigationBarItem(
+            icon: Padding(
+              padding: EdgeInsets.only(bottom: 4),
+              child: Icon(Icons.person_rounded, size: 24),
+            ),
+            label: 'Profile',
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showProfileMenu() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(24),
+            topRight: Radius.circular(24),
+          ),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const SizedBox(height: 12),
+            Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: Colors.grey[300],
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            const SizedBox(height: 24),
+            ListTile(
+              leading: const Icon(Icons.person_outline, color: AppColors.primaryBlue),
+              title: const Text('Profile Details'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.pushNamed(context, AppRoutes.profile);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.edit_outlined, color: AppColors.primaryBlue),
+              title: const Text('Edit Profile'),
+              onTap: () {
+                Navigator.pop(context);
+                // TODO: Navigate to edit profile page
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Edit Profile coming soon')),
+                );
+              },
+            ),
+            const Divider(),
+            ListTile(
+              leading: const Icon(Icons.logout_rounded, color: AppColors.error),
+              title: const Text('Logout', style: TextStyle(color: AppColors.error)),
+              onTap: () async {
+                Navigator.pop(context);
+                await TokenManager().clearAll();
+                if (context.mounted) {
+                  Navigator.pushNamedAndRemoveUntil(
+                    context,
+                    AppRoutes.login,
+                    (route) => false,
+                  );
+                }
+              },
+            ),
+            const SizedBox(height: 24),
+          ],
+        ),
       ),
     );
   }
@@ -250,7 +417,9 @@ class _HistoryPageState extends State<HistoryPage>
                         const SizedBox(width: 6),
                         Flexible(
                           child: Text(
-                            item.providerName as String,   // ✅ correct field
+                            _isProvider 
+                                ? 'Request from ${item.userName as String}'
+                                : 'Provider: ${item.providerName as String}',
                             style: const TextStyle(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w600,
@@ -387,52 +556,110 @@ class _HistoryPageState extends State<HistoryPage>
                 Expanded(
                   child: OutlinedButton.icon(
                     onPressed: () => _cancelDialog(item.id?.toString() ?? ''),
-                    icon: const Icon(Icons.cancel_outlined, size: 18),
-                    label: const Text('Cancel'),
+                    icon: const Icon(Icons.cancel_outlined, size: 16),
+                    label: const Text('Cancel', style: TextStyle(fontSize: 13)),
                     style: OutlinedButton.styleFrom(
                       foregroundColor: Colors.red,
                       side: BorderSide(
                           color: Colors.red.withValues(alpha: 0.4), width: 1.5),
                       shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(14)),
-                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 8),
                     ),
                   ),
                 ),
 
               if (item.isPending as bool) const SizedBox(width: 12),
 
-              // Chat button — only if accepted or completed (canChat)
-              Expanded(
-                child: ElevatedButton.icon(
-                  onPressed: (item.canChat as bool)
-                      ? () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => ChatPage(
-                          name: item.providerName as String,
+              // Payment button — only for completed bookings
+              if (item.isCompleted as bool)
+                Expanded(
+                  child: ElevatedButton.icon(
+                    onPressed: () {
+                      // TODO: Navigate to payment page
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Payment feature coming soon!'),
+                          backgroundColor: AppColors.primaryBlue,
                         ),
-                      ),
-                    );
-                  }
-                      : null, // disabled if not accepted yet
-                  icon: const Icon(Icons.chat_bubble_rounded, size: 18),
-                  label: Text(
-                    (item.canChat as bool) ? 'Chat' : 'Awaiting Acceptance',
-                  ),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primaryBlue,
-                    foregroundColor: Colors.white,
-                    disabledBackgroundColor: Colors.grey[200],
-                    disabledForegroundColor: AppColors.textLight,
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14)),
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    elevation: 0,
+                      );
+                    },
+                    icon: const Icon(Icons.payment_rounded, size: 18),
+                    label: const Text('Pay Now'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.success,
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14)),
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      elevation: 0,
+                    ),
                   ),
                 ),
-              ),
+
+              if (item.isCompleted as bool) const SizedBox(width: 12),
+
+              // Chat button — show when accepted (chatEnabled OR status is ACCEPTED)
+              if (item.canChat as bool || item.isAccepted as bool)
+                Expanded(
+                  child: ElevatedButton.icon(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => ChatPage(
+                            name: _isProvider 
+                                ? item.userName as String 
+                                : item.providerName as String,
+                            bookingId: item.id?.toString(),
+                            userId: _isProvider 
+                                ? item.userId 
+                                : item.providerId,
+                          ),
+                        ),
+                      );
+                    },
+                    icon: const Icon(Icons.chat_bubble_rounded, size: 18),
+                    label: Text(_isProvider ? 'Message Customer' : 'Message Provider'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primaryBlue,
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14)),
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      elevation: 0,
+                    ),
+                  ),
+                )
+              else if (item.isPending as bool)
+                Expanded(
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 8),
+                    decoration: BoxDecoration(
+                      color: Colors.grey[100],
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.schedule, size: 16, color: Colors.grey[500]),
+                        const SizedBox(width: 6),
+                        Flexible(
+                          child: Text(
+                            'Awaiting Acceptance',
+                            style: TextStyle(
+                              color: Colors.grey[600],
+                              fontWeight: FontWeight.w500,
+                              fontSize: 13,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
             ]),
           ],
         ),
@@ -459,10 +686,27 @@ class _HistoryPageState extends State<HistoryPage>
                     color: AppColors.primaryBlue, fontWeight: FontWeight.bold)),
           ),
           ElevatedButton(
-            onPressed: () {
+            onPressed: () async {
               Navigator.pop(context);
-              // Call your real API cancel here if needed
-              // Provider.of<BookingProvider>(context, listen: false).rejectBooking(bookingId);
+              final provider = Provider.of<BookingProvider>(context, listen: false);
+              final success = await provider.cancelBooking(bookingId);
+              
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      success 
+                        ? 'Booking cancelled successfully' 
+                        : 'Failed to cancel booking',
+                    ),
+                    backgroundColor: success ? Colors.green : Colors.red,
+                    behavior: SnackBarBehavior.floating,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                );
+              }
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.red,

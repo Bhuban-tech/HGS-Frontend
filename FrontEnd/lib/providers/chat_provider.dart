@@ -51,6 +51,16 @@ class ChatProvider with ChangeNotifier {
     }
   }
 
+  /// Subscribe to booking topic
+  Future<void> subscribeToBookingTopic(String bookingId) async {
+    try {
+      await _chatService.subscribeToBookingTopic(bookingId);
+    } catch (e) {
+      _error = e.toString();
+      notifyListeners();
+    }
+  }
+
   /// Send a message (will be hidden if booking not accepted)
   Future<bool> sendMessage({
     required String bookingId,
@@ -65,11 +75,35 @@ class ChatProvider with ChangeNotifier {
     }
 
     try {
+      // Get current user data for sender info
+      final userData = await _chatService.getUserData();
+      
+      // Create a temporary message to show immediately (optimistic update)
+      final tempMessage = ChatMessage(
+        id: DateTime.now().millisecondsSinceEpoch.toString(),
+        bookingId: bookingId,
+        senderId: userData?['id'] ?? 'me',
+        senderName: userData?['userName'] ?? 'You',
+        receiverId: receiverId,
+        message: message.trim(),
+        timestamp: DateTime.now(),
+      );
+      
+      // Add message to local state immediately
+      if (_chatHistory.containsKey(bookingId)) {
+        _chatHistory[bookingId]!.add(tempMessage);
+      } else {
+        _chatHistory[bookingId] = [tempMessage];
+      }
+      notifyListeners();
+      
+      // Send via WebSocket
       await _chatService.sendMessage(
         bookingId: bookingId,
         receiverId: receiverId,
         message: message.trim(),
       );
+      
       return true;
     } catch (e) {
       _error = e.toString();
@@ -85,11 +119,47 @@ class ChatProvider with ChangeNotifier {
     notifyListeners();
 
     try {
+      if (kDebugMode) {
+        print('📥 [CHAT PROVIDER] Loading chat history for booking: $bookingId');
+      }
+      
       final messages = await _chatService.getChatHistory(bookingId);
-      _chatHistory[bookingId] = messages;
+      
+      // Merge with existing messages instead of replacing
+      if (_chatHistory.containsKey(bookingId)) {
+        final existingMessages = _chatHistory[bookingId]!;
+        
+        // Create a map of existing message IDs for quick lookup
+        final existingIds = existingMessages.map((m) => m.id).toSet();
+        
+        // Add new messages from backend that don't exist locally
+        for (var message in messages) {
+          if (!existingIds.contains(message.id)) {
+            existingMessages.add(message);
+          }
+        }
+        
+        // Sort by timestamp
+        existingMessages.sort((a, b) => a.timestamp.compareTo(b.timestamp));
+        
+        _chatHistory[bookingId] = existingMessages;
+      } else {
+        _chatHistory[bookingId] = messages;
+      }
+      
+      if (kDebugMode) {
+        print('✅ [CHAT PROVIDER] Total messages after merge: ${_chatHistory[bookingId]?.length ?? 0}');
+        for (var msg in _chatHistory[bookingId] ?? []) {
+          print('   💬 ${msg.senderName}: ${msg.message}');
+        }
+      }
+      
       _isLoading = false;
       notifyListeners();
     } catch (e) {
+      if (kDebugMode) {
+        print('❌ [CHAT PROVIDER] Error loading chat history: $e');
+      }
       _error = e.toString();
       _isLoading = false;
       notifyListeners();

@@ -23,6 +23,11 @@ class ChatService {
 
   ChatService(this._dio);
 
+  /// Get user data from token manager
+  Future<Map<String, String>?> getUserData() async {
+    return await _tokenManager.getUserData();
+  }
+
   /// Connect to WebSocket
   Future<void> connect() async {
     try {
@@ -64,21 +69,40 @@ class ChatService {
     }
   }
 
-  /// Subscribe to user-specific topic
+  /// Subscribe to user-specific topics for receiving messages
   Future<void> subscribeToUserTopic(String userId) async {
+    if (!_isConnected || _channel == null) {
+      throw Exception('WebSocket not connected');
+    }
+
+    // Subscribe to user's personal queue to receive messages
+    final subscribeMessage = {
+      'action': 'subscribe',
+      'destination': '/user/$userId/queue/messages',
+    };
+
+    _channel!.sink.add(jsonEncode(subscribeMessage));
+    
+    if (kDebugMode) {
+      print('✅ Subscribed to: /user/$userId/queue/messages');
+    }
+  }
+
+  /// Subscribe to booking topic to see all messages in the booking
+  Future<void> subscribeToBookingTopic(String bookingId) async {
     if (!_isConnected || _channel == null) {
       throw Exception('WebSocket not connected');
     }
 
     final subscribeMessage = {
       'action': 'subscribe',
-      'topic': ApiConstants.chatTopic(userId),
+      'destination': '/topic/booking/$bookingId',
     };
 
     _channel!.sink.add(jsonEncode(subscribeMessage));
     
     if (kDebugMode) {
-      print('Subscribed to topic: ${ApiConstants.chatTopic(userId)}');
+      print('✅ Subscribed to: /topic/booking/$bookingId');
     }
   }
 
@@ -119,6 +143,10 @@ class ChatService {
     try {
       final token = await _tokenManager.getAccessToken();
       
+      if (kDebugMode) {
+        print('📥 [CHAT SERVICE] Fetching chat history for booking: $bookingId');
+      }
+      
       final response = await _dio.get(
         ApiConstants.chatHistory(bookingId),
         options: Options(
@@ -126,10 +154,41 @@ class ChatService {
         ),
       );
 
-      final List<dynamic> data = response.data;
+      if (kDebugMode) {
+        print('📦 [CHAT SERVICE] Response data type: ${response.data.runtimeType}');
+        print('📦 [CHAT SERVICE] Response data: ${response.data}');
+      }
+
+      // Handle both list and single object responses
+      List<dynamic> data;
+      if (response.data is List) {
+        data = response.data;
+      } else if (response.data is Map) {
+        // Backend returned a single object, wrap it in a list
+        data = [response.data];
+      } else {
+        if (kDebugMode) {
+          print('⚠️ [CHAT SERVICE] Unexpected response format, returning empty list');
+        }
+        return [];
+      }
+      
+      if (kDebugMode) {
+        print('✅ [CHAT SERVICE] Loaded ${data.length} messages');
+      }
+      
       return data.map((json) => ChatMessage.fromJson(json)).toList();
     } on DioException catch (e) {
+      if (kDebugMode) {
+        print('❌ [CHAT SERVICE] DioException: ${e.message}');
+        print('❌ [CHAT SERVICE] Response: ${e.response?.data}');
+      }
       throw _handleDioError(e);
+    } catch (e) {
+      if (kDebugMode) {
+        print('❌ [CHAT SERVICE] Error loading chat history: $e');
+      }
+      rethrow;
     }
   }
 

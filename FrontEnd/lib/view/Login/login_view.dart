@@ -133,9 +133,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
               gradient: LinearGradient(
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
-                colors: _isProvider 
-                  ? [const Color(0xFF1E293B), const Color(0xFF0F172A)] // Darker theme for providers
-                  : [AppColors.primaryBlue, AppColors.primaryPurple, AppColors.gradientPink],
+                colors: [AppColors.primaryBlue, AppColors.primaryPurple, AppColors.gradientPink],
               ),
             ),
           ),
@@ -279,7 +277,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                                 ElevatedButton(
                                   onPressed: _isLoading ? null : _handleLogin,
                                   style: ElevatedButton.styleFrom(
-                                    backgroundColor: _isProvider ? const Color(0xFF0F172A) : AppColors.primaryBlue,
+                                    backgroundColor: AppColors.primaryBlue,
                                     foregroundColor: Colors.white,
                                     padding: const EdgeInsets.symmetric(vertical: 16),
                                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),

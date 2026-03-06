@@ -7,6 +7,7 @@ import 'package:HamroGharSewa/view/forgetpassword/forgetpassword_view.dart';
 import 'package:HamroGharSewa/view/register/register_view.dart';
 import 'package:HamroGharSewa/Booking/HistoryPage.dart';
 import 'package:HamroGharSewa/Booking/ChatPage.dart';
+import 'package:HamroGharSewa/view/admin/AdminProfileScreen.dart';
 import 'package:flutter/material.dart';
 
 class AppRoutes {
@@ -20,6 +21,7 @@ class AppRoutes {
   static const String history = '/history';
   static const String chat = '/chat';
   static const String profile = '/profile';
+  static const String adminProfile = '/admin-profile';
 
 
   static Route<dynamic> generateRoute(RouteSettings settings) {
@@ -54,8 +56,11 @@ class AppRoutes {
         return MaterialPageRoute(builder: (_) => const ChatPage(name: "Support Chat"));
 
       case profile:
-        // Assuming a Profile page would exist or navigate back to UserDashboard for now
+        // Navigate to UserDashboard for now (can be enhanced to show actual profile)
         return MaterialPageRoute(builder: (_) => const UserDashboard());
+      
+      case adminProfile:
+        return MaterialPageRoute(builder: (_) => const AdminProfileScreen());
       
       default:
         return MaterialPageRoute(

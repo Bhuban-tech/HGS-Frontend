@@ -52,8 +52,44 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
           ),
         );
 
-        // Auto-redirect to dashboard based on role instead of login page
-        await TokenManager().redirectBasedOnRole(context);
+        // Check if this is a provider registration (no token means pending approval)
+        if (result.accessToken == null || result.accessToken!.isEmpty) {
+          // Provider pending approval - go to login with message
+          if (!mounted) return;
+          showDialog(
+            context: context,
+            barrierDismissible: false,
+            builder: (ctx) => AlertDialog(
+              title: const Row(
+                children: [
+                  Icon(Icons.pending_actions, color: Colors.orange),
+                  SizedBox(width: 8),
+                  Text('Registration Successful'),
+                ],
+              ),
+              content: const Text(
+                'Your provider account has been created and is pending admin approval. '
+                'You will be able to log in once an admin approves your request.',
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.pop(ctx);
+                    Navigator.pushNamedAndRemoveUntil(
+                      context,
+                      AppRoutes.login,
+                      (route) => false,
+                    );
+                  },
+                  child: const Text('Go to Login'),
+                ),
+              ],
+            ),
+          );
+        } else {
+          // Regular user - auto-redirect to dashboard
+          await TokenManager().redirectBasedOnRole(context);
+        }
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(

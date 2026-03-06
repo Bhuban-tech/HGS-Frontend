@@ -250,12 +250,36 @@ class _ConfirmPageState extends State<ConfirmPage> {
                               return;
                             }
     
+                            // Validate provider data
+                            final providerId = widget.providerData['id']?.toString();
+                            final serviceCategoryId = widget.providerData['serviceCategoryId']?.toString();
+                            
+                            if (providerId == null || providerId.isEmpty) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('Invalid provider ID. Please try again.'),
+                                  backgroundColor: Colors.red,
+                                ),
+                              );
+                              return;
+                            }
+                            
+                            if (serviceCategoryId == null || serviceCategoryId.isEmpty) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('Service category not found. Please try again.'),
+                                  backgroundColor: Colors.red,
+                                ),
+                              );
+                              return;
+                            }
+    
                             // Create Booking using Provider
                             final success = await provider.createBooking(
-                              providerId: widget.providerData['id']?.toString() ?? 'provider_demo',
-                              serviceId: widget.providerData['serviceCategoryId']?.toString() ?? '1',
+                              providerId: providerId,
+                              serviceId: serviceCategoryId, // Using category ID as service ID for now
                               bookingDate: widget.selectedDateTime,
-                              description: 'Service Request from ${nameController.text.trim()}',
+                              description: 'Booking request for ${widget.providerData['service']}',
                               location: addressController.text.trim(),
                             );
     

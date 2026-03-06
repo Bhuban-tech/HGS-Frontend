@@ -17,6 +17,7 @@ import 'constants/api_constants.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  
   AuthService().initialize();
   final isLoggedIn = await TokenManager().isLoggedIn();
   

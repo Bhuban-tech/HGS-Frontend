@@ -3,6 +3,9 @@ import 'package:HamroGharSewa/constants/app_colors.dart';
 import 'package:HamroGharSewa/services/auth_service.dart';
 import 'package:HamroGharSewa/view/verifyotpscreen/verifyotpscreen.dart';
 import 'package:flutter/material.dart';
+import 'package:HamroGharSewa/services/api_client.dart';
+import 'dart:convert';
+import 'package:HamroGharSewa/constants/api_constants.dart';
 import 'dart:ui';
 
 class SignUpScreen extends StatefulWidget {
@@ -22,7 +25,10 @@ class _SignUpScreenState extends State<SignUpScreen> with SingleTickerProviderSt
 
   final _addressController = TextEditingController();
   final _experienceController = TextEditingController();
-  String _selectedCategory = 'Plumbing';
+  
+  List<dynamic> _categories = [];
+  String? _selectedCategoryId;
+  bool _isCategoriesLoading = false;
 
   bool _isProvider = false;
   bool _isLoading = false;
@@ -42,6 +48,36 @@ class _SignUpScreenState extends State<SignUpScreen> with SingleTickerProviderSt
       CurvedAnimation(parent: _animController, curve: Curves.easeOut),
     );
     _animController.forward();
+    _loadCategories();
+  }
+
+  Future<void> _loadCategories() async {
+    setState(() => _isCategoriesLoading = true);
+    try {
+      final response = await ApiClient().get(ApiConstants.categories);
+      if (response.statusCode == 200) {
+        final decoded = jsonDecode(response.body);
+        setState(() {
+          // Handle both formats: { "data": [...] } and direct array [...]
+          List<dynamic> categoriesList;
+          if (decoded is List) {
+            categoriesList = decoded;
+          } else if (decoded is Map && decoded['data'] != null) {
+            categoriesList = decoded['data'] as List;
+          } else {
+            categoriesList = [];
+          }
+          _categories = categoriesList.where((c) => c != null).toList();
+          if (_categories.isNotEmpty) {
+            _selectedCategoryId = _categories[0]['id'].toString();
+          }
+        });
+      }
+    } catch (e) {
+      debugPrint("Error loading categories: $e");
+    } finally {
+      setState(() => _isCategoriesLoading = false);
+    }
   }
 
   @override
@@ -68,9 +104,9 @@ class _SignUpScreenState extends State<SignUpScreen> with SingleTickerProviderSt
         email: _emailController.text.trim(),
         phone: _phoneController.text.trim(),
         password: _passwordController.text.trim(),
-        role: _isProvider ? 'PROVIDER' : 'USER',
+        role: _isProvider ? 'SERVICE_PROVIDER' : 'USER',
         address: _isProvider ? _addressController.text.trim() : null,
-        category: _isProvider ? _selectedCategory : null,
+        category: _isProvider ? _selectedCategoryId : null,
         experience: _isProvider ? _experienceController.text.trim() : null,
       );
 
@@ -125,13 +161,11 @@ class _SignUpScreenState extends State<SignUpScreen> with SingleTickerProviderSt
         children: [
           // Background Gradient
           Container(
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
               gradient: LinearGradient(
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
-                colors: _isProvider
-                    ? [const Color(0xFF1E293B), const Color(0xFF0F172A)]
-                    : [const Color(0xFF6366F1), const Color(0xFF8B5CF6), const Color(0xFFD946EF)],
+                colors: [Color(0xFF6366F1), Color(0xFF8B5CF6), Color(0xFFD946EF)],
               ),
             ),
           ),
@@ -368,7 +402,8 @@ class _SignUpScreenState extends State<SignUpScreen> with SingleTickerProviderSt
                                         borderRadius: BorderRadius.circular(16),
                                       ),
                                       child: DropdownButtonFormField<String>(
-                                        value: _selectedCategory,
+                                        value: _selectedCategoryId,
+                                        hint: Text(_isCategoriesLoading ? 'Loading categories...' : 'Select Category'),
                                         decoration: InputDecoration(
                                           labelText: 'Service Category',
                                           prefixIcon: const Icon(Icons.category_outlined, color: AppColors.primaryBlue),
@@ -378,10 +413,13 @@ class _SignUpScreenState extends State<SignUpScreen> with SingleTickerProviderSt
                                           ),
                                           contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                                         ),
-                                        items: ['Plumbing', 'Electrical', 'Painting', 'Cleaning', 'Carpentry', 'Gardening']
-                                            .map((e) => DropdownMenuItem(value: e, child: Text(e)))
+                                        items: _categories
+                                            .map((e) => DropdownMenuItem(
+                                                value: e['id'].toString(), 
+                                                child: Text(e['name'] ?? 'Unknown')))
                                             .toList(),
-                                        onChanged: (v) => setState(() => _selectedCategory = v!),
+                                        onChanged: (v) => setState(() => _selectedCategoryId = v!),
+                                        validator: (v) => v == null ? 'Required' : null,
                                       ),
                                     ),
                                     const SizedBox(height: 16),

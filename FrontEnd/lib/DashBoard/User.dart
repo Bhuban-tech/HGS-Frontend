@@ -1,11 +1,19 @@
 import 'package:HamroGharSewa/constants/app_colors.dart';
 import 'package:HamroGharSewa/view/booking/bookingPage_view.dart';
 import 'package:HamroGharSewa/providers/service_provider.dart';
+import 'package:HamroGharSewa/providers/booking_provider.dart';
 import 'package:HamroGharSewa/services/token_manager.dart';
+import 'package:HamroGharSewa/services/payment/payment_service.dart';
+import 'package:HamroGharSewa/view/payment/payment_browser.dart';
+import 'package:HamroGharSewa/view/payment/esewa_payment_form.dart';
+import 'package:HamroGharSewa/view/payment/transaction_history_page.dart';
+import 'package:HamroGharSewa/Booking/ChatPage.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:dio/dio.dart';
 
 import 'package:HamroGharSewa/route/app_routes.dart';
+
 
 class UserDashboard extends StatefulWidget {
   const UserDashboard({super.key});
@@ -18,6 +26,7 @@ class _UserDashboardState extends State<UserDashboard>
     with SingleTickerProviderStateMixin {
   final TextEditingController _searchController = TextEditingController();
   final TokenManager _tokenManager = TokenManager();
+  late final PaymentService _paymentService;
   String searchQuery = '';
   String userName = 'User';
   String userEmail = '';
@@ -37,6 +46,7 @@ class _UserDashboardState extends State<UserDashboard>
   @override
   void initState() {
     super.initState();
+    _paymentService = PaymentService(Dio());
     _animationController = AnimationController(
       duration: const Duration(milliseconds: 1200),
       vsync: this,
@@ -46,6 +56,7 @@ class _UserDashboardState extends State<UserDashboard>
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Provider.of<ServiceProvider>(context, listen: false).fetchProviders();
+      Provider.of<BookingProvider>(context, listen: false).fetchUserBookings();
     });
   }
 
@@ -69,11 +80,12 @@ class _UserDashboardState extends State<UserDashboard>
   @override
   Widget build(BuildContext context) {
     final serviceProvider = Provider.of<ServiceProvider>(context);
+    final bookingProvider = Provider.of<BookingProvider>(context);
     final allProviders = serviceProvider.registeredProviders;
 
     final filteredProviders = allProviders.where((p) {
       if (_selectedCategory != null) {
-        final providerService = (p['service'] as String).toLowerCase().trim();
+        final providerService = (p['service'] as String? ?? '').toLowerCase().trim();
         final selected = _selectedCategory!.toLowerCase().trim();
         const categoryMap = {
           'carpenter': 'carpentry',
@@ -86,13 +98,13 @@ class _UserDashboardState extends State<UserDashboard>
       }
       final q = searchQuery.toLowerCase();
       if (q.isEmpty) return true;
-      return (p['service'] as String).toLowerCase().contains(q) ||
-          (p['name'] as String).toLowerCase().contains(q) ||
-          (p['location'] as String).toLowerCase().contains(q);
+      return (p['service'] as String? ?? '').toLowerCase().contains(q) ||
+          (p['name'] as String? ?? '').toLowerCase().contains(q) ||
+          (p['location'] as String? ?? '').toLowerCase().contains(q);
     }).toList();
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: Colors.blue[50],
       body: Column(
         children: [
           // ── Header with overlapping search bar ──────────────────────────
@@ -197,41 +209,73 @@ class _UserDashboardState extends State<UserDashboard>
                 ),
               ),
 
-              // Search bar overlapping bottom edge
+              // Search bar overlapping bottom edge (matching image design)
               Positioned(
                 bottom: -28,
                 left: 20,
                 right: 20,
                 child: Container(
                   height: 56,
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  padding: const EdgeInsets.symmetric(horizontal: 18),
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: Colors.white.withOpacity(0.95),
                     borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: Colors.white.withOpacity(0.3),
+                      width: 1,
+                    ),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.08),
-                        blurRadius: 15,
-                        offset: const Offset(0, 8),
+                        color: Colors.black.withValues(alpha: 0.06),
+                        blurRadius: 20,
+                        offset: const Offset(0, 4),
                       ),
                     ],
                   ),
-                  child: Center(
-                    child: TextField(
-                      controller: _searchController,
-                      onChanged: (v) => setState(() => searchQuery = v),
-                      decoration: const InputDecoration(
-                        hintText: 'Search for services...',
-                        border: InputBorder.none,
-                        enabledBorder: InputBorder.none,
-                        focusedBorder: InputBorder.none,
-                        icon: Icon(Icons.search_rounded, color: AppColors.textLight),
-                        suffixIcon: Icon(
-                          Icons.tune_rounded,
-                          color: AppColors.primaryBlue,
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.search_rounded,
+                        color: Colors.grey[400],
+                        size: 22,
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: TextField(
+                          controller: _searchController,
+                          onChanged: (v) => setState(() => searchQuery = v),
+                          style: const TextStyle(
+                            fontSize: 15,
+                            color: AppColors.textDark,
+                          ),
+                          decoration: InputDecoration(
+                            hintText: 'Search for services...',
+                            hintStyle: TextStyle(
+                              color: Colors.grey[400],
+                              fontSize: 15,
+                              fontWeight: FontWeight.w400,
+                            ),
+                            border: InputBorder.none,
+                            enabledBorder: InputBorder.none,
+                            focusedBorder: InputBorder.none,
+                            isDense: true,
+                            contentPadding: EdgeInsets.zero,
+                          ),
                         ),
                       ),
-                    ),
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: AppColors.primaryBlue.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Icon(
+                          Icons.tune_rounded,
+                          color: AppColors.primaryBlue,
+                          size: 20,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ),
@@ -240,7 +284,6 @@ class _UserDashboardState extends State<UserDashboard>
 
           const SizedBox(height: 48),
 
-
           Expanded(
             child: SingleChildScrollView(
               physics: const BouncingScrollPhysics(),
@@ -248,6 +291,302 @@ class _UserDashboardState extends State<UserDashboard>
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // Payment & Bookings Cards (matching image design)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: Row(
+                      children: [
+                        // eSewa Card (Clickable)
+                        Expanded(
+                          child: GestureDetector(
+                            onTap: () => _handleEsewaPayment(),
+                            child: Container(
+                              height: 120,
+                              padding: const EdgeInsets.all(16),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF60BB46),
+                                borderRadius: BorderRadius.circular(20),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: const Color(0xFF60BB46).withOpacity(0.3),
+                                    blurRadius: 12,
+                                    offset: const Offset(0, 4),
+                                  ),
+                                ],
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white.withOpacity(0.3),
+                                      borderRadius: BorderRadius.circular(6),
+                                    ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Icon(
+                                          Icons.credit_card,
+                                          size: 12,
+                                          color: Colors.white,
+                                        ),
+                                        const SizedBox(width: 4),
+                                        const Text(
+                                          'Instant',
+                                          style: TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 10,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  const Spacer(),
+                                  const Text(
+                                    'eSewa',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    'Pay with eSewa',
+                                    style: TextStyle(
+                                      color: Colors.white.withOpacity(0.9),
+                                      fontSize: 11,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        
+                        // Khalti Card (Clickable)
+                        Expanded(
+                          child: GestureDetector(
+                            onTap: () => _handleKhaltiPayment(),
+                            child: Container(
+                              height: 120,
+                              padding: const EdgeInsets.all(16),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF5D2E8E),
+                                borderRadius: BorderRadius.circular(20),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: const Color(0xFF5D2E8E).withOpacity(0.3),
+                                    blurRadius: 12,
+                                    offset: const Offset(0, 4),
+                                  ),
+                                ],
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white.withOpacity(0.3),
+                                      borderRadius: BorderRadius.circular(6),
+                                    ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Icon(
+                                          Icons.account_balance_wallet,
+                                          size: 12,
+                                          color: Colors.white,
+                                        ),
+                                        const SizedBox(width: 4),
+                                        const Text(
+                                          'Digital',
+                                          style: TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 10,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  const Spacer(),
+                                  const Text(
+                                    'Khalti',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    'Pay with Khalti',
+                                    style: TextStyle(
+                                      color: Colors.white.withOpacity(0.9),
+                                      fontSize: 11,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        
+                        // Bookings Card (Dynamic Count - Display Only)
+                        Expanded(
+                          child: Container(
+                            height: 120,
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(20),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.05),
+                                  blurRadius: 10,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ],
+                            ),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(8),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.success.withOpacity(0.1),
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: const Icon(
+                                    Icons.check_circle_rounded,
+                                    color: AppColors.success,
+                                    size: 24,
+                                  ),
+                                ),
+                                const SizedBox(height: 6),
+                                Text(
+                                  '${bookingProvider.userBookings.length}',
+                                  style: const TextStyle(
+                                    color: AppColors.textDark,
+                                    fontSize: 22,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                const SizedBox(height: 2),
+                                const Text(
+                                  'Bookings',
+                                  style: TextStyle(
+                                    color: AppColors.textLight,
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  
+                  const SizedBox(height: 16),
+                  
+                  // Transaction History Card (matching image design)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const TransactionHistoryPage(),
+                            ),
+                          );
+                        },
+                        borderRadius: BorderRadius.circular(20),
+                        child: Container(
+                          padding: const EdgeInsets.all(20),
+                          decoration: BoxDecoration(
+                            gradient: const LinearGradient(
+                              colors: [Color(0xFF2D3561), Color(0xFF1F2544)],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ),
+                            borderRadius: BorderRadius.circular(20),
+                            boxShadow: [
+                              BoxShadow(
+                                color: const Color(0xFF2D3561).withOpacity(0.3),
+                                blurRadius: 12,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
+                          ),
+                          child: Row(
+                            children: [
+                              // Icon
+                              Container(
+                                padding: const EdgeInsets.all(12),
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withOpacity(0.15),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: const Icon(
+                                  Icons.receipt_long_rounded,
+                                  color: Colors.white,
+                                  size: 24,
+                                ),
+                              ),
+                              const SizedBox(width: 16),
+                              // Text
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const Text(
+                                      'Transaction History',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      'View all payments & receipts',
+                                      style: TextStyle(
+                                        color: Colors.white.withOpacity(0.7),
+                                        fontSize: 13,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              // Arrow
+                              Icon(
+                                Icons.arrow_forward_ios_rounded,
+                                color: Colors.white.withOpacity(0.7),
+                                size: 18,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  
+                  const SizedBox(height: 24),
+                  
                   // Categories header
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -443,7 +782,7 @@ class _UserDashboardState extends State<UserDashboard>
                     padding: const EdgeInsets.symmetric(horizontal: 20),
                     itemCount: filteredProviders.length,
                     itemBuilder: (context, i) =>
-                        _buildProviderCard(filteredProviders[i]),
+                        _buildProviderCard(filteredProviders[i], bookingProvider),
                   ),
 
                   const SizedBox(height: 20),
@@ -599,8 +938,23 @@ class _UserDashboardState extends State<UserDashboard>
   }
 
   // ── Provider card ─────────────────────────────────────────────────────────
-  Widget _buildProviderCard(Map<String, dynamic> provider) {
+  Widget _buildProviderCard(Map<String, dynamic> provider, BookingProvider bookingProvider) {
     final bool isAvailable = provider['status'] == 'Available';
+    final String providerId = provider['id']?.toString() ?? '';
+    
+    // Check if there's a valid active booking
+    final hasActiveBooking = bookingProvider.userBookings.any(
+      (booking) => 
+        booking.providerId == providerId && 
+        (booking.isPending || booking.isAccepted),
+    );
+    
+    final canChat = hasActiveBooking && 
+      bookingProvider.userBookings.any(
+        (booking) => 
+          booking.providerId == providerId && 
+          booking.isAccepted,
+      );
 
     return Hero(
       tag: 'provider_${provider['name']}',
@@ -783,7 +1137,7 @@ class _UserDashboardState extends State<UserDashboard>
 
                         const SizedBox(height: 10),
 
-                        // Rate + Book button
+                        // Rate + Book/Chat buttons
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
@@ -819,58 +1173,158 @@ class _UserDashboardState extends State<UserDashboard>
                               ),
                             ),
                             const SizedBox(width: 8),
-                            Material(
-                              color: Colors.transparent,
-                              child: InkWell(
-                                onTap: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (_) => BookingPage(providerData: provider),
-                                    ),
-                                  );
-                                },
-                                borderRadius: BorderRadius.circular(14),
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 20,
-                                    vertical: 10,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    gradient: const LinearGradient(
-                                      colors: [AppColors.primaryBlue, AppColors.primaryPurple],
-                                    ),
-                                    borderRadius: BorderRadius.circular(14),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: AppColors.primaryBlue.withValues(alpha: 0.4),
-                                        blurRadius: 12,
-                                        offset: const Offset(0, 6),
-                                      ),
-                                    ],
-                                  ),
-                                  child: const Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Text(
-                                        'Book Now',
-                                        style: TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 13,
-                                          fontWeight: FontWeight.bold,
+                            
+                            // Show different buttons based on booking status
+                            if (hasActiveBooking && canChat)
+                              // Show Chat button if booking is accepted
+                              Material(
+                                color: Colors.transparent,
+                                child: InkWell(
+                                  onTap: () {
+                                    final booking = bookingProvider.userBookings.firstWhere(
+                                      (b) => b.providerId == providerId && b.isAccepted,
+                                    );
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (_) => ChatPage(
+                                          name: provider['name'] ?? 'Provider',
+                                          bookingId: booking.id,
+                                          userId: providerId,
                                         ),
                                       ),
-                                      SizedBox(width: 6),
-                                      Icon(
-                                        Icons.arrow_forward_rounded,
-                                        size: 16,
-                                        color: Colors.white,
+                                    );
+                                  },
+                                  borderRadius: BorderRadius.circular(14),
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 20,
+                                      vertical: 10,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      gradient: const LinearGradient(
+                                        colors: [AppColors.primaryBlue, AppColors.primaryPurple],
                                       ),
-                                    ],
+                                      borderRadius: BorderRadius.circular(14),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: AppColors.primaryBlue.withValues(alpha: 0.4),
+                                          blurRadius: 12,
+                                          offset: const Offset(0, 6),
+                                        ),
+                                      ],
+                                    ),
+                                    child: const Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Icon(
+                                          Icons.chat_bubble_rounded,
+                                          size: 16,
+                                          color: Colors.white,
+                                        ),
+                                        SizedBox(width: 6),
+                                        Text(
+                                          'Chat',
+                                          style: TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 13,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              )
+                            else if (hasActiveBooking)
+                              // Show "Already Booked" if pending
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 20,
+                                  vertical: 10,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: Colors.orange.shade50,
+                                  borderRadius: BorderRadius.circular(14),
+                                  border: Border.all(
+                                    color: Colors.orange.shade200,
+                                    width: 1.5,
+                                  ),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(
+                                      Icons.schedule_rounded,
+                                      size: 16,
+                                      color: Colors.orange.shade700,
+                                    ),
+                                    const SizedBox(width: 6),
+                                    Text(
+                                      'Pending',
+                                      style: TextStyle(
+                                        color: Colors.orange.shade700,
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              )
+                            else
+                              // Show "Book Now" button
+                              Material(
+                                color: Colors.transparent,
+                                child: InkWell(
+                                  onTap: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (_) => BookingPage(providerData: provider),
+                                      ),
+                                    );
+                                  },
+                                  borderRadius: BorderRadius.circular(14),
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 20,
+                                      vertical: 10,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      gradient: const LinearGradient(
+                                        colors: [AppColors.primaryBlue, AppColors.primaryPurple],
+                                      ),
+                                      borderRadius: BorderRadius.circular(14),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: AppColors.primaryBlue.withValues(alpha: 0.4),
+                                          blurRadius: 12,
+                                          offset: const Offset(0, 6),
+                                        ),
+                                      ],
+                                    ),
+                                    child: const Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Text(
+                                          'Book Now',
+                                          style: TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 13,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                        SizedBox(width: 6),
+                                        Icon(
+                                          Icons.arrow_forward_rounded,
+                                          size: 16,
+                                          color: Colors.white,
+                                        ),
+                                      ],
+                                    ),
                                   ),
                                 ),
                               ),
-                            ),
                           ],
                         ),
                       ],
@@ -919,10 +1373,8 @@ class _UserDashboardState extends State<UserDashboard>
               Navigator.pushNamed(context, AppRoutes.history);
               break;
             case 2:
-              Navigator.pushNamed(context, AppRoutes.chat);
-              break;
-            case 3:
-              Navigator.pushNamed(context, AppRoutes.profile);
+              // Show profile menu
+              _showProfileMenu();
               break;
           }
         },
@@ -954,13 +1406,6 @@ class _UserDashboardState extends State<UserDashboard>
           BottomNavigationBarItem(
             icon: Padding(
               padding: EdgeInsets.only(bottom: 4),
-              child: Icon(Icons.chat_bubble_rounded, size: 24),
-            ),
-            label: 'Chat',
-          ),
-          BottomNavigationBarItem(
-            icon: Padding(
-              padding: EdgeInsets.only(bottom: 4),
               child: Icon(Icons.person_rounded, size: 24),
             ),
             label: 'Profile',
@@ -968,5 +1413,154 @@ class _UserDashboardState extends State<UserDashboard>
         ],
       ),
     );
+  }
+
+  void _showProfileMenu() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(24),
+            topRight: Radius.circular(24),
+          ),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const SizedBox(height: 12),
+            Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: Colors.grey[300],
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            const SizedBox(height: 24),
+            ListTile(
+              leading: const Icon(Icons.person_outline, color: AppColors.primaryBlue),
+              title: const Text('Profile Details'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.pushNamed(context, AppRoutes.profile);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.edit_outlined, color: AppColors.primaryBlue),
+              title: const Text('Edit Profile'),
+              onTap: () {
+                Navigator.pop(context);
+                // TODO: Navigate to edit profile page
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Edit Profile coming soon')),
+                );
+              },
+            ),
+            const Divider(),
+            ListTile(
+              leading: const Icon(Icons.logout_rounded, color: AppColors.error),
+              title: const Text('Logout', style: TextStyle(color: AppColors.error)),
+              onTap: () async {
+                Navigator.pop(context);
+                await TokenManager().clearAll();
+                if (context.mounted) {
+                  Navigator.pushNamedAndRemoveUntil(
+                    context,
+                    AppRoutes.login,
+                    (route) => false,
+                  );
+                }
+              },
+            ),
+            const SizedBox(height: 24),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // Payment Methods
+  Future<void> _handleKhaltiPayment() async {
+    try {
+      // Show loading
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => const Center(
+          child: CircularProgressIndicator(color: Color(0xFF5D2E8E)),
+        ),
+      );
+
+      // Initiate payment (test amount: Rs. 100)
+      final paymentData = await _paymentService.initiateKhaltiPayment(100);
+      
+      if (mounted) {
+        Navigator.pop(context); // Close loading
+
+        // Open payment URL in browser
+        await PaymentBrowser.openPaymentUrl(
+          context: context,
+          paymentUrl: paymentData['payment_url'],
+          paymentMethod: 'khalti',
+        );
+      }
+    } catch (error) {
+      if (mounted) {
+        Navigator.pop(context); // Close loading
+        
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Payment failed: $error'),
+            backgroundColor: AppColors.error,
+            duration: const Duration(seconds: 5),
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _handleEsewaPayment() async {
+    try {
+      // Show loading
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => const Center(
+          child: CircularProgressIndicator(color: Color(0xFF60BB46)),
+        ),
+      );
+
+      // Initiate payment (test amount: Rs. 100)
+      final paymentData = await _paymentService.initiateEsewaPayment(100);
+      
+      if (mounted) {
+        Navigator.pop(context); // Close loading
+
+        // Open eSewa payment form in WebView
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => EsewaPaymentForm(
+              paymentData: paymentData,
+            ),
+          ),
+        );
+      }
+    } catch (error) {
+      if (mounted) {
+        Navigator.pop(context); // Close loading
+        
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Payment failed: $error'),
+            backgroundColor: AppColors.error,
+            duration: const Duration(seconds: 5),
+          ),
+        );
+      }
+    }
   }
 }

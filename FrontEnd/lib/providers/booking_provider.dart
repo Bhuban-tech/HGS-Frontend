@@ -46,39 +46,17 @@ class BookingProvider with ChangeNotifier {
     _error = null;
 
     try {
-      // DEMO MODE: Simulate API call if needed or just proceed
-      // For now, we assume _bookingService.createBooking might act as a mock or we catch error
-      
-      Booking booking;
-      try {
-         booking = await _bookingService.createBooking(
-          providerId: providerId,
-          serviceId: serviceId,
-          bookingDate: bookingDate,
-          description: description,
-          location: location,
-        );
-      } catch (e) {
-        // Fallback for Demo if API fails/is not connected
-        booking = Booking(
-          id: DateTime.now().millisecondsSinceEpoch.toString(),
-          userId: 'user_1',
-          providerId: providerId,
-          serviceId: serviceId,
-          serviceName: 'Requested Service', // Placeholder
-          providerName: 'Provider Recipient',
-          userName: 'Current User',
-          status: 'PENDING',
-          bookingDate: bookingDate,
-          description: description,
-          location: location,
-          createdAt: DateTime.now(),
-        );
-      }
+      final booking = await _bookingService.createBooking(
+        providerId: providerId,
+        serviceId: serviceId,
+        bookingDate: bookingDate,
+        description: description,
+        location: location,
+      );
 
       _userBookings.insert(0, booking);
       
-      // FOR DEMO: Automatically add to provider bookings so we can see it in Provider Dashboard
+      // Also add to provider bookings for demo purposes
       _providerBookings.insert(0, booking);
       
       notifyListeners();
@@ -93,12 +71,12 @@ class BookingProvider with ChangeNotifier {
   }
 
   /// Fetch user bookings
-  Future<void> fetchUserBookings() async {
+  Future<void> fetchUserBookings({String? status}) async {
     _setLoading(true);
     _error = null;
 
     try {
-      _userBookings = await _bookingService.getUserBookings();
+      _userBookings = await _bookingService.getUserBookings(status: status);
       _setLoading(false);
       notifyListeners();
     } catch (e) {
@@ -109,12 +87,12 @@ class BookingProvider with ChangeNotifier {
   }
 
   /// Fetch provider bookings
-  Future<void> fetchProviderBookings() async {
+  Future<void> fetchProviderBookings({String? status}) async {
     _setLoading(true);
     _error = null;
 
     try {
-      _providerBookings = await _bookingService.getProviderBookings();
+      _providerBookings = await _bookingService.getProviderBookings(status: status);
       _setLoading(false);
       notifyListeners();
     } catch (e) {
@@ -176,6 +154,26 @@ class BookingProvider with ChangeNotifier {
 
     try {
       final updatedBooking = await _bookingService.completeBooking(bookingId);
+
+      _updateBookingInList(updatedBooking);
+      _setLoading(false);
+      notifyListeners();
+      return true;
+    } catch (e) {
+      _error = e.toString();
+      _setLoading(false);
+      notifyListeners();
+      return false;
+    }
+  }
+
+  /// Cancel a booking (User only)
+  Future<bool> cancelBooking(String bookingId) async {
+    _setLoading(true);
+    _error = null;
+
+    try {
+      final updatedBooking = await _bookingService.cancelBooking(bookingId);
 
       _updateBookingInList(updatedBooking);
       _setLoading(false);

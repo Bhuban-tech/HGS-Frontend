@@ -55,38 +55,66 @@ class BookingService {
   }
 
   /// Get all bookings for the current user
-  Future<List<Booking>> getUserBookings() async {
+  Future<List<Booking>> getUserBookings({String? status}) async {
     try {
       final token = await _tokenManager.getAccessToken();
+      
+      final endpoint = status != null 
+          ? ApiConstants.userBookingsByStatus(status)
+          : ApiConstants.userBookings;
 
       final response = await _dio.get(
-        ApiConstants.userBookings,
+        endpoint,
         options: Options(
           headers: {'Authorization': 'Bearer $token'},
         ),
       );
 
-      final List<dynamic> data = response.data;
-      return data.map((json) => Booking.fromJson(json)).toList();
+      final dynamic data = response.data;
+      List<dynamic> bookingsList;
+      
+      if (data is List) {
+        bookingsList = data;
+      } else if (data is Map && data['data'] != null) {
+        bookingsList = data['data'] as List;
+      } else {
+        bookingsList = [];
+      }
+      
+      return bookingsList.map((json) => Booking.fromJson(json)).toList();
     } on DioException catch (e) {
       throw _handleError(e);
     }
   }
 
   /// Get all bookings for the current provider
-  Future<List<Booking>> getProviderBookings() async {
+  Future<List<Booking>> getProviderBookings({String? status}) async {
     try {
       final token = await _tokenManager.getAccessToken();
+      
+      final endpoint = status != null 
+          ? ApiConstants.providerBookingsByStatus(status)
+          : ApiConstants.providerBookings;
 
       final response = await _dio.get(
-        ApiConstants.providerBookings,
+        endpoint,
         options: Options(
           headers: {'Authorization': 'Bearer $token'},
         ),
       );
 
-      final List<dynamic> data = response.data;
-      return data.map((json) => Booking.fromJson(json)).toList();
+      final dynamic data = response.data;
+      List<dynamic> bookingsList;
+      
+      if (data is List) {
+        bookingsList = data;
+      } else if (data is Map && data['data'] != null) {
+        bookingsList = data['data'] as List;
+      } else {
+        bookingsList = [];
+      }
+      
+      return bookingsList.map((json) => Booking.fromJson(json)).toList();
     } on DioException catch (e) {
       throw _handleError(e);
     }

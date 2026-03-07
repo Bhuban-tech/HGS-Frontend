@@ -2,6 +2,7 @@ import 'package:HamroGharSewa/common/custom_text_field.dart';
 import 'package:HamroGharSewa/constants/app_colors.dart';
 import 'package:HamroGharSewa/services/auth_service.dart';
 import 'package:HamroGharSewa/view/verifyotpscreen/verifyotpscreen.dart';
+import 'package:HamroGharSewa/widgets/hamro_logo.dart';
 import 'package:flutter/material.dart';
 import 'package:HamroGharSewa/services/api_client.dart';
 import 'dart:convert';
@@ -207,11 +208,14 @@ class _SignUpScreenState extends State<SignUpScreen> with SingleTickerProviderSt
                     // Back Button
                     Align(
                       alignment: Alignment.centerLeft,
-                      child: IconButton(
-                        onPressed: () => Navigator.pop(context),
-                        icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white),
-                        style: IconButton.styleFrom(
-                          backgroundColor: Colors.white.withOpacity(0.2),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.2),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: IconButton(
+                          onPressed: () => Navigator.pop(context),
+                          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white),
                           padding: const EdgeInsets.all(12),
                         ),
                       ),
@@ -219,24 +223,26 @@ class _SignUpScreenState extends State<SignUpScreen> with SingleTickerProviderSt
                     
                     const SizedBox(height: 20),
                     
-                    // Header
+                    // Logo
                     Column(
                       children: [
-                        AnimatedSwitcher(
-                          duration: const Duration(milliseconds: 500),
-                          child: Container(
-                            key: ValueKey<bool>(_isProvider),
-                            padding: const EdgeInsets.all(16),
-                            decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.2),
-                              shape: BoxShape.circle,
-                              border: Border.all(color: Colors.white.withOpacity(0.3)),
-                            ),
-                            child: Icon(
-                              _isProvider ? Icons.engineering_rounded : Icons.person_add_rounded,
-                              size: 40,
-                              color: Colors.white,
-                            ),
+                        Container(
+                          width: 80,
+                          height: 80,
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            shape: BoxShape.circle,
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.1),
+                                blurRadius: 20,
+                                spreadRadius: 5,
+                              ),
+                            ],
+                          ),
+                          child: const HamroLogo(
+                            size: 80,
+                            showText: false,
                           ),
                         ),
                         const SizedBox(height: 16),
@@ -322,7 +328,18 @@ class _SignUpScreenState extends State<SignUpScreen> with SingleTickerProviderSt
                                   hint: 'Full Name',
                                   label: 'Full Name',
                                   prefixIcon: Icons.person_outline_rounded,
-                                  validator: (v) => v!.isEmpty ? 'Required' : null,
+                                  validator: (v) {
+                                    if (v == null || v.isEmpty) {
+                                      return 'Full name is required';
+                                    }
+                                    if (v.length < 3) {
+                                      return 'Name must be at least 3 characters';
+                                    }
+                                    if (!RegExp(r'^[a-zA-Z\s]+$').hasMatch(v)) {
+                                      return 'Name can only contain letters';
+                                    }
+                                    return null;
+                                  },
                                 ),
                                 const SizedBox(height: 16),
                                 CustomTextField(
@@ -332,9 +349,11 @@ class _SignUpScreenState extends State<SignUpScreen> with SingleTickerProviderSt
                                   prefixIcon: Icons.email_outlined,
                                   keyboardType: TextInputType.emailAddress,
                                   validator: (v) {
-                                    if (v!.isEmpty) return 'Required';
+                                    if (v == null || v.isEmpty) {
+                                      return 'Email is required';
+                                    }
                                     if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(v)) {
-                                      return 'Invalid email';
+                                      return 'Enter a valid email address';
                                     }
                                     return null;
                                   },
@@ -346,7 +365,18 @@ class _SignUpScreenState extends State<SignUpScreen> with SingleTickerProviderSt
                                   label: 'Phone',
                                   prefixIcon: Icons.phone_outlined,
                                   keyboardType: TextInputType.phone,
-                                  validator: (v) => v!.isEmpty ? 'Required' : null,
+                                  validator: (v) {
+                                    if (v == null || v.isEmpty) {
+                                      return 'Phone number is required';
+                                    }
+                                    // Remove any spaces or dashes
+                                    String cleaned = v.replaceAll(RegExp(r'[\s\-]'), '');
+                                    // Check if it's exactly 10 digits
+                                    if (!RegExp(r'^[0-9]{10}$').hasMatch(cleaned)) {
+                                      return 'Phone number must be exactly 10 digits';
+                                    }
+                                    return null;
+                                  },
                                 ),
                                 const SizedBox(height: 16),
                                 CustomTextField(
@@ -363,11 +393,14 @@ class _SignUpScreenState extends State<SignUpScreen> with SingleTickerProviderSt
                                     onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
                                   ),
                                   validator: (v) {
-                                    if (v!.isEmpty) return 'Required';
-                                    if (v.length < 8) return 'Min 8 characters';
-                                    if (!RegExp(r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-{}\[\]().,<>/?]).+$')
-                                        .hasMatch(v)) {
-                                      return 'Must include A-Z, a-z, 0-9 & special char';
+                                    if (v == null || v.isEmpty) {
+                                      return 'Password is required';
+                                    }
+                                    if (v.length < 8) {
+                                      return 'Password must be at least 8 characters';
+                                    }
+                                    if (!RegExp(r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#])[A-Za-z\d@$!%*?&#]').hasMatch(v)) {
+                                      return 'Must include uppercase, lowercase, number & special character';
                                     }
                                     return null;
                                   },
@@ -387,8 +420,12 @@ class _SignUpScreenState extends State<SignUpScreen> with SingleTickerProviderSt
                                       onPressed: () => setState(() => _obscureConfirmPassword = !_obscureConfirmPassword),
                                     ),
                                     validator: (v) {
-                                      if (v!.isEmpty) return 'Required';
-                                      if (v != _passwordController.text) return 'Mismatch';
+                                      if (v == null || v.isEmpty) {
+                                        return 'Please confirm your password';
+                                      }
+                                      if (v != _passwordController.text) {
+                                        return 'Passwords do not match';
+                                      }
                                       return null;
                                     },
                                   ),
@@ -428,7 +465,15 @@ class _SignUpScreenState extends State<SignUpScreen> with SingleTickerProviderSt
                                       hint: 'Service Location / Address',
                                       label: 'Address',
                                       prefixIcon: Icons.location_on_outlined,
-                                      validator: (v) => v!.isEmpty ? 'Required' : null,
+                                      validator: (v) {
+                                        if (v == null || v.isEmpty) {
+                                          return 'Address is required';
+                                        }
+                                        if (v.length < 10) {
+                                          return 'Please provide a complete address';
+                                        }
+                                        return null;
+                                      },
                                     ),
                                     const SizedBox(height: 16),
                                     CustomTextField(
@@ -437,7 +482,19 @@ class _SignUpScreenState extends State<SignUpScreen> with SingleTickerProviderSt
                                       label: 'Experience',
                                       prefixIcon: Icons.work_history_outlined,
                                       keyboardType: TextInputType.number,
-                                      validator: (v) => v!.isEmpty ? 'Required' : null,
+                                      validator: (v) {
+                                        if (v == null || v.isEmpty) {
+                                          return 'Experience is required';
+                                        }
+                                        final exp = int.tryParse(v);
+                                        if (exp == null) {
+                                          return 'Enter a valid number';
+                                        }
+                                        if (exp < 0 || exp > 50) {
+                                          return 'Experience must be between 0-50 years';
+                                        }
+                                        return null;
+                                      },
                                     ),
                                   ],
                                   

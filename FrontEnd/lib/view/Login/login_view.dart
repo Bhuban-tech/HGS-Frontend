@@ -3,6 +3,7 @@ import 'package:HamroGharSewa/constants/app_colors.dart';
 import 'package:HamroGharSewa/services/auth_service.dart';
 import 'package:HamroGharSewa/services/token_manager.dart';
 import 'package:HamroGharSewa/view/register/register_view.dart';
+import 'package:HamroGharSewa/widgets/hamro_logo.dart';
 import 'package:flutter/material.dart';
 import 'dart:ui';
 
@@ -161,22 +162,24 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    // Dynamic Icon
-                    AnimatedSwitcher(
-                      duration: const Duration(milliseconds: 500),
-                      child: Container(
-                        key: ValueKey<bool>(_isProvider),
-                        padding: const EdgeInsets.all(20),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.2),
-                          shape: BoxShape.circle,
-                          border: Border.all(color: Colors.white.withOpacity(0.3), width: 2),
-                        ),
-                        child: Icon(
-                          _isProvider ? Icons.engineering_rounded : Icons.home_repair_service_rounded,
-                          size: 60,
-                          color: Colors.white,
-                        ),
+                    // Logo
+                    Container(
+                      width: 100,
+                      height: 100,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.1),
+                            blurRadius: 20,
+                            spreadRadius: 5,
+                          ),
+                        ],
+                      ),
+                      child: const HamroLogo(
+                        size: 100,
+                        showText: false,
                       ),
                     ),
                     const SizedBox(height: 24),
@@ -250,7 +253,13 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                                   prefixIcon: Icons.email_outlined,
                                   keyboardType: TextInputType.emailAddress,
                                   validator: (value) {
-                                    if (value == null || value.isEmpty) return 'Required';
+                                    if (value == null || value.isEmpty) {
+                                      return 'Email is required';
+                                    }
+                                    // Email regex pattern
+                                    if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
+                                      return 'Enter a valid email address';
+                                    }
                                     return null;
                                   },
                                 ),
@@ -269,7 +278,12 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                                     onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
                                   ),
                                   validator: (value) {
-                                    if (value == null || value.isEmpty) return 'Required';
+                                    if (value == null || value.isEmpty) {
+                                      return 'Password is required';
+                                    }
+                                    if (value.length < 8) {
+                                      return 'Password must be at least 8 characters';
+                                    }
                                     return null;
                                   },
                                 ),

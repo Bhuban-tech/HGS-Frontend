@@ -205,22 +205,6 @@ class _SignUpScreenState extends State<SignUpScreen> with SingleTickerProviderSt
                 padding: const EdgeInsets.all(24),
                 child: Column(
                   children: [
-                    // Back Button
-                    Align(
-                      alignment: Alignment.centerLeft,
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.2),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: IconButton(
-                          onPressed: () => Navigator.pop(context),
-                          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white),
-                          padding: const EdgeInsets.all(12),
-                        ),
-                      ),
-                    ),
-                    
                     const SizedBox(height: 20),
                     
                     // Logo
@@ -327,7 +311,6 @@ class _SignUpScreenState extends State<SignUpScreen> with SingleTickerProviderSt
                                   controller: _nameController,
                                   hint: 'Full Name',
                                   label: 'Full Name',
-                                  prefixIcon: Icons.person_outline_rounded,
                                   validator: (v) {
                                     if (v == null || v.isEmpty) {
                                       return 'Full name is required';
@@ -346,7 +329,6 @@ class _SignUpScreenState extends State<SignUpScreen> with SingleTickerProviderSt
                                   controller: _emailController,
                                   hint: 'Email Address',
                                   label: 'Email',
-                                  prefixIcon: Icons.email_outlined,
                                   keyboardType: TextInputType.emailAddress,
                                   validator: (v) {
                                     if (v == null || v.isEmpty) {
@@ -363,7 +345,6 @@ class _SignUpScreenState extends State<SignUpScreen> with SingleTickerProviderSt
                                   controller: _phoneController,
                                   hint: 'Phone Number',
                                   label: 'Phone',
-                                  prefixIcon: Icons.phone_outlined,
                                   keyboardType: TextInputType.phone,
                                   validator: (v) {
                                     if (v == null || v.isEmpty) {
@@ -383,12 +364,11 @@ class _SignUpScreenState extends State<SignUpScreen> with SingleTickerProviderSt
                                   controller: _passwordController,
                                   hint: 'Password',
                                   label: 'Password',
-                                  prefixIcon: Icons.lock_outline_rounded,
                                   obscureText: _obscurePassword,
                                   suffixIcon: IconButton(
                                     icon: Icon(
-                                      _obscurePassword ? Icons.visibility_off_outlined : Icons.visibility_outlined,
-                                      color: AppColors.textLight,
+                                      _obscurePassword ? Icons.visibility_off : Icons.visibility,
+                                      color: AppColors.primaryBlue,
                                     ),
                                     onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
                                   ),
@@ -410,12 +390,11 @@ class _SignUpScreenState extends State<SignUpScreen> with SingleTickerProviderSt
                                     controller: _confirmPasswordController,
                                     hint: 'Confirm Password',
                                     label: 'Confirm Password',
-                                    prefixIcon: Icons.lock_clock_outlined,
                                     obscureText: _obscureConfirmPassword,
                                     suffixIcon: IconButton(
                                       icon: Icon(
-                                        _obscureConfirmPassword ? Icons.visibility_off_outlined : Icons.visibility_outlined,
-                                        color: AppColors.textLight,
+                                        _obscureConfirmPassword ? Icons.visibility_off : Icons.visibility,
+                                        color: AppColors.primaryBlue,
                                       ),
                                       onPressed: () => setState(() => _obscureConfirmPassword = !_obscureConfirmPassword),
                                     ),
@@ -443,7 +422,6 @@ class _SignUpScreenState extends State<SignUpScreen> with SingleTickerProviderSt
                                         hint: Text(_isCategoriesLoading ? 'Loading categories...' : 'Select Category'),
                                         decoration: InputDecoration(
                                           labelText: 'Service Category',
-                                          prefixIcon: const Icon(Icons.category_outlined, color: AppColors.primaryBlue),
                                           border: OutlineInputBorder(
                                             borderRadius: BorderRadius.circular(16),
                                             borderSide: BorderSide.none,
@@ -464,7 +442,6 @@ class _SignUpScreenState extends State<SignUpScreen> with SingleTickerProviderSt
                                       controller: _addressController,
                                       hint: 'Service Location / Address',
                                       label: 'Address',
-                                      prefixIcon: Icons.location_on_outlined,
                                       validator: (v) {
                                         if (v == null || v.isEmpty) {
                                           return 'Address is required';
@@ -480,7 +457,6 @@ class _SignUpScreenState extends State<SignUpScreen> with SingleTickerProviderSt
                                       controller: _experienceController,
                                       hint: 'Years of Experience',
                                       label: 'Experience',
-                                      prefixIcon: Icons.work_history_outlined,
                                       keyboardType: TextInputType.number,
                                       validator: (v) {
                                         if (v == null || v.isEmpty) {

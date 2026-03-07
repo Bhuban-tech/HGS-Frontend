@@ -250,7 +250,6 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                                   controller: _emailController,
                                   hint: 'Email Address',
                                   label: 'Email',
-                                  prefixIcon: Icons.email_outlined,
                                   keyboardType: TextInputType.emailAddress,
                                   validator: (value) {
                                     if (value == null || value.isEmpty) {
@@ -268,12 +267,11 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                                   controller: _passwordController,
                                   hint: 'Password',
                                   label: 'Password',
-                                  prefixIcon: Icons.lock_outline_rounded,
                                   obscureText: _obscurePassword,
                                   suffixIcon: IconButton(
                                     icon: Icon(
-                                      _obscurePassword ? Icons.visibility_off_outlined : Icons.visibility_outlined,
-                                      color: AppColors.textLight,
+                                      _obscurePassword ? Icons.visibility_off : Icons.visibility,
+                                      color: AppColors.primaryBlue,
                                     ),
                                     onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
                                   ),

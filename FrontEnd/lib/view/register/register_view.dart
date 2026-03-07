@@ -73,9 +73,40 @@ class _SignUpScreenState extends State<SignUpScreen> with SingleTickerProviderSt
             _selectedCategoryId = _categories[0]['id'].toString();
           }
         });
+      } else if (response.statusCode == 401 || response.statusCode == 403) {
+        // Authentication error - categories endpoint requires auth
+        debugPrint("Categories endpoint requires authentication. Using fallback.");
+        setState(() {
+          // Provide fallback categories
+          _categories = [
+            {'id': '1', 'name': 'Plumbing'},
+            {'id': '2', 'name': 'Electrical'},
+            {'id': '3', 'name': 'Cleaning'},
+            {'id': '4', 'name': 'Carpenter'},
+            {'id': '5', 'name': 'Painting'},
+            {'id': '6', 'name': 'Gardening'},
+          ];
+          if (_categories.isNotEmpty) {
+            _selectedCategoryId = _categories[0]['id'].toString();
+          }
+        });
       }
     } catch (e) {
       debugPrint("Error loading categories: $e");
+      // Provide fallback categories on error
+      setState(() {
+        _categories = [
+          {'id': '1', 'name': 'Plumbing'},
+          {'id': '2', 'name': 'Electrical'},
+          {'id': '3', 'name': 'Cleaning'},
+          {'id': '4', 'name': 'Carpenter'},
+          {'id': '5', 'name': 'Painting'},
+          {'id': '6', 'name': 'Gardening'},
+        ];
+        if (_categories.isNotEmpty) {
+          _selectedCategoryId = _categories[0]['id'].toString();
+        }
+      });
     } finally {
       setState(() => _isCategoriesLoading = false);
     }

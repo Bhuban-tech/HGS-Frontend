@@ -54,15 +54,18 @@ class ServiceApiService {
 
       // Map backend fields to frontend expected fields
       return rawList.map((p) {
+        // Debug: print provider data to see what fields are available
+        print('🔍 Provider data: ${p.toString()}');
+        
         return {
           'id': p['id'] ?? '',
           'name': p['userName'] ?? p['name'] ?? 'Unknown',
           'service': p['serviceCategoryName'] ?? p['categoryName'] ?? p['serviceCategory'] ?? 'Service Provider',
-          'location': p['address'] ?? p['location'] ?? 'Location not set',
+          'location': p['address'] ?? p['location'] ?? p['serviceLocation'] ?? 'Location not set',
           'status': (p['active'] == true) ? 'Available' : 'Busy',
           'rate': p['experienceYears'] != null ? '${p['experienceYears']} yrs exp' : 'Contact for rate',
           'email': p['email'] ?? '',
-          'phone': p['phoneNumber'] ?? '',
+          'phone': p['phoneNumber'] ?? p['phone'] ?? '',
           'serviceCategoryId': p['serviceCategoryId'] ?? '',
           'active': p['active'] ?? false,
           'approved': p['approved'] ?? false,

@@ -11,10 +11,21 @@ class ApiClient {
   final String _baseUrl = ApiConstants.baseUrl; 
 
   Map<String, String> _getHeaders(String? token) {
+    // Clean token if present
+    String? cleanToken;
+    if (token != null && token.isNotEmpty) {
+      cleanToken = token.trim().replaceAll('"', '').replaceAll('\n', '').replaceAll('\r', '');
+      
+      // Debug logging
+      print('🔑 Token length: ${cleanToken.length}');
+      print('🔑 Token parts: ${cleanToken.split('.').length}');
+      print('🔑 Token preview: ${cleanToken.substring(0, cleanToken.length > 50 ? 50 : cleanToken.length)}...');
+    }
+    
     return {
       'Content-Type': 'application/json',
       'Accept': 'application/json',
-      if (token != null && token.isNotEmpty) 'Authorization': 'Bearer $token',
+      if (cleanToken != null && cleanToken.isNotEmpty) 'Authorization': 'Bearer $cleanToken',
     };
   }
 

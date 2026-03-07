@@ -377,6 +377,17 @@ class _ServiceAdminAppState extends State<ServiceAdminApp> {
         ),
         centerTitle: true,
         actions: [
+          // Logout button
+          IconButton(
+            icon: const Icon(Icons.logout, color: Colors.white),
+            tooltip: 'Logout',
+            onPressed: () async {
+              await TokenManager().forceLogout();
+              if (context.mounted) {
+                await TokenManager().logout(context);
+              }
+            },
+          ),
           GestureDetector(
             onTap: () {
               Navigator.pushNamed(context, '/admin-profile');
@@ -658,81 +669,157 @@ class _ServiceAdminAppState extends State<ServiceAdminApp> {
                 final provider = _pendingProviders[index];
                 return Column(
                   children: [
-                    ListTile(
-                      contentPadding: EdgeInsets.zero,
-                      leading: CircleAvatar(
-                        backgroundColor: AppColors.primaryBlue.withOpacity(0.1),
-                        child: Text(
-                          (provider['userName'] ?? 'P')[0].toUpperCase(),
-                          style: TextStyle(color: AppColors.primaryBlue, fontWeight: FontWeight.bold),
-                        ),
+                    // Provider Card
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: Colors.grey.shade200),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.03),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
                       ),
-                      title: Text(
-                        provider['userName'] ?? 'Unknown',
-                        style: const TextStyle(fontWeight: FontWeight.w600),
-                      ),
-                      subtitle: Column(
+                      child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(provider['email'] ?? ''),
-                          const SizedBox(height: 4),
+                          // Header with avatar and name
+                          Row(
+                            children: [
+                              CircleAvatar(
+                                radius: 28,
+                                backgroundColor: AppColors.primaryBlue.withOpacity(0.1),
+                                child: Text(
+                                  (provider['userName'] ?? 'P')[0].toUpperCase(),
+                                  style: const TextStyle(
+                                    color: AppColors.primaryBlue,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 20,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      provider['userName'] ?? 'Unknown',
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 16,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      provider['email'] ?? '',
+                                      style: TextStyle(
+                                        color: Colors.grey.shade600,
+                                        fontSize: 13,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                          
+                          const SizedBox(height: 12),
+                          const Divider(height: 1),
+                          const SizedBox(height: 12),
+                          
+                          // Info chips
                           Wrap(
                             spacing: 8,
-                            runSpacing: 4,
+                            runSpacing: 8,
                             children: [
-                              _buildInfoChip(Icons.home_repair_service, _getCategoryName(provider['serviceCategoryId']), Colors.blue),
+                              _buildInfoChip(
+                                Icons.category,
+                                _getCategoryName(provider['serviceCategoryId']),
+                                AppColors.primaryBlue,
+                              ),
                               if (provider['experienceYears'] != null)
-                                _buildInfoChip(Icons.work_history, "${provider['experienceYears']} yr exp", Colors.orange),
+                                _buildInfoChip(
+                                  Icons.work_history,
+                                  "${provider['experienceYears']} years exp",
+                                  Colors.orange,
+                                ),
                               if (provider['address'] != null && provider['address'].toString().isNotEmpty)
-                                _buildInfoChip(Icons.location_on, provider['address'], Colors.red),
+                                _buildInfoChip(
+                                  Icons.location_on,
+                                  provider['address'],
+                                  Colors.red,
+                                ),
+                            ],
+                          ),
+                          
+                          const SizedBox(height: 16),
+                          
+                          // Action buttons
+                          Row(
+                            children: [
+                              Expanded(
+                                child: OutlinedButton(
+                                  onPressed: () => _showProviderDetails(provider),
+                                  style: OutlinedButton.styleFrom(
+                                    foregroundColor: AppColors.primaryBlue,
+                                    side: BorderSide(color: AppColors.primaryBlue.withOpacity(0.5)),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                    padding: const EdgeInsets.symmetric(vertical: 12),
+                                  ),
+                                  child: const Text(
+                                    'View Details',
+                                    style: TextStyle(fontWeight: FontWeight.w600),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: ElevatedButton(
+                                  onPressed: () => _approveProvider(provider['id'].toString()),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.green,
+                                    foregroundColor: Colors.white,
+                                    elevation: 0,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                    padding: const EdgeInsets.symmetric(vertical: 12),
+                                  ),
+                                  child: const Text(
+                                    'Approve',
+                                    style: TextStyle(fontWeight: FontWeight.bold),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: OutlinedButton(
+                                  onPressed: () => _rejectProvider(provider['id'].toString()),
+                                  style: OutlinedButton.styleFrom(
+                                    foregroundColor: Colors.red,
+                                    side: BorderSide(color: Colors.red.withOpacity(0.5)),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                    padding: const EdgeInsets.symmetric(vertical: 12),
+                                  ),
+                                  child: const Text(
+                                    'Reject',
+                                    style: TextStyle(fontWeight: FontWeight.w600),
+                                  ),
+                                ),
+                              ),
                             ],
                           ),
                         ],
                       ),
-                    ),
-                    const SizedBox(height: 8),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: OutlinedButton.icon(
-                            onPressed: () => _showProviderDetails(provider),
-                            icon: const Icon(Icons.info_outline, size: 16),
-                            label: const Text('View Details'),
-                            style: OutlinedButton.styleFrom(
-                              foregroundColor: AppColors.primaryBlue,
-                              side: const BorderSide(color: AppColors.primaryBlue),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: ElevatedButton.icon(
-                            onPressed: () => _approveProvider(provider['id'].toString()),
-                            icon: const Icon(Icons.check, size: 16),
-                            label: const Text('Approve'),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.green,
-                              foregroundColor: Colors.white,
-                              elevation: 0,
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: OutlinedButton.icon(
-                            onPressed: () => _rejectProvider(provider['id'].toString()),
-                            icon: const Icon(Icons.close, size: 16),
-                            label: const Text('Reject'),
-                            style: OutlinedButton.styleFrom(
-                              foregroundColor: Colors.red,
-                              side: const BorderSide(color: Colors.red),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                            ),
-                          ),
-                        ),
-                      ],
                     ),
                   ],
                 );
@@ -745,18 +832,25 @@ class _ServiceAdminAppState extends State<ServiceAdminApp> {
 
   Widget _buildInfoChip(IconData icon, String label, Color color) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
         color: color.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(6),
-        border: Border.all(color: color.withOpacity(0.2)),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: color.withOpacity(0.3)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 10, color: color),
-          const SizedBox(width: 4),
-          Text(label, style: TextStyle(fontSize: 10, color: color, fontWeight: FontWeight.w500)),
+          Icon(icon, size: 14, color: color),
+          const SizedBox(width: 6),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 12,
+              color: color,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
         ],
       ),
     );

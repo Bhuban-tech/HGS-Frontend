@@ -1,67 +1,66 @@
 class Transaction {
   final String? id;
-  final String userId;
-  final String paymentMethod; // 'KHALTI' or 'ESEWA'
-  final int amount; // in paisa for Khalti, rupees for eSewa
-  final String status; // 'Completed', 'Pending', 'Failed'
-  final String? transactionId;
-  final String? pidx; // For Khalti
-  final String? referenceId; // For eSewa
-  final DateTime? paidAt;
-  final DateTime? createdAt;
+  final String serviceName;
+  final String serviceDescription;
+  final String paymentMethod; // 'eSewa' or 'Khalti'
+  final double amount; // in rupees
+  final String status; // 'Success', 'Pending', 'Failed', 'Refunded'
+  final String bookingStatus; // 'PENDING', 'ACCEPTED', 'COMPLETED', 'CANCELLED'
+  final DateTime transactionDate;
+  final String transactionId;
+  final String? categoryIcon;
+  final bool refund;
 
   Transaction({
     this.id,
-    required this.userId,
+    required this.serviceName,
+    required this.serviceDescription,
     required this.paymentMethod,
     required this.amount,
     required this.status,
-    this.transactionId,
-    this.pidx,
-    this.referenceId,
-    this.paidAt,
-    this.createdAt,
+    required this.bookingStatus,
+    required this.transactionDate,
+    required this.transactionId,
+    this.categoryIcon,
+    required this.refund,
   });
 
   factory Transaction.fromJson(Map<String, dynamic> json) {
     return Transaction(
       id: json['id']?.toString(),
-      userId: json['userId']?.toString() ?? '',
+      serviceName: json['serviceName'] ?? 'Payment',
+      serviceDescription: json['serviceDescription'] ?? '',
       paymentMethod: json['paymentMethod'] ?? '',
-      amount: json['amount'] ?? 0,
+      amount: (json['amount'] ?? 0).toDouble(),
       status: json['status'] ?? 'Pending',
-      transactionId: json['transactionId'],
-      pidx: json['pidx'],
-      referenceId: json['referenceId'],
-      paidAt: json['paidAt'] != null ? DateTime.parse(json['paidAt']) : null,
-      createdAt: json['createdAt'] != null ? DateTime.parse(json['createdAt']) : null,
+      bookingStatus: json['bookingStatus'] ?? '',
+      transactionDate: json['transactionDate'] != null 
+          ? DateTime.parse(json['transactionDate']) 
+          : DateTime.now(),
+      transactionId: json['transactionId'] ?? '',
+      categoryIcon: json['categoryIcon'],
+      refund: json['refund'] ?? false,
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
       if (id != null) 'id': id,
-      'userId': userId,
+      'serviceName': serviceName,
+      'serviceDescription': serviceDescription,
       'paymentMethod': paymentMethod,
       'amount': amount,
       'status': status,
-      if (transactionId != null) 'transactionId': transactionId,
-      if (pidx != null) 'pidx': pidx,
-      if (referenceId != null) 'referenceId': referenceId,
-      if (paidAt != null) 'paidAt': paidAt!.toIso8601String(),
-      if (createdAt != null) 'createdAt': createdAt!.toIso8601String(),
+      'bookingStatus': bookingStatus,
+      'transactionDate': transactionDate.toIso8601String(),
+      'transactionId': transactionId,
+      if (categoryIcon != null) 'categoryIcon': categoryIcon,
+      'refund': refund,
     };
   }
 
-  bool get isCompleted => status == 'Completed';
+  bool get isCompleted => status == 'Success';
   bool get isPending => status == 'Pending';
   bool get isFailed => status == 'Failed';
-
-  // Get amount in rupees
-  double get amountInRupees {
-    if (paymentMethod == 'KHALTI') {
-      return amount / 100; // Convert paisa to rupees
-    }
-    return amount.toDouble();
-  }
+  bool get isRefunded => status == 'Refunded';
 }

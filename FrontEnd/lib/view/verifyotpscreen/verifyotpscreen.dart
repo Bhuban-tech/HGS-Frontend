@@ -60,28 +60,67 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
             context: context,
             barrierDismissible: false,
             builder: (ctx) => AlertDialog(
-              title: const Row(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+              title: Column(
                 children: [
-                  Icon(Icons.pending_actions, color: Colors.orange),
-                  SizedBox(width: 8),
-                  Text('Registration Successful'),
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.orange.withOpacity(0.1),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.hourglass_empty,
+                      color: Colors.orange,
+                      size: 48,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  const Text(
+                    'Registration Successful',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ],
               ),
               content: const Text(
                 'Your provider account has been created and is pending admin approval. '
                 'You will be able to log in once an admin approves your request.',
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 15),
               ),
               actions: [
-                TextButton(
-                  onPressed: () {
-                    Navigator.pop(ctx);
-                    Navigator.pushNamedAndRemoveUntil(
-                      context,
-                      AppRoutes.login,
-                      (route) => false,
-                    );
-                  },
-                  child: const Text('Go to Login'),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primaryBlue,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    onPressed: () {
+                      Navigator.pop(ctx);
+                      Navigator.pushNamedAndRemoveUntil(
+                        context,
+                        AppRoutes.login,
+                        (route) => false,
+                      );
+                    },
+                    child: const Text(
+                      'Go to Login',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
                 ),
               ],
             ),

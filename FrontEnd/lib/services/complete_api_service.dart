@@ -1,7 +1,7 @@
-import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:HamroGharSewa/constants/api_constants.dart';
 import 'package:HamroGharSewa/services/token_manager.dart';
+import 'package:jwt_decode/jwt_decode.dart';
 
 /// Complete API Service integrating all backend endpoints
 class CompleteApiService {
@@ -23,15 +23,40 @@ class CompleteApiService {
 
   final TokenManager _tokenManager = TokenManager();
 
+  // ==================== TOKEN HELPER ====================
+
+  /// ✅ FIXED: properly validates token without swallowing valid tokens
+  Future<String> _getValidToken() async {
+    final token = await _tokenManager.getAccessToken();
+
+    if (token == null || token.isEmpty) {
+      throw Exception('No token found - please login again');
+    }
+
+    bool expired = false;
+    try {
+      expired = Jwt.isExpired(token);
+    } catch (_) {
+      await _tokenManager.clearAll();
+      throw Exception('Invalid token - please login again');
+    }
+
+    if (expired) {
+      await _tokenManager.clearAll();
+      throw Exception('Token expired - please login again');
+    }
+
+    return token;
+  }
+
   // ==================== 1. AUTHENTICATION ENDPOINTS ====================
 
-  /// POST /api/auth/register - Register new user/provider and send OTP
   Future<Map<String, dynamic>> register({
     required String username,
     required String email,
     required String password,
     required String phoneNumber,
-    String role = 'USER', // USER or SERVICE_PROVIDER
+    String role = 'USER',
   }) async {
     try {
       final response = await _dio.post(
@@ -50,7 +75,6 @@ class CompleteApiService {
     }
   }
 
-  /// POST /api/auth/register/verify-otp - Verify OTP to complete registration
   Future<Map<String, dynamic>> verifyRegistrationOtp({
     required String email,
     required String otp,
@@ -58,21 +82,17 @@ class CompleteApiService {
     try {
       final response = await _dio.post(
         ApiConstants.verifyOtp,
-        data: {
-          'email': email,
-          'otp': otp,
-        },
+        data: {'email': email, 'otp': otp},
       );
       final data = _handleResponse(response);
-      
-      // Save tokens after successful OTP verification
-      if (data.containsKey('accessToken')) {
+      final token = data['token'] ?? data['accessToken'];
+      if (token != null) {
         await _tokenManager.saveTokens(
-          accessToken: data['accessToken'],
+          accessToken: token,
           refreshToken: data['refreshToken'],
           userId: data['userId'] ?? '',
           email: email,
-          userName: data['username'] ?? '',
+          userName: data['userName'] ?? data['username'] ?? '',
         );
       }
       return data;
@@ -81,7 +101,7 @@ class CompleteApiService {
     }
   }
 
-  /// POST /api/auth/login - Authenticate and receive JWT
+  /// ✅ FIXED: uses 'token' field (matches server response)
   Future<Map<String, dynamic>> login({
     required String email,
     required String password,
@@ -89,67 +109,49 @@ class CompleteApiService {
     try {
       final response = await _dio.post(
         ApiConstants.login,
-        data: {
-          'email': email,
-          'password': password,
-        },
+        data: {'email': email, 'password': password},
       );
       final data = _handleResponse(response);
-      
-      // Save tokens
-      await _tokenManager.saveTokens(
-        accessToken: data['accessToken'] ?? data['token'],
-        refreshToken: data['refreshToken'],
-        userId: data['userId'] ?? '',
-        email: email,
-        userName: data['username'] ?? '',
-      );
+
+      // ✅ Server returns 'token', not 'accessToken'
+      final token = data['token'] ?? data['accessToken'];
+      if (token != null) {
+        await _tokenManager.saveTokens(
+          accessToken: token,
+          refreshToken: data['refreshToken'],
+          userId: data['userId'] ?? '',
+          email: email,
+          userName: data['userName'] ?? data['username'] ?? '',
+        );
+      }
       return data;
     } catch (e) {
       throw _handleError(e);
     }
   }
 
-  /// POST /api/auth/logout - Invalidate current session
   Future<void> logout() async {
     try {
       final token = await _tokenManager.getAccessToken();
       await _dio.post(
         ApiConstants.logout,
-        options: Options(
-          headers: {'Authorization': 'Bearer $token'},
-        ),
+        options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
       await _tokenManager.clearAll();
     } catch (e) {
-      // Clear tokens even if API call fails
       await _tokenManager.clearAll();
-      throw _handleError(e);
-    }
-  }
-
-  /// POST /api/auth/refresh-token - Get new access token
-  Future<Map<String, dynamic>> refreshAccessToken() async {
-    try {
-      // Note: Refresh token functionality needs to be added to TokenManager
-      // For now, we'll skip this as it's not implemented
-      throw Exception('Refresh token not implemented in TokenManager');
-    } catch (e) {
       throw _handleError(e);
     }
   }
 
   // ==================== 2. USER & PROFILE MANAGEMENT ====================
 
-  /// GET /api/users/me - Fetch current user profile
   Future<Map<String, dynamic>> getCurrentUserProfile() async {
     try {
-      final token = await _tokenManager.getAccessToken();
+      final token = await _getValidToken();
       final response = await _dio.get(
         '/api/users/me',
-        options: Options(
-          headers: {'Authorization': 'Bearer $token'},
-        ),
+        options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
       return _handleResponse(response);
     } catch (e) {
@@ -157,14 +159,13 @@ class CompleteApiService {
     }
   }
 
-  /// PUT /api/users/profile - Update profile details
   Future<Map<String, dynamic>> updateProfile({
     required String name,
     required String phone,
     String? address,
   }) async {
     try {
-      final token = await _tokenManager.getAccessToken();
+      final token = await _getValidToken();
       final response = await _dio.put(
         '/api/users/profile',
         data: {
@@ -172,9 +173,7 @@ class CompleteApiService {
           'phone': phone,
           if (address != null) 'address': address,
         },
-        options: Options(
-          headers: {'Authorization': 'Bearer $token'},
-        ),
+        options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
       return _handleResponse(response);
     } catch (e) {
@@ -182,22 +181,16 @@ class CompleteApiService {
     }
   }
 
-  /// PATCH /api/users/change-password - Change password
   Future<Map<String, dynamic>> changePassword({
     required String oldPassword,
     required String newPassword,
   }) async {
     try {
-      final token = await _tokenManager.getAccessToken();
+      final token = await _getValidToken();
       final response = await _dio.patch(
         '/api/users/change-password',
-        data: {
-          'oldPassword': oldPassword,
-          'newPassword': newPassword,
-        },
-        options: Options(
-          headers: {'Authorization': 'Bearer $token'},
-        ),
+        data: {'oldPassword': oldPassword, 'newPassword': newPassword},
+        options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
       return _handleResponse(response);
     } catch (e) {
@@ -205,17 +198,16 @@ class CompleteApiService {
     }
   }
 
-  /// GET /api/users/providers/category/{categoryId} - Browse providers by category
   Future<List<dynamic>> getProvidersByCategory(String categoryId) async {
     try {
-      final response = await _dio.get('/api/users/providers/category/$categoryId');
+      final response =
+      await _dio.get('/api/users/providers/category/$categoryId');
       return _handleListResponse(response);
     } catch (e) {
       throw _handleError(e);
     }
   }
 
-  /// POST /api/users/forgot-password - Request password reset OTP
   Future<Map<String, dynamic>> forgotPassword(String email) async {
     try {
       final response = await _dio.post(
@@ -228,7 +220,6 @@ class CompleteApiService {
     }
   }
 
-  /// POST /api/users/verify-otp - Verify reset password OTP
   Future<Map<String, dynamic>> verifyResetPasswordOtp({
     required String email,
     required String otp,
@@ -236,10 +227,7 @@ class CompleteApiService {
     try {
       final response = await _dio.post(
         '/api/users/verify-otp',
-        data: {
-          'email': email,
-          'otp': otp,
-        },
+        data: {'email': email, 'otp': otp},
       );
       return _handleResponse(response);
     } catch (e) {
@@ -247,7 +235,6 @@ class CompleteApiService {
     }
   }
 
-  /// POST /api/users/reset-password - Set new password
   Future<Map<String, dynamic>> resetPassword({
     required String email,
     required String otp,
@@ -256,11 +243,7 @@ class CompleteApiService {
     try {
       final response = await _dio.post(
         ApiConstants.resetPassword,
-        data: {
-          'email': email,
-          'otp': otp,
-          'newPassword': newPassword,
-        },
+        data: {'email': email, 'otp': otp, 'newPassword': newPassword},
       );
       return _handleResponse(response);
     } catch (e) {
@@ -268,9 +251,8 @@ class CompleteApiService {
     }
   }
 
-  // ==================== 3. BOOKINGS & SERVICE REQUESTS ====================
+  // ==================== 3. BOOKINGS ====================
 
-  /// POST /api/bookings - Create new service request (USER)
   Future<Map<String, dynamic>> createBooking({
     required String providerId,
     required String serviceId,
@@ -279,7 +261,7 @@ class CompleteApiService {
     String? location,
   }) async {
     try {
-      final token = await _tokenManager.getAccessToken();
+      final token = await _getValidToken();
       final response = await _dio.post(
         '/api/bookings',
         data: {
@@ -289,9 +271,7 @@ class CompleteApiService {
           if (description != null) 'description': description,
           if (location != null) 'location': location,
         },
-        options: Options(
-          headers: {'Authorization': 'Bearer $token'},
-        ),
+        options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
       return _handleResponse(response);
     } catch (e) {
@@ -299,15 +279,12 @@ class CompleteApiService {
     }
   }
 
-  /// GET /api/bookings/my-bookings - View user's bookings (USER)
   Future<List<dynamic>> getMyBookings() async {
     try {
-      final token = await _tokenManager.getAccessToken();
+      final token = await _getValidToken();
       final response = await _dio.get(
         '/api/bookings/my-bookings',
-        options: Options(
-          headers: {'Authorization': 'Bearer $token'},
-        ),
+        options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
       return _handleListResponse(response);
     } catch (e) {
@@ -315,15 +292,12 @@ class CompleteApiService {
     }
   }
 
-  /// PATCH /api/bookings/{id}/cancel - Cancel pending booking (USER)
   Future<Map<String, dynamic>> cancelBooking(String bookingId) async {
     try {
-      final token = await _tokenManager.getAccessToken();
+      final token = await _getValidToken();
       final response = await _dio.patch(
         '/api/bookings/$bookingId/cancel',
-        options: Options(
-          headers: {'Authorization': 'Bearer $token'},
-        ),
+        options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
       return _handleResponse(response);
     } catch (e) {
@@ -331,15 +305,12 @@ class CompleteApiService {
     }
   }
 
-  /// GET /api/bookings/requests - View incoming requests (SERVICE_PROVIDER)
   Future<List<dynamic>> getProviderRequests() async {
     try {
-      final token = await _tokenManager.getAccessToken();
+      final token = await _getValidToken();
       final response = await _dio.get(
         '/api/bookings/requests',
-        options: Options(
-          headers: {'Authorization': 'Bearer $token'},
-        ),
+        options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
       return _handleListResponse(response);
     } catch (e) {
@@ -347,15 +318,12 @@ class CompleteApiService {
     }
   }
 
-  /// PATCH /api/bookings/{id}/accept - Accept service request (SERVICE_PROVIDER)
   Future<Map<String, dynamic>> acceptBooking(String bookingId) async {
     try {
-      final token = await _tokenManager.getAccessToken();
+      final token = await _getValidToken();
       final response = await _dio.patch(
         '/api/bookings/$bookingId/accept',
-        options: Options(
-          headers: {'Authorization': 'Bearer $token'},
-        ),
+        options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
       return _handleResponse(response);
     } catch (e) {
@@ -363,16 +331,14 @@ class CompleteApiService {
     }
   }
 
-  /// PATCH /api/bookings/{id}/reject - Reject service request (SERVICE_PROVIDER)
-  Future<Map<String, dynamic>> rejectBooking(String bookingId, String reason) async {
+  Future<Map<String, dynamic>> rejectBooking(
+      String bookingId, String reason) async {
     try {
-      final token = await _tokenManager.getAccessToken();
+      final token = await _getValidToken();
       final response = await _dio.patch(
         '/api/bookings/$bookingId/reject',
         data: {'reason': reason},
-        options: Options(
-          headers: {'Authorization': 'Bearer $token'},
-        ),
+        options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
       return _handleResponse(response);
     } catch (e) {
@@ -380,15 +346,12 @@ class CompleteApiService {
     }
   }
 
-  /// PATCH /api/bookings/{id}/complete - Mark service completed
   Future<Map<String, dynamic>> completeBooking(String bookingId) async {
     try {
-      final token = await _tokenManager.getAccessToken();
+      final token = await _getValidToken();
       final response = await _dio.patch(
         '/api/bookings/$bookingId/complete',
-        options: Options(
-          headers: {'Authorization': 'Bearer $token'},
-        ),
+        options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
       return _handleResponse(response);
     } catch (e) {
@@ -396,15 +359,12 @@ class CompleteApiService {
     }
   }
 
-  /// GET /api/bookings/all - List all bookings (SUPERADMIN)
   Future<List<dynamic>> getAllBookings() async {
     try {
-      final token = await _tokenManager.getAccessToken();
+      final token = await _getValidToken();
       final response = await _dio.get(
         '/api/bookings/all',
-        options: Options(
-          headers: {'Authorization': 'Bearer $token'},
-        ),
+        options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
       return _handleListResponse(response);
     } catch (e) {
@@ -414,22 +374,16 @@ class CompleteApiService {
 
   // ==================== 4. CHAT SYSTEM ====================
 
-  /// POST /api/chat/send - Send message via REST (backup to WebSocket)
   Future<Map<String, dynamic>> sendChatMessage({
     required String requestId,
     required String message,
   }) async {
     try {
-      final token = await _tokenManager.getAccessToken();
+      final token = await _getValidToken();
       final response = await _dio.post(
         '/api/chat/send',
-        data: {
-          'requestId': requestId,
-          'message': message,
-        },
-        options: Options(
-          headers: {'Authorization': 'Bearer $token'},
-        ),
+        data: {'requestId': requestId, 'message': message},
+        options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
       return _handleResponse(response);
     } catch (e) {
@@ -437,15 +391,12 @@ class CompleteApiService {
     }
   }
 
-  /// GET /api/chat/{requestId} - Fetch chat history
   Future<List<dynamic>> getChatHistory(String requestId) async {
     try {
-      final token = await _tokenManager.getAccessToken();
+      final token = await _getValidToken();
       final response = await _dio.get(
         '/api/chat/$requestId',
-        options: Options(
-          headers: {'Authorization': 'Bearer $token'},
-        ),
+        options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
       return _handleListResponse(response);
     } catch (e) {
@@ -453,15 +404,12 @@ class CompleteApiService {
     }
   }
 
-  /// GET /api/chat/{requestId}/unread-count - Get unread messages count
   Future<int> getUnreadMessageCount(String requestId) async {
     try {
-      final token = await _tokenManager.getAccessToken();
+      final token = await _getValidToken();
       final response = await _dio.get(
         '/api/chat/$requestId/unread-count',
-        options: Options(
-          headers: {'Authorization': 'Bearer $token'},
-        ),
+        options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
       final data = _handleResponse(response);
       return data['count'] ?? 0;
@@ -472,7 +420,7 @@ class CompleteApiService {
 
   // ==================== 5. SERVICE CATEGORIES ====================
 
-  /// GET /api/categories - List all active categories (Public)
+  /// GET /api/categories - Public, no auth needed
   Future<List<dynamic>> getActiveCategories() async {
     try {
       final response = await _dio.get(ApiConstants.categories);
@@ -482,24 +430,18 @@ class CompleteApiService {
     }
   }
 
-  /// POST /api/categories - Create new category (SUPERADMIN)
+  /// POST /api/admin/categories ✅
   Future<Map<String, dynamic>> createCategory({
     required String name,
     required String description,
     required String icon,
   }) async {
     try {
-      final token = await _tokenManager.getAccessToken();
+      final token = await _getValidToken();
       final response = await _dio.post(
-        ApiConstants.categories,
-        data: {
-          'name': name,
-          'description': description,
-          'icon': icon,
-        },
-        options: Options(
-          headers: {'Authorization': 'Bearer $token'},
-        ),
+        ApiConstants.adminCategories,
+        data: {'name': name, 'description': description, 'icon': icon},
+        options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
       return _handleResponse(response);
     } catch (e) {
@@ -507,7 +449,7 @@ class CompleteApiService {
     }
   }
 
-  /// PUT /api/categories/{id} - Update category (SUPERADMIN)
+  /// PUT /api/admin/categories/{id} ✅
   Future<Map<String, dynamic>> updateCategory({
     required String id,
     required String name,
@@ -515,17 +457,11 @@ class CompleteApiService {
     required String icon,
   }) async {
     try {
-      final token = await _tokenManager.getAccessToken();
+      final token = await _getValidToken();
       final response = await _dio.put(
-        ApiConstants.categoryById(id),
-        data: {
-          'name': name,
-          'description': description,
-          'icon': icon,
-        },
-        options: Options(
-          headers: {'Authorization': 'Bearer $token'},
-        ),
+        ApiConstants.adminUpdateCategory(id),
+        data: {'name': name, 'description': description, 'icon': icon},
+        options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
       return _handleResponse(response);
     } catch (e) {
@@ -533,15 +469,13 @@ class CompleteApiService {
     }
   }
 
-  /// DELETE /api/categories/{id} - Delete category (SUPERADMIN)
+  /// DELETE /api/admin/categories/{id} ✅
   Future<void> deleteCategory(String id) async {
     try {
-      final token = await _tokenManager.getAccessToken();
+      final token = await _getValidToken();
       await _dio.delete(
-        ApiConstants.categoryById(id),
-        options: Options(
-          headers: {'Authorization': 'Bearer $token'},
-        ),
+        ApiConstants.adminDeleteCategory(id),
+        options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
     } catch (e) {
       throw _handleError(e);
@@ -550,15 +484,12 @@ class CompleteApiService {
 
   // ==================== 6. ADMIN MANAGEMENT ====================
 
-  /// GET /api/admin/users - Fetch all users
   Future<List<dynamic>> getAllUsers() async {
     try {
-      final token = await _tokenManager.getAccessToken();
+      final token = await _getValidToken();
       final response = await _dio.get(
         ApiConstants.adminUsers,
-        options: Options(
-          headers: {'Authorization': 'Bearer $token'},
-        ),
+        options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
       return _handleListResponse(response);
     } catch (e) {
@@ -566,15 +497,12 @@ class CompleteApiService {
     }
   }
 
-  /// GET /api/admin/service-providers - Fetch all providers
   Future<List<dynamic>> getAllProviders() async {
     try {
-      final token = await _tokenManager.getAccessToken();
+      final token = await _getValidToken();
       final response = await _dio.get(
         ApiConstants.adminProviders,
-        options: Options(
-          headers: {'Authorization': 'Bearer $token'},
-        ),
+        options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
       return _handleListResponse(response);
     } catch (e) {
@@ -582,15 +510,12 @@ class CompleteApiService {
     }
   }
 
-  /// GET /api/admin/service-providers/pending - List pending providers
   Future<List<dynamic>> getPendingProviders() async {
     try {
-      final token = await _tokenManager.getAccessToken();
+      final token = await _getValidToken();
       final response = await _dio.get(
         ApiConstants.adminPendingProviders,
-        options: Options(
-          headers: {'Authorization': 'Bearer $token'},
-        ),
+        options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
       return _handleListResponse(response);
     } catch (e) {
@@ -598,60 +523,48 @@ class CompleteApiService {
     }
   }
 
-  /// PATCH /api/admin/approve/{id} - Approve provider account
   Future<void> approveProvider(String id) async {
     try {
-      final token = await _tokenManager.getAccessToken();
+      final token = await _getValidToken();
       await _dio.patch(
         ApiConstants.adminApproveProvider(id),
-        options: Options(
-          headers: {'Authorization': 'Bearer $token'},
-        ),
+        options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
     } catch (e) {
       throw _handleError(e);
     }
   }
 
-  /// PATCH /api/admin/reject/{id} - Reject provider account
   Future<void> rejectProvider(String id) async {
     try {
-      final token = await _tokenManager.getAccessToken();
+      final token = await _getValidToken();
       await _dio.patch(
         ApiConstants.adminRejectProvider(id),
-        options: Options(
-          headers: {'Authorization': 'Bearer $token'},
-        ),
+        options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
     } catch (e) {
       throw _handleError(e);
     }
   }
 
-  /// PATCH /api/admin/activate/{id} - Activate user account
   Future<void> activateUser(String id) async {
     try {
-      final token = await _tokenManager.getAccessToken();
+      final token = await _getValidToken();
       await _dio.patch(
         ApiConstants.adminActivateUser(id),
-        options: Options(
-          headers: {'Authorization': 'Bearer $token'},
-        ),
+        options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
     } catch (e) {
       throw _handleError(e);
     }
   }
 
-  /// PATCH /api/admin/deactivate/{id} - Deactivate user account
   Future<void> deactivateUser(String id) async {
     try {
-      final token = await _tokenManager.getAccessToken();
+      final token = await _getValidToken();
       await _dio.patch(
         ApiConstants.adminDeactivateUser(id),
-        options: Options(
-          headers: {'Authorization': 'Bearer $token'},
-        ),
+        options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
     } catch (e) {
       throw _handleError(e);

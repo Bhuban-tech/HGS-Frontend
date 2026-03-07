@@ -52,25 +52,25 @@ class _TransactionHistoryPageState extends State<TransactionHistoryPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.blue[50],
+      backgroundColor: const Color(0xFFF5F5F5),
       appBar: AppBar(
-        backgroundColor: AppColors.primaryBlue,
+        backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          icon: const Icon(Icons.arrow_back, color: Colors.black87),
           onPressed: () => Navigator.pop(context),
         ),
         title: const Text(
           'Transaction History',
           style: TextStyle(
-            color: Colors.white,
+            color: Colors.black87,
             fontSize: 20,
             fontWeight: FontWeight.bold,
           ),
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.refresh, color: Colors.white),
+            icon: const Icon(Icons.refresh, color: Colors.black87),
             onPressed: _loadTransactions,
           ),
         ],
@@ -178,44 +178,46 @@ class _TransactionHistoryPageState extends State<TransactionHistoryPage> {
       );
     }
 
+    // Group transactions by date
+    final grouped = _groupByDate(_transactions);
+
     return RefreshIndicator(
       onRefresh: _loadTransactions,
       color: AppColors.primaryBlue,
       child: ListView.builder(
-        padding: const EdgeInsets.all(20),
-        itemCount: _transactions.length,
+        padding: const EdgeInsets.all(16),
+        itemCount: grouped.length,
         itemBuilder: (context, index) {
-          return _buildTransactionCard(_transactions[index]);
+          final dateLabel = grouped.keys.elementAt(index);
+          final dayTransactions = grouped[dateLabel]!;
+          
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 4),
+                child: Text(
+                  dateLabel,
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.grey[600],
+                    letterSpacing: 0.5,
+                  ),
+                ),
+              ),
+              ...dayTransactions.map((tx) => _buildTransactionCard(tx)),
+            ],
+          );
         },
       ),
     );
   }
 
   Widget _buildTransactionCard(Transaction transaction) {
-    Color statusColor;
-    Color statusBgColor;
-    IconData statusIcon;
-
-    if (transaction.isCompleted) {
-      statusColor = AppColors.success;
-      statusBgColor = AppColors.success.withOpacity(0.1);
-      statusIcon = Icons.check_circle;
-    } else if (transaction.isPending) {
-      statusColor = Colors.orange;
-      statusBgColor = Colors.orange.withOpacity(0.1);
-      statusIcon = Icons.pending;
-    } else {
-      statusColor = AppColors.error;
-      statusBgColor = AppColors.error.withOpacity(0.1);
-      statusIcon = Icons.cancel;
-    }
-
-    final paymentMethodColor = transaction.paymentMethod == 'KHALTI'
-        ? const Color(0xFF5D2E8E)
-        : const Color(0xFF60BB46);
-
     return Container(
-      margin: const EdgeInsets.only(bottom: 16),
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
@@ -223,156 +225,203 @@ class _TransactionHistoryPageState extends State<TransactionHistoryPage> {
           BoxShadow(
             color: Colors.black.withOpacity(0.05),
             blurRadius: 10,
-            offset: const Offset(0, 4),
+            offset: const Offset(0, 2),
           ),
         ],
       ),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Header: Payment method and status
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      child: Row(
+        children: [
+          _buildIcon(transaction),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                Text(
+                  transaction.serviceName,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.black87,
+                  ),
+                ),
+                const SizedBox(height: 4),
                 Row(
                   children: [
-                    Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: paymentMethodColor.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Icon(
-                        transaction.paymentMethod == 'KHALTI'
-                            ? Icons.account_balance_wallet
-                            : Icons.credit_card,
-                        color: paymentMethodColor,
-                        size: 20,
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Text(
-                      transaction.paymentMethod,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.textDark,
+                    _buildPaymentChip(transaction.paymentMethod),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        transaction.serviceDescription,
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: Colors.grey[600],
+                        ),
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
                   ],
                 ),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: statusBgColor,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(statusIcon, size: 14, color: statusColor),
-                      const SizedBox(width: 4),
-                      Text(
-                        transaction.status,
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
-                          color: statusColor,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
               ],
             ),
-
-            const SizedBox(height: 16),
-
-            // Amount
-            Text(
-              'Rs. ${transaction.amountInRupees.toStringAsFixed(2)}',
-              style: const TextStyle(
-                fontSize: 28,
-                fontWeight: FontWeight.bold,
-                color: AppColors.primaryBlue,
+          ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Text(
+                '${transaction.refund ? '+' : '-'} Rs. ${_formatAmount(transaction.amount)}',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: transaction.refund ? Colors.green : Colors.red,
+                ),
               ),
-            ),
-
-            const SizedBox(height: 12),
-
-            // Transaction details
-            if (transaction.transactionId != null) ...[
-              _buildDetailRow(
-                Icons.receipt_outlined,
-                'Transaction ID',
-                transaction.transactionId!,
+              const SizedBox(height: 4),
+              Text(
+                _formatTime(transaction.transactionDate),
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Colors.grey[500],
+                ),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 6),
+              _buildStatusBadge(transaction.status),
             ],
+          ),
+        ],
+      ),
+    );
+  }
 
-            if (transaction.pidx != null) ...[
-              _buildDetailRow(
-                Icons.tag,
-                'Payment ID',
-                transaction.pidx!,
-              ),
-              const SizedBox(height: 8),
-            ],
+  Widget _buildIcon(Transaction tx) {
+    IconData icon;
+    Color bgColor;
+    Color iconColor;
 
-            if (transaction.referenceId != null) ...[
-              _buildDetailRow(
-                Icons.tag,
-                'Reference ID',
-                transaction.referenceId!,
-              ),
-              const SizedBox(height: 8),
-            ],
+    if (tx.refund) {
+      icon = Icons.refresh;
+      bgColor = Colors.orange.shade50;
+      iconColor = Colors.orange;
+    } else if (tx.status == 'Failed') {
+      icon = Icons.close;
+      bgColor = Colors.red.shade50;
+      iconColor = Colors.red;
+    } else {
+      icon = Icons.favorite;
+      bgColor = _getServiceColor(tx.serviceName).withOpacity(0.1);
+      iconColor = _getServiceColor(tx.serviceName);
+    }
 
-            if (transaction.paidAt != null)
-              _buildDetailRow(
-                Icons.access_time,
-                'Paid At',
-                DateFormat('MMM dd, yyyy • hh:mm a').format(transaction.paidAt!),
-              )
-            else if (transaction.createdAt != null)
-              _buildDetailRow(
-                Icons.access_time,
-                'Created At',
-                DateFormat('MMM dd, yyyy • hh:mm a').format(transaction.createdAt!),
-              ),
-          ],
+    return Container(
+      width: 56,
+      height: 56,
+      decoration: BoxDecoration(
+        color: bgColor,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Icon(icon, color: iconColor, size: 28),
+    );
+  }
+
+  Widget _buildPaymentChip(String method) {
+    final isEsewa = method.toLowerCase() == 'esewa';
+    
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: isEsewa ? Colors.green.shade50 : Colors.purple.shade50,
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: Text(
+        method,
+        style: TextStyle(
+          fontSize: 11,
+          fontWeight: FontWeight.w600,
+          color: isEsewa ? Colors.green.shade700 : Colors.purple.shade700,
         ),
       ),
     );
   }
 
-  Widget _buildDetailRow(IconData icon, String label, String value) {
-    return Row(
-      children: [
-        Icon(icon, size: 16, color: Colors.grey[600]),
-        const SizedBox(width: 8),
-        Text(
-          '$label: ',
-          style: TextStyle(
-            fontSize: 13,
-            color: Colors.grey[600],
-          ),
+  Widget _buildStatusBadge(String status) {
+    Color bgColor;
+    Color textColor;
+
+    switch (status) {
+      case 'Success':
+        bgColor = Colors.green.shade50;
+        textColor = Colors.green.shade700;
+        break;
+      case 'Pending':
+        bgColor = Colors.orange.shade50;
+        textColor = Colors.orange.shade700;
+        break;
+      case 'Failed':
+        bgColor = Colors.red.shade50;
+        textColor = Colors.red.shade700;
+        break;
+      case 'Refunded':
+        bgColor = Colors.blue.shade50;
+        textColor = Colors.blue.shade700;
+        break;
+      default:
+        bgColor = Colors.grey.shade50;
+        textColor = Colors.grey.shade700;
+    }
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(
+        color: bgColor,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Text(
+        status,
+        style: TextStyle(
+          fontSize: 11,
+          fontWeight: FontWeight.w600,
+          color: textColor,
         ),
-        Expanded(
-          child: Text(
-            value,
-            style: const TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
-              color: AppColors.textDark,
-            ),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ),
-      ],
+      ),
     );
+  }
+
+  Color _getServiceColor(String name) {
+    final lowerName = name.toLowerCase();
+    if (lowerName.contains('plumb')) return Colors.green;
+    if (lowerName.contains('electric')) return Colors.purple;
+    if (lowerName.contains('clean')) return Colors.blue;
+    if (lowerName.contains('paint')) return Colors.red;
+    return Colors.grey;
+  }
+
+  String _formatAmount(double amount) {
+    return NumberFormat('#,##0').format(amount);
+  }
+
+  String _formatTime(DateTime date) {
+    return DateFormat('h:mm a').format(date);
+  }
+
+  Map<String, List<Transaction>> _groupByDate(List<Transaction> txs) {
+    final Map<String, List<Transaction>> grouped = {};
+    
+    for (var tx in txs) {
+      final key = _getDateLabel(tx.transactionDate);
+      grouped.putIfAbsent(key, () => []).add(tx);
+    }
+    
+    return grouped;
+  }
+
+  String _getDateLabel(DateTime date) {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final yesterday = today.subtract(const Duration(days: 1));
+    final txDate = DateTime(date.year, date.month, date.day);
+
+    if (txDate == today) return 'TODAY';
+    if (txDate == yesterday) return 'YESTERDAY';
+    return DateFormat('MMMM dd, yyyy').format(date).toUpperCase();
   }
 }

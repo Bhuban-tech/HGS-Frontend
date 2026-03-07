@@ -20,13 +20,16 @@ class TokenManager {
   }) async {
     final prefs = await SharedPreferences.getInstance();
 
-    await prefs.setString(_accessTokenKey, accessToken);
+    // Clean token before saving - remove quotes, spaces, and newlines
+    final cleanToken = accessToken.trim().replaceAll('"', '').replaceAll('\n', '').replaceAll('\r', '');
+    
+    await prefs.setString(_accessTokenKey, cleanToken);
     await prefs.setString(_userIdKey, userId);
     await prefs.setString(_userEmailKey, email);
     await prefs.setString(_userNameKey, userName);
 
     try {
-      final payload = Jwt.parseJwt(accessToken);
+      final payload = Jwt.parseJwt(cleanToken);
        print('SAVE TOKEN - JWT PAYLOAD: $payload');
       final role = _extractRole(payload);
        print('role: $role');
@@ -42,7 +45,14 @@ class TokenManager {
 
   Future<String?> getAccessToken() async {
     final prefs = await SharedPreferences.getInstance();
-    return prefs.getString(_accessTokenKey);
+    final token = prefs.getString(_accessTokenKey);
+    
+    // Clean token - remove quotes, spaces, and newlines
+    if (token != null) {
+      return token.trim().replaceAll('"', '').replaceAll('\n', '').replaceAll('\r', '');
+    }
+    
+    return null;
   }
 
 
@@ -162,6 +172,21 @@ class TokenManager {
   Future<void> clearAll() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.clear();
+    if (kDebugMode) print('✅ All tokens and data cleared');
+  }
+  
+  /// Force clear everything and print confirmation
+  Future<void> forceLogout() async {
+    final prefs = await SharedPreferences.getInstance();
+    final keys = prefs.getKeys();
+    if (kDebugMode) {
+      print('🗑️ Clearing ${keys.length} stored items:');
+      for (var key in keys) {
+        print('  - $key');
+      }
+    }
+    await prefs.clear();
+    if (kDebugMode) print('✅ Force logout complete - all data cleared');
   }
 
   /// ================= PRIVATE HELPERS =================

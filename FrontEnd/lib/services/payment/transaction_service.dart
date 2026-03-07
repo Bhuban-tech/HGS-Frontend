@@ -15,18 +15,31 @@ class TransactionService {
       final token = await _tokenManager.getAccessToken();
 
       final response = await _dio.get(
-        '${ApiConstants.baseUrl}/api/payment/transactions',
+        ApiConstants.userTransactions,
         options: Options(
           headers: {'Authorization': 'Bearer $token'},
         ),
       );
 
-      if (response.data['success'] == true) {
-        final List<dynamic> data = response.data['data'] ?? [];
-        return data.map((json) => Transaction.fromJson(json)).toList();
+      // Handle different response formats
+      final dynamic responseData = response.data;
+      List<dynamic> transactionsList;
+
+      if (responseData is List) {
+        // Direct array response
+        transactionsList = responseData;
+      } else if (responseData is Map) {
+        // Check for success flag
+        if (responseData['success'] == false) {
+          throw responseData['message'] ?? 'Failed to fetch transactions';
+        }
+        // Extract data array
+        transactionsList = responseData['data'] ?? [];
       } else {
-        throw response.data['message'] ?? 'Failed to fetch transactions';
+        transactionsList = [];
       }
+
+      return transactionsList.map((json) => Transaction.fromJson(json)).toList();
     } on DioException catch (e) {
       throw _handleError(e);
     }
@@ -38,16 +51,24 @@ class TransactionService {
       final token = await _tokenManager.getAccessToken();
 
       final response = await _dio.get(
-        '${ApiConstants.baseUrl}/api/payment/transactions/$transactionId',
+        ApiConstants.transactionById(transactionId),
         options: Options(
           headers: {'Authorization': 'Bearer $token'},
         ),
       );
 
-      if (response.data['success'] == true) {
-        return Transaction.fromJson(response.data['data']);
+      // Handle different response formats
+      final dynamic responseData = response.data;
+      
+      if (responseData is Map) {
+        if (responseData['success'] == false) {
+          throw responseData['message'] ?? 'Failed to fetch transaction';
+        }
+        // Extract transaction data
+        final transactionData = responseData['data'] ?? responseData;
+        return Transaction.fromJson(transactionData);
       } else {
-        throw response.data['message'] ?? 'Failed to fetch transaction';
+        throw 'Invalid response format';
       }
     } on DioException catch (e) {
       throw _handleError(e);
@@ -57,6 +78,17 @@ class TransactionService {
   String _handleError(DioException e) {
     if (e.response != null) {
       final data = e.response!.data;
+      
+      // Handle 404 - endpoint not found
+      if (e.response!.statusCode == 404) {
+        return 'Transaction history feature is not available yet. Please contact support.';
+      }
+      
+      // Handle 401/403 - authentication issues
+      if (e.response!.statusCode == 401 || e.response!.statusCode == 403) {
+        return 'Authentication failed. Please login again.';
+      }
+      
       if (data is Map && data.containsKey('message')) {
         return data['message'];
       }

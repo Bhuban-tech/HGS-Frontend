@@ -23,7 +23,6 @@ class AuthRepository {
           handler.next(options);
         },
         onError: (error, handler) async {
-          // Handle 401 Unauthorized - token expired or invalid
           if (error.response?.statusCode == 401) {
             await _tokenManager.clearAll();
             if (kDebugMode) print("Token expired or invalid - cleared storage");
@@ -44,10 +43,22 @@ class AuthRepository {
         },
       );
 
+      // ✅ DEBUG - shows exactly what server returns
+      print('🔴 RAW SERVER RESPONSE: ${response.data}');
+      print('🔴 data field: ${response.data['data']}');
+      print('🔴 token field: ${response.data['data']?['token']}');
+      print('🔴 accessToken field: ${response.data['data']?['accessToken']}');
+
       final authResponse = AuthResponse.fromJson(response.data);
+
+      print('🔴 authResponse.success: ${authResponse.success}');
+      print('🔴 authResponse.accessToken: ${authResponse.accessToken}');
 
       if (authResponse.success && authResponse.accessToken != null) {
         await _saveAuthData(authResponse);
+        print('✅ Token saved successfully');
+      } else {
+        print('❌ Token NOT saved - success: ${authResponse.success}, token: ${authResponse.accessToken}');
       }
 
       return authResponse;
@@ -56,8 +67,8 @@ class AuthRepository {
     } catch (e) {
       if (kDebugMode) print("Unexpected login error: $e");
       return AuthResponse(
-        success: false, 
-        message: 'Unexpected error during login'
+        success: false,
+        message: 'Unexpected error during login',
       );
     }
   }
@@ -77,8 +88,8 @@ class AuthRepository {
         ApiConstants.register,
         data: {
           'userName': name,
-          'username': name, // Added for compatibility
-          'email': email.toLowerCase(), // Ensure lowercase
+          'username': name,
+          'email': email.toLowerCase(),
           'phoneNumber': phone,
           'password': password,
           'role': role ?? 'USER',
@@ -94,8 +105,8 @@ class AuthRepository {
     } catch (e) {
       if (kDebugMode) print("Unexpected registration error: $e");
       return AuthResponse(
-        success: false, 
-        message: 'Unexpected error during registration'
+        success: false,
+        message: 'Unexpected error during registration',
       );
     }
   }
@@ -124,8 +135,8 @@ class AuthRepository {
     } catch (e) {
       if (kDebugMode) print("Unexpected OTP verification error: $e");
       return AuthResponse(
-        success: false, 
-        message: 'Unexpected error during OTP verification'
+        success: false,
+        message: 'Unexpected error during OTP verification',
       );
     }
   }
@@ -138,7 +149,7 @@ class AuthRepository {
           ApiConstants.logout,
           options: Options(
             headers: {'Authorization': 'Bearer $token'},
-            validateStatus: (status) => status! < 500, // Don't throw on 4xx
+            validateStatus: (status) => status! < 500,
           ),
         );
       }
@@ -147,42 +158,38 @@ class AuthRepository {
     } catch (e) {
       if (kDebugMode) print("Unexpected logout error (ignoring): $e");
     } finally {
-      // Always clear local data regardless of API result
       await _tokenManager.clearAll();
     }
   }
 
-  /// Check if user is currently authenticated with a valid token
   Future<bool> isAuthenticated() async {
     return await _tokenManager.isLoggedIn();
   }
 
-  /// Get current user data from storage
   Future<Map<String, String>?> getCurrentUser() async {
     return await _tokenManager.getUserData();
   }
 
-  // Helper: Save token and user data
   Future<void> _saveAuthData(AuthResponse authResponse) async {
     if (authResponse.accessToken == null) {
       throw Exception("Access token is null");
     }
 
     if (authResponse.user == null) {
-      // Save token only
       await _tokenManager.saveTokens(
         accessToken: authResponse.accessToken!,
         userId: '',
         email: '',
-        userName: '', refreshToken: null,
+        userName: '',
+        refreshToken: null,
       );
     } else {
-      // Save token and user data together
       await _tokenManager.saveTokens(
         accessToken: authResponse.accessToken!,
         userId: authResponse.user!.id,
         email: authResponse.user!.email,
-        userName: authResponse.user!.userName, refreshToken: null,
+        userName: authResponse.user!.userName,
+        refreshToken: null,
       );
     }
   }
@@ -191,7 +198,6 @@ class AuthRepository {
     String message = fallbackMessage;
 
     if (e.response != null) {
-      // Try to extract message from backend
       try {
         final errorData = e.response!.data;
         if (errorData is Map<String, dynamic> && errorData['message'] != null) {
@@ -203,7 +209,6 @@ class AuthRepository {
         if (kDebugMode) print("Could not parse error response");
       }
 
-      // Common status codes with user-friendly messages
       switch (e.response!.statusCode) {
         case 400:
           message = message.isEmpty ? "Invalid request" : message;
@@ -244,7 +249,7 @@ class AuthRepository {
     }
 
     if (kDebugMode) print("DioError: ${e.type} - $message");
-    
+
     return AuthResponse(success: false, message: message);
   }
 }

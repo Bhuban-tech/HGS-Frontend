@@ -68,4 +68,16 @@ class ApiConstants {
 
   static const String requestEmailChange = '/api/users/request-email-change';
   static const String confirmEmailChange = '/api/users/confirm-email-change';
+
+  // ==================== PAYMENT & TRANSACTION ENDPOINTS ====================
+  static const String userTransactions = '/api/payment/history';
+  static String transactionById(String id) => '/api/payment/history/$id';
+  
+  // Khalti payment endpoints
+  static const String khaltiInitiate = '/api/payment/khalti/initiate';
+  static const String khaltiVerify = '/api/payment/khalti/verify';
+  
+  // eSewa payment endpoints
+  static const String esewaInitiate = '/api/payment/esewa/initiate';
+  static const String esewaVerify = '/api/payment/esewa/verify';
 }

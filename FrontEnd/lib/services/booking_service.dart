@@ -24,8 +24,13 @@ class BookingService {
     if (serviceId.isEmpty) {
       throw 'Service ID is required';
     }
-    if (bookingDate.isBefore(DateTime.now())) {
-      throw 'Booking date must be in the future';
+    // Allow same-day bookings - only reject if date is in the past
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final bookingDay = DateTime(bookingDate.year, bookingDate.month, bookingDate.day);
+    
+    if (bookingDay.isBefore(today)) {
+      throw 'Booking date cannot be in the past';
     }
     if (location == null || location.trim().isEmpty) {
       throw 'Location is required';

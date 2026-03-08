@@ -15,8 +15,10 @@ class TransactionHistoryPage extends StatefulWidget {
 class _TransactionHistoryPageState extends State<TransactionHistoryPage> {
   late final TransactionService _transactionService;
   List<Transaction> _transactions = [];
+  List<Transaction> _filteredTransactions = [];
   bool _isLoading = true;
   String? _error;
+  String _selectedFilter = 'All';
 
   @override
   void initState() {
@@ -32,14 +34,23 @@ class _TransactionHistoryPageState extends State<TransactionHistoryPage> {
     });
 
     try {
+      print('📊 Loading transactions...');
       final transactions = await _transactionService.getUserTransactions();
+      print('📊 Transactions loaded: ${transactions.length}');
+      
+      if (transactions.isNotEmpty) {
+        print('📊 First transaction: ${transactions[0].toJson()}');
+      }
+      
       if (mounted) {
         setState(() {
           _transactions = transactions;
+          _applyFilter();
           _isLoading = false;
         });
       }
     } catch (error) {
+      print('❌ Transaction loading error: $error');
       if (mounted) {
         setState(() {
           _error = error.toString();
@@ -47,6 +58,22 @@ class _TransactionHistoryPageState extends State<TransactionHistoryPage> {
         });
       }
     }
+  }
+
+  void _applyFilter() {
+    setState(() {
+      if (_selectedFilter == 'All') {
+        _filteredTransactions = _transactions;
+      } else if (_selectedFilter == 'eSewa') {
+        _filteredTransactions = _transactions.where((tx) => tx.paymentMethod.toLowerCase() == 'esewa').toList();
+      } else if (_selectedFilter == 'Khalti') {
+        _filteredTransactions = _transactions.where((tx) => tx.paymentMethod.toLowerCase() == 'khalti').toList();
+      } else if (_selectedFilter == 'Refunds') {
+        _filteredTransactions = _transactions.where((tx) => tx.refund).toList();
+      } else if (_selectedFilter == 'Failed') {
+        _filteredTransactions = _transactions.where((tx) => tx.status == 'Failed').toList();
+      }
+    });
   }
 
   @override
@@ -75,7 +102,71 @@ class _TransactionHistoryPageState extends State<TransactionHistoryPage> {
           ),
         ],
       ),
-      body: _buildBody(),
+      body: Column(
+        children: [
+          // Filter Tabs
+          Container(
+            color: Colors.white,
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: [
+                  _buildFilterChip('All'),
+                  const SizedBox(width: 8),
+                  _buildFilterChip('eSewa'),
+                  const SizedBox(width: 8),
+                  _buildFilterChip('Khalti'),
+                  const SizedBox(width: 8),
+                  _buildFilterChip('Refunds'),
+                  const SizedBox(width: 8),
+                  _buildFilterChip('Failed'),
+                ],
+              ),
+            ),
+          ),
+          Expanded(child: _buildBody()),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFilterChip(String label) {
+    final isSelected = _selectedFilter == label;
+    
+    Color backgroundColor;
+    Color textColor;
+    
+    if (isSelected) {
+      backgroundColor = AppColors.primaryBlue;
+      textColor = Colors.white;
+    } else {
+      backgroundColor = const Color(0xFFF5F5F5);
+      textColor = AppColors.textMedium;
+    }
+
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          _selectedFilter = label;
+          _applyFilter();
+        });
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+        decoration: BoxDecoration(
+          color: backgroundColor,
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+            color: textColor,
+          ),
+        ),
+      ),
     );
   }
 
@@ -135,7 +226,7 @@ class _TransactionHistoryPageState extends State<TransactionHistoryPage> {
       );
     }
 
-    if (_transactions.isEmpty) {
+    if (_filteredTransactions.isEmpty) {
       return Center(
         child: Padding(
           padding: const EdgeInsets.all(24),
@@ -179,7 +270,7 @@ class _TransactionHistoryPageState extends State<TransactionHistoryPage> {
     }
 
     // Group transactions by date
-    final grouped = _groupByDate(_transactions);
+    final grouped = _groupByDate(_filteredTransactions);
 
     return RefreshIndicator(
       onRefresh: _loadTransactions,

@@ -13,13 +13,20 @@ class TransactionService {
   Future<List<Transaction>> getUserTransactions() async {
     try {
       final token = await _tokenManager.getAccessToken();
+      final fullUrl = '${ApiConstants.baseUrl}${ApiConstants.userTransactions}';
+      
+      print('📡 Fetching transactions from: $fullUrl');
+      print('📡 Token: ${token?.substring(0, 20)}...');
 
       final response = await _dio.get(
-        ApiConstants.userTransactions,
+        fullUrl,
         options: Options(
           headers: {'Authorization': 'Bearer $token'},
         ),
       );
+
+      print('📡 Response status: ${response.statusCode}');
+      print('📡 Response data: ${response.data}');
 
       // Handle different response formats
       final dynamic responseData = response.data;
@@ -28,6 +35,7 @@ class TransactionService {
       if (responseData is List) {
         // Direct array response
         transactionsList = responseData;
+        print('📡 Direct array format: ${transactionsList.length} transactions');
       } else if (responseData is Map) {
         // Check for success flag
         if (responseData['success'] == false) {
@@ -35,12 +43,16 @@ class TransactionService {
         }
         // Extract data array
         transactionsList = responseData['data'] ?? [];
+        print('📡 Map format: ${transactionsList.length} transactions');
       } else {
         transactionsList = [];
+        print('📡 Unknown format, returning empty list');
       }
 
       return transactionsList.map((json) => Transaction.fromJson(json)).toList();
     } on DioException catch (e) {
+      print('❌ DioException: ${e.message}');
+      print('❌ Response: ${e.response?.data}');
       throw _handleError(e);
     }
   }
@@ -49,9 +61,10 @@ class TransactionService {
   Future<Transaction> getTransactionById(String transactionId) async {
     try {
       final token = await _tokenManager.getAccessToken();
+      final fullUrl = '${ApiConstants.baseUrl}${ApiConstants.transactionById(transactionId)}';
 
       final response = await _dio.get(
-        ApiConstants.transactionById(transactionId),
+        fullUrl,
         options: Options(
           headers: {'Authorization': 'Bearer $token'},
         ),

@@ -8,6 +8,7 @@ class PaymentBrowser {
     required BuildContext context,
     required String paymentUrl,
     required String paymentMethod,
+    String? pidx, // For Khalti
   }) async {
     try {
       final uri = Uri.parse(paymentUrl);

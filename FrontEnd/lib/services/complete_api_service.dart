@@ -23,9 +23,9 @@ class CompleteApiService {
 
   final TokenManager _tokenManager = TokenManager();
 
-  // ==================== TOKEN HELPER ====================
 
-  /// ✅ FIXED: properly validates token without swallowing valid tokens
+
+
   Future<String> _getValidToken() async {
     final token = await _tokenManager.getAccessToken();
 
@@ -323,7 +323,11 @@ class CompleteApiService {
       final token = await _getValidToken();
       final response = await _dio.patch(
         '/api/bookings/$bookingId/accept',
-        options: Options(headers: {'Authorization': 'Bearer $token'}),
+        data: {},
+        options: Options(headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        }),
       );
       return _handleResponse(response);
     } catch (e) {

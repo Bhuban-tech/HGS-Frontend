@@ -46,12 +46,12 @@ class ApiConstants {
   static String cancelBooking(String id) => '/api/bookings/$id/cancel';
   static String completeBooking(String id) => '/api/bookings/$id/complete';
 
-  // ==================== SERVICE ENDPOINTS ====================
+
   static const String services = '/api/services';
   static String serviceById(String id) => '/api/services/$id';
   static const String servicesByCategory = '/api/services/category';
 
-  // ==================== PROVIDER ENDPOINTS ====================
+ 
   static const String providers = '/api/users/providers';
   static String providerById(String id) => '/api/users/providers/$id';
   static const String becomeProvider = '/api/users/become-provider';
@@ -62,14 +62,14 @@ class ApiConstants {
   static String chatTopic(String userId) => '/topic/user/$userId';
   static String chatSend = '/app/chat';
 
-  // ==================== USER PROFILE ENDPOINTS ====================
+
   static const String userProfile = '/api/users/me';
   static const String updateProfile = '/api/users/profile';
 
   static const String requestEmailChange = '/api/users/request-email-change';
   static const String confirmEmailChange = '/api/users/confirm-email-change';
 
-  // ==================== PAYMENT & TRANSACTION ENDPOINTS ====================
+ 
   static const String userTransactions = '/api/payment/history';
   static String transactionById(String id) => '/api/payment/history/$id';
   

@@ -95,14 +95,16 @@ class ChatService {
     }
 
     final subscribeMessage = {
-      'action': 'subscribe',
+      'action': 'SUBSCRIBE',
       'destination': '/topic/booking/$bookingId',
+      'id': 'sub-$bookingId',
     };
 
     _channel!.sink.add(jsonEncode(subscribeMessage));
     
     if (kDebugMode) {
-      print('✅ Subscribed to: /topic/booking/$bookingId');
+      print('✅ Subscribed to booking topic: /topic/booking/$bookingId');
+      print('📡 All devices subscribed to this topic will receive messages');
     }
   }
 
@@ -195,16 +197,26 @@ class ChatService {
   /// Handle incoming messages
   void _handleMessage(dynamic data) {
     try {
+      if (kDebugMode) {
+        print('📨 [WebSocket] Raw message received: $data');
+      }
+      
       final Map<String, dynamic> json = jsonDecode(data);
+      
+      if (kDebugMode) {
+        print('📨 [WebSocket] Parsed message: $json');
+      }
+      
       final message = ChatMessage.fromJson(json);
       _messageController.add(message);
       
       if (kDebugMode) {
-        print('Message received: ${message.message}');
+        print('✅ [WebSocket] Message delivered to stream: ${message.senderName} -> ${message.message}');
       }
     } catch (e) {
       if (kDebugMode) {
-        print('Error parsing message: $e');
+        print('❌ [WebSocket] Error parsing message: $e');
+        print('❌ [WebSocket] Raw data was: $data');
       }
     }
   }

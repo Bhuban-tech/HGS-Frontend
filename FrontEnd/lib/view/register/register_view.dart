@@ -77,7 +77,7 @@ class _SignUpScreenState extends State<SignUpScreen> with SingleTickerProviderSt
         // Authentication error - categories endpoint requires auth
         debugPrint("Categories endpoint requires authentication. Using fallback.");
         setState(() {
-          // Provide fallback categories
+
           _categories = [
             {'id': '1', 'name': 'Plumbing'},
             {'id': '2', 'name': 'Electrical'},
@@ -381,9 +381,9 @@ class _SignUpScreenState extends State<SignUpScreen> with SingleTickerProviderSt
                                     if (v == null || v.isEmpty) {
                                       return 'Phone number is required';
                                     }
-                                    // Remove any spaces or dashes
+
                                     String cleaned = v.replaceAll(RegExp(r'[\s\-]'), '');
-                                    // Check if it's exactly 10 digits
+
                                     if (!RegExp(r'^[0-9]{10}$').hasMatch(cleaned)) {
                                       return 'Phone number must be exactly 10 digits';
                                     }

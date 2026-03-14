@@ -29,7 +29,7 @@ class ApiService {
     required String password,
   }) async {
     final response = await http.post(
-      Uri.parse(ApiConstants.register),
+      Uri.parse('${ApiConstants.baseUrl}${ApiConstants.register}'),
       headers: await _getHeaders(requireAuth: false),
       body: jsonEncode({
         'username': username,
@@ -53,7 +53,7 @@ class ApiService {
     required String password,
   }) async {
     final response = await http.post(
-      Uri.parse(ApiConstants.login),
+      Uri.parse('${ApiConstants.baseUrl}${ApiConstants.login}'),
       headers: await _getHeaders(requireAuth: false),
       body: jsonEncode({
         'email': email,
@@ -81,7 +81,7 @@ class ApiService {
   /// Get all users (admin only)
   Future<List<dynamic>> getAllUsers() async {
     final response = await http.get(
-      Uri.parse(ApiConstants.adminUsers),
+      Uri.parse('${ApiConstants.baseUrl}${ApiConstants.adminUsers}'),
       headers: await _getHeaders(),
     );
     return _handleListResponse(response);
@@ -90,7 +90,7 @@ class ApiService {
   /// Get all service providers
   Future<List<dynamic>> getAllProviders() async {
     final response = await http.get(
-      Uri.parse(ApiConstants.adminProviders),
+      Uri.parse('${ApiConstants.baseUrl}${ApiConstants.adminProviders}'),
       headers: await _getHeaders(),
     );
     return _handleListResponse(response);
@@ -99,7 +99,7 @@ class ApiService {
   /// Get pending providers
   Future<List<dynamic>> getPendingProviders() async {
     final response = await http.get(
-      Uri.parse(ApiConstants.adminPendingProviders),
+      Uri.parse('${ApiConstants.baseUrl}${ApiConstants.adminPendingProviders}'),
       headers: await _getHeaders(),
     );
     return _handleListResponse(response);
@@ -108,7 +108,7 @@ class ApiService {
   /// Approve a provider
   Future<void> approveProvider(String id) async {
     final response = await http.patch(
-      Uri.parse(ApiConstants.adminApproveProvider(id)),
+      Uri.parse('${ApiConstants.baseUrl}${ApiConstants.adminApproveProvider(id)}'),
       headers: await _getHeaders(),
       body: jsonEncode({}),
     );
@@ -118,7 +118,7 @@ class ApiService {
   /// Reject a provider
   Future<void> rejectProvider(String id) async {
     final response = await http.patch(
-      Uri.parse(ApiConstants.adminRejectProvider(id)),
+      Uri.parse('${ApiConstants.baseUrl}${ApiConstants.adminRejectProvider(id)}'),
       headers: await _getHeaders(),
       body: jsonEncode({}),
     );
@@ -128,7 +128,7 @@ class ApiService {
   /// Deactivate a provider/user (added for admin dashboard)
   Future<void> deactivateProvider(String id) async {
     final response = await http.patch(
-      Uri.parse(ApiConstants.adminDeactivateUser(id)),
+      Uri.parse('${ApiConstants.baseUrl}${ApiConstants.adminDeactivateUser(id)}'),
       headers: await _getHeaders(),
       body: jsonEncode({}),
     );
@@ -140,7 +140,7 @@ class ApiService {
   /// Get all active categories (public)
   Future<List<dynamic>> getAllActiveCategories() async {
     final response = await http.get(
-      Uri.parse(ApiConstants.categories),
+      Uri.parse('${ApiConstants.baseUrl}${ApiConstants.categories}'),
       headers: await _getHeaders(requireAuth: false),
     );
     return _handleListResponse(response);
@@ -149,7 +149,7 @@ class ApiService {
   /// Get all categories (admin)
   Future<List<dynamic>> getAllCategories() async {
     final response = await http.get(
-      Uri.parse(ApiConstants.categories),
+      Uri.parse('${ApiConstants.baseUrl}${ApiConstants.categories}'),
       headers: await _getHeaders(),
     );
     return _handleListResponse(response);
@@ -162,7 +162,7 @@ class ApiService {
     required String icon,
   }) async {
     final response = await http.post(
-      Uri.parse(ApiConstants.categories),
+      Uri.parse('${ApiConstants.baseUrl}${ApiConstants.categories}'),
       headers: await _getHeaders(),
       body: jsonEncode({
         'name': name,
@@ -191,7 +191,7 @@ class ApiService {
     required String icon,
   }) async {
     final response = await http.put(
-      Uri.parse(ApiConstants.categoryById(id)),
+      Uri.parse('${ApiConstants.baseUrl}${ApiConstants.categoryById(id)}'),
       headers: await _getHeaders(),
       body: jsonEncode({
         'name': name,
@@ -215,7 +215,7 @@ class ApiService {
   /// Delete a category (admin)
   Future<void> deleteCategory(String id) async {
     final response = await http.delete(
-      Uri.parse(ApiConstants.categoryById(id)),
+      Uri.parse('${ApiConstants.baseUrl}${ApiConstants.categoryById(id)}'),
       headers: await _getHeaders(),
     );
     _handleVoidResponse(response, 'delete');

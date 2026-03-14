@@ -189,7 +189,7 @@ class TokenManager {
     if (kDebugMode) print('✅ Force logout complete - all data cleared');
   }
 
-  /// ================= PRIVATE HELPERS =================
+
   void _goToLogin(BuildContext context) {
     Navigator.pushNamedAndRemoveUntil(
       context,
@@ -198,7 +198,7 @@ class TokenManager {
     );
   }
 
-  /// Handles: role, roles, string or list
+
   String? _extractRole(Map<String, dynamic> payload) {
     if (payload['role'] is String) {
       return payload['role'].toString().toUpperCase();

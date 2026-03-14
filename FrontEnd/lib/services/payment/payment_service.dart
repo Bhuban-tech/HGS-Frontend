@@ -8,14 +8,13 @@ class PaymentService {
 
   PaymentService(this._dio);
 
-  /// Initiate Khalti Payment
   Future<Map<String, dynamic>> initiateKhaltiPayment(int amount) async {
     try {
       final token = await _tokenManager.getAccessToken();
       
-      print('🔵 Initiating Khalti payment...');
-      print('🔵 Amount: $amount');
-      print('🔵 URL: ${ApiConstants.baseUrl}/api/payment/khalti/initiate');
+      // print('🔵 Initiating Khalti payment...');
+      // print('🔵 Amount: $amount');
+      // print('🔵 URL: ${ApiConstants.baseUrl}/api/payment/khalti/initiate');
 
       final response = await _dio.post(
         '${ApiConstants.baseUrl}/api/payment/khalti/initiate',
@@ -25,8 +24,7 @@ class PaymentService {
         ),
       );
 
-      print('🔵 Response status: ${response.statusCode}');
-      print('🔵 Response data: ${response.data}');
+
 
       if (response.data['success'] == true) {
         return response.data['data'];
@@ -43,7 +41,7 @@ class PaymentService {
     }
   }
 
-  /// Verify Khalti Payment
+
   Future<Map<String, dynamic>> verifyKhaltiPayment(String pidx) async {
     try {
       final token = await _tokenManager.getAccessToken();

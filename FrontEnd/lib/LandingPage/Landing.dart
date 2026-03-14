@@ -134,6 +134,28 @@ class _LandingPageState extends State<LandingPage> {
 
           const SizedBox(height: 48),
 
+          // ── Action Buttons ──────────────────────────────────
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            child: Column(
+              children: [
+                _primaryButton(
+                  text: 'Explore All Services',
+                  icon: Icons.search_rounded,
+                  onTap: () => Navigator.pushNamed(context, '/login'),
+                ),
+                const SizedBox(height: 16),
+                _outlineButton(
+                  text: 'Become a Service Provider',
+                  icon: Icons.work_outline_rounded,
+                  onTap: () => Navigator.pushNamed(context, '/signup'),
+                ),
+              ],
+            ),
+          ),
+
+          const SizedBox(height: 48),
+
           // ── Footer ──────────────────────────────────────────
           Container(
             width: double.infinity,
@@ -270,6 +292,99 @@ class _LandingPageState extends State<LandingPage> {
         border: Border.all(color: Colors.white.withOpacity(0.2)),
       ),
       child: Icon(icon, color: Colors.white, size: 20),
+    );
+  }
+
+  Widget _primaryButton({
+    required String text,
+    required IconData icon,
+    required VoidCallback onTap,
+  }) {
+    return SizedBox(
+      width: double.infinity,
+      height: 60,
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(16),
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(16),
+          child: Ink(
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Color(0xFF6366F1), Color(0xFF4F46E5)],
+              ),
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFF6366F1).withOpacity(0.3),
+                  blurRadius: 15,
+                  offset: const Offset(0, 8),
+                ),
+              ],
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(icon, color: Colors.white, size: 22),
+                const SizedBox(width: 12),
+                Text(
+                  text,
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _outlineButton({
+    required String text,
+    required IconData icon,
+    required VoidCallback onTap,
+  }) {
+    return SizedBox(
+      width: double.infinity,
+      height: 60,
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(16),
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(16),
+          child: Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: const Color(0xFF6366F1).withOpacity(0.5),
+                width: 1.5,
+              ),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(icon, color: const Color(0xFF6366F1), size: 22),
+                const SizedBox(width: 12),
+                Text(
+                  text,
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: const Color(0xFF6366F1),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

@@ -9,6 +9,7 @@ import 'package:HamroGharSewa/providers/booking_provider.dart';
 import 'package:HamroGharSewa/providers/chat_provider.dart';
 import 'package:HamroGharSewa/providers/service_provider.dart' as sp;
 import 'package:flutter/material.dart';
+import 'package:flutter/gestures.dart';
 import 'package:device_preview/device_preview.dart';
 import 'package:provider/provider.dart';
 import 'package:dio/dio.dart';
@@ -68,7 +69,13 @@ class MyApp extends StatelessWidget {
       child: MaterialApp(
         useInheritedMediaQuery: true,
         locale: DevicePreview.locale(context),
-        builder: DevicePreview.appBuilder,
+        builder: (context, child) => DevicePreview.appBuilder(
+          context,
+          ScrollConfiguration(
+            behavior: _PointerScrollBehavior(),
+            child: child!,
+          ),
+        ),
         title: 'HamroGharSewa',
         debugShowCheckedModeBanner: false,
         theme: AppTheme.lightTheme,
@@ -77,4 +84,13 @@ class MyApp extends StatelessWidget {
       ),
     );
   }
+}
+
+/// Makes GestureDetector / InkWell show pointer cursor on web
+class _PointerScrollBehavior extends MaterialScrollBehavior {
+  @override
+  Set<PointerDeviceKind> get dragDevices => {
+        PointerDeviceKind.touch,
+        PointerDeviceKind.mouse,
+      };
 }

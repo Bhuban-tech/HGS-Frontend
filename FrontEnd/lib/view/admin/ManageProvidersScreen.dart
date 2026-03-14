@@ -381,7 +381,7 @@ class _ManageProvidersScreenState extends State<ManageProvidersScreen>
                           size: 18),
                       label: Text(isActive ? 'Deactivate' : 'Activate'),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: isActive ? Colors.orange : Colors.green,
+                        backgroundColor: AppColors.primaryBlue,
                         foregroundColor: Colors.white,
                         padding: const EdgeInsets.symmetric(vertical: 14),
                         shape: RoundedRectangleBorder(

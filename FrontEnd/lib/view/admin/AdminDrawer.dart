@@ -126,7 +126,7 @@ class AdminDrawer extends StatelessWidget {
                               Expanded(
                                 child: ElevatedButton(
                                   onPressed: () => Navigator.pop(ctx, true),
-                                  style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                                  style: ElevatedButton.styleFrom(backgroundColor: AppColors.primaryBlue),
                                   child: const Text('Logout', style: TextStyle(color: Colors.white)),
                                 ),
                               ),

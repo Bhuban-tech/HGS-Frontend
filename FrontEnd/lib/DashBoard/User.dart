@@ -11,6 +11,7 @@ import 'package:HamroGharSewa/Booking/ChatPage.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:dio/dio.dart';
+import 'package:intl/intl.dart';
 
 import 'package:HamroGharSewa/route/app_routes.dart';
 
@@ -721,61 +722,64 @@ class _UserDashboardState extends State<UserDashboard>
       margin: const EdgeInsets.symmetric(horizontal: 8),
       child: Material(
         color: Colors.transparent,
-        child: InkWell(
-          onTap: () {
-            setState(() {
-              _selectedCategory = isSelected ? null : title;
-            });
-          },
-          borderRadius: BorderRadius.circular(20),
-          child: Column(
-            children: [
-              Hero(
-                tag: 'category_$title',
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 250),
-                  curve: Curves.easeInOut,
-                  width: 76,
-                  height: 76,
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: isSelected
-                          ? [color.withValues(alpha: 0.9), color]
-                          : [
-                        color.withValues(alpha: 0.15),
-                        color.withValues(alpha: 0.05),
-                      ],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                    borderRadius: BorderRadius.circular(22),
-                    border: isSelected ? Border.all(color: color, width: 2.5) : null,
-                    boxShadow: [
-                      BoxShadow(
-                        color: color.withValues(alpha: isSelected ? 0.45 : 0.2),
-                        blurRadius: isSelected ? 18 : 12,
-                        offset: const Offset(0, 6),
+        child: MouseRegion(
+          cursor: SystemMouseCursors.click,
+          child: InkWell(
+            onTap: () {
+              setState(() {
+                _selectedCategory = isSelected ? null : title;
+              });
+            },
+            borderRadius: BorderRadius.circular(20),
+            child: Column(
+              children: [
+                Hero(
+                  tag: 'category_$title',
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 250),
+                    curve: Curves.easeInOut,
+                    width: 76,
+                    height: 76,
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: isSelected
+                            ? [color.withValues(alpha: 0.9), color]
+                            : [
+                          color.withValues(alpha: 0.15),
+                          color.withValues(alpha: 0.05),
+                        ],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
                       ),
-                    ],
-                  ),
-                  child: Icon(
-                    service['icon'] as IconData,
-                    color: isSelected ? Colors.white : color,
-                    size: 34,
+                      borderRadius: BorderRadius.circular(22),
+                      border: isSelected ? Border.all(color: color, width: 2.5) : null,
+                      boxShadow: [
+                        BoxShadow(
+                          color: color.withValues(alpha: isSelected ? 0.45 : 0.2),
+                          blurRadius: isSelected ? 18 : 12,
+                          offset: const Offset(0, 6),
+                        ),
+                      ],
+                    ),
+                    child: Icon(
+                      service['icon'] as IconData,
+                      color: isSelected ? Colors.white : color,
+                      size: 34,
+                    ),
                   ),
                 ),
-              ),
-              const SizedBox(height: 10),
-              Text(
-                title,
-                style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w700,
-                  color: isSelected ? color : AppColors.textDark,
-                  letterSpacing: -0.2,
+                const SizedBox(height: 10),
+                Text(
+                  title,
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                    color: isSelected ? color : AppColors.textDark,
+                    letterSpacing: -0.2,
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
@@ -982,38 +986,48 @@ class _UserDashboardState extends State<UserDashboard>
 
                         const SizedBox(height: 10),
 
-                        // Rate + Book/Chat buttons
+                        // View Details + Book/Chat buttons
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Flexible(
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 12,
-                                  vertical: 6,
-                                ),
-                                decoration: BoxDecoration(
-                                  gradient: const LinearGradient(
-                                    colors: [AppColors.primaryBlue, AppColors.primaryPurple],
-                                  ),
-                                  borderRadius: BorderRadius.circular(10),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: AppColors.primaryBlue.withValues(alpha: 0.3),
-                                      blurRadius: 8,
-                                      offset: const Offset(0, 4),
+                              child: MouseRegion(
+                                cursor: SystemMouseCursors.click,
+                                child: GestureDetector(
+                                  onTap: () => _showProviderDetails(provider),
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 10,
+                                      vertical: 8,
                                     ),
-                                  ],
-                                ),
-                                child: Text(
-                                  provider['rate'] ?? '',
-                                  style: const TextStyle(
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.white,
+                                    decoration: BoxDecoration(
+                                      color: AppColors.primaryBlue.withValues(alpha: 0.08),
+                                      borderRadius: BorderRadius.circular(10),
+                                      border: Border.all(
+                                        color: AppColors.primaryBlue.withValues(alpha: 0.3),
+                                      ),
+                                    ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        const Icon(Icons.info_outline_rounded,
+                                            size: 14, color: AppColors.primaryBlue),
+                                        const SizedBox(width: 4),
+                                        Flexible(
+                                          child: Text(
+                                            'View Details',
+                                            style: const TextStyle(
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.w700,
+                                              color: AppColors.primaryBlue,
+                                            ),
+                                            overflow: TextOverflow.ellipsis,
+                                            maxLines: 1,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
                                   ),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
                                 ),
                               ),
                             ),
@@ -1022,61 +1036,64 @@ class _UserDashboardState extends State<UserDashboard>
                             // Show different buttons based on booking status
                             if (hasActiveBooking && canChat)
                               // Show Chat button if booking is accepted
-                              Material(
-                                color: Colors.transparent,
-                                child: InkWell(
-                                  onTap: () {
-                                    final booking = bookingProvider.userBookings.firstWhere(
-                                      (b) => b.providerId == providerId && b.isAccepted,
-                                    );
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (_) => ChatPage(
-                                          name: provider['name'] ?? 'Provider',
-                                          bookingId: booking.id,
-                                          userId: providerId,
-                                        ),
-                                      ),
-                                    );
-                                  },
-                                  borderRadius: BorderRadius.circular(14),
-                                  child: Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 20,
-                                      vertical: 10,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      gradient: const LinearGradient(
-                                        colors: [AppColors.primaryBlue, AppColors.primaryPurple],
-                                      ),
-                                      borderRadius: BorderRadius.circular(14),
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: AppColors.primaryBlue.withValues(alpha: 0.4),
-                                          blurRadius: 12,
-                                          offset: const Offset(0, 6),
-                                        ),
-                                      ],
-                                    ),
-                                    child: const Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        Icon(
-                                          Icons.chat_bubble_rounded,
-                                          size: 16,
-                                          color: Colors.white,
-                                        ),
-                                        SizedBox(width: 6),
-                                        Text(
-                                          'Chat',
-                                          style: TextStyle(
-                                            color: Colors.white,
-                                            fontSize: 13,
-                                            fontWeight: FontWeight.bold,
+                              MouseRegion(
+                                cursor: SystemMouseCursors.click,
+                                child: Material(
+                                  color: Colors.transparent,
+                                  child: InkWell(
+                                    onTap: () {
+                                      final booking = bookingProvider.userBookings.firstWhere(
+                                        (b) => b.providerId == providerId && b.isAccepted,
+                                      );
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (_) => ChatPage(
+                                            name: provider['name'] ?? 'Provider',
+                                            bookingId: booking.id,
+                                            userId: providerId,
                                           ),
                                         ),
-                                      ],
+                                      );
+                                    },
+                                    borderRadius: BorderRadius.circular(14),
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 20,
+                                        vertical: 10,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        gradient: const LinearGradient(
+                                          colors: [AppColors.primaryBlue, AppColors.primaryPurple],
+                                        ),
+                                        borderRadius: BorderRadius.circular(14),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: AppColors.primaryBlue.withValues(alpha: 0.4),
+                                            blurRadius: 12,
+                                            offset: const Offset(0, 6),
+                                          ),
+                                        ],
+                                      ),
+                                      child: const Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Icon(
+                                            Icons.chat_bubble_rounded,
+                                            size: 16,
+                                            color: Colors.white,
+                                          ),
+                                          SizedBox(width: 6),
+                                          Text(
+                                            'Chat',
+                                            style: TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 13,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
                                     ),
                                   ),
                                 ),
@@ -1118,54 +1135,57 @@ class _UserDashboardState extends State<UserDashboard>
                               )
                             else
                               // Show "Book Now" button
-                              Material(
-                                color: Colors.transparent,
-                                child: InkWell(
-                                  onTap: () {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (_) => BookingPage(providerData: provider),
-                                      ),
-                                    );
-                                  },
-                                  borderRadius: BorderRadius.circular(14),
-                                  child: Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 20,
-                                      vertical: 10,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      gradient: const LinearGradient(
-                                        colors: [AppColors.primaryBlue, AppColors.primaryPurple],
-                                      ),
-                                      borderRadius: BorderRadius.circular(14),
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: AppColors.primaryBlue.withValues(alpha: 0.4),
-                                          blurRadius: 12,
-                                          offset: const Offset(0, 6),
+                              MouseRegion(
+                                cursor: SystemMouseCursors.click,
+                                child: Material(
+                                  color: Colors.transparent,
+                                  child: InkWell(
+                                    onTap: () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (_) => BookingPage(providerData: provider),
                                         ),
-                                      ],
-                                    ),
-                                    child: const Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        Text(
-                                          'Book Now',
-                                          style: TextStyle(
-                                            color: Colors.white,
-                                            fontSize: 13,
-                                            fontWeight: FontWeight.bold,
+                                      );
+                                    },
+                                    borderRadius: BorderRadius.circular(14),
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 20,
+                                        vertical: 10,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        gradient: const LinearGradient(
+                                          colors: [AppColors.primaryBlue, AppColors.primaryPurple],
+                                        ),
+                                        borderRadius: BorderRadius.circular(14),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: AppColors.primaryBlue.withValues(alpha: 0.4),
+                                            blurRadius: 12,
+                                            offset: const Offset(0, 6),
                                           ),
-                                        ),
-                                        SizedBox(width: 6),
-                                        Icon(
-                                          Icons.arrow_forward_rounded,
-                                          size: 16,
-                                          color: Colors.white,
-                                        ),
-                                      ],
+                                        ],
+                                      ),
+                                      child: const Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Text(
+                                            'Book Now',
+                                            style: TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 13,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                          SizedBox(width: 6),
+                                          Icon(
+                                            Icons.arrow_forward_rounded,
+                                            size: 16,
+                                            color: Colors.white,
+                                          ),
+                                        ],
+                                      ),
                                     ),
                                   ),
                                 ),
@@ -1181,6 +1201,295 @@ class _UserDashboardState extends State<UserDashboard>
           ),
         ),
       ),
+    );
+  }
+
+  void _showProviderDetails(Map<String, dynamic> provider) {
+    final bool isAvailable = provider['status'] == 'Available';
+    final String providerId = provider['id']?.toString() ?? '';
+    
+    // Check if user already has a booking with this provider
+    final bookingProvider = Provider.of<BookingProvider>(context, listen: false);
+    final existingBooking = bookingProvider.userBookings.where(
+      (b) => b.providerId == providerId && (b.isPending || b.isAccepted),
+    ).firstOrNull;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => Container(
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+        ),
+        padding: const EdgeInsets.fromLTRB(24, 12, 24, 32),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Handle bar
+            Center(
+              child: Container(
+                width: 40, height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.grey[300],
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
+
+            // Header row
+            Row(
+              children: [
+                Container(
+                  width: 72, height: 72,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        AppColors.primaryBlue.withOpacity(0.12),
+                        AppColors.primaryPurple.withOpacity(0.12),
+                      ],
+                    ),
+                    borderRadius: BorderRadius.circular(18),
+                  ),
+                  child: Icon(
+                    _getCategoryIcon(provider['service'] ?? ''),
+                    size: 36, color: AppColors.primaryBlue,
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        provider['name'] ?? 'Unknown',
+                        style: const TextStyle(
+                          fontSize: 20, fontWeight: FontWeight.w800,
+                          color: AppColors.textDark,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: isAvailable
+                              ? AppColors.success.withOpacity(0.12)
+                              : Colors.orange.withOpacity(0.12),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              isAvailable ? Icons.check_circle : Icons.access_time,
+                              size: 13,
+                              color: isAvailable ? AppColors.success : Colors.orange,
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              provider['status'] ?? '',
+                              style: TextStyle(
+                                fontSize: 12, fontWeight: FontWeight.w700,
+                                color: isAvailable ? AppColors.success : Colors.orange,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 24),
+            const Divider(height: 1),
+            const SizedBox(height: 20),
+
+            // Details grid
+            _detailRow(Icons.build_rounded, 'Service', provider['service'] ?? 'N/A'),
+            const SizedBox(height: 14),
+            _detailRow(Icons.location_on_rounded, 'Location', provider['location'] ?? 'N/A'),
+            const SizedBox(height: 14),
+            _detailRow(Icons.email_rounded, 'Email', provider['email'] ?? 'N/A'),
+            const SizedBox(height: 14),
+            _detailRow(Icons.phone_rounded, 'Phone', provider['phone'] ?? 'N/A'),
+            const SizedBox(height: 14),
+            _detailRow(Icons.work_history_rounded, 'Experience',
+                provider['rate'] ?? 'N/A'),
+
+            // Show booking info if already booked
+            if (existingBooking != null) ...[
+              const SizedBox(height: 20),
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: existingBooking.isAccepted
+                      ? AppColors.success.withValues(alpha: 0.08)
+                      : Colors.orange.withValues(alpha: 0.08),
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(
+                    color: existingBooking.isAccepted
+                        ? AppColors.success.withValues(alpha: 0.3)
+                        : Colors.orange.withValues(alpha: 0.3),
+                  ),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(
+                          existingBooking.isAccepted
+                              ? Icons.check_circle_rounded
+                              : Icons.schedule_rounded,
+                          size: 16,
+                          color: existingBooking.isAccepted
+                              ? AppColors.success
+                              : Colors.orange,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          existingBooking.isAccepted
+                              ? 'Booking Accepted'
+                              : 'Booking Pending',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w700,
+                            color: existingBooking.isAccepted
+                                ? AppColors.success
+                                : Colors.orange,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 10),
+                    Row(
+                      children: [
+                        Icon(Icons.calendar_today_rounded,
+                            size: 14, color: AppColors.textLight),
+                        const SizedBox(width: 8),
+                        Text(
+                          DateFormat('EEE, MMM dd yyyy').format(existingBooking.bookingDate),
+                          style: const TextStyle(
+                              fontSize: 13, color: AppColors.textMedium),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 6),
+                    Row(
+                      children: [
+                        Icon(Icons.access_time_rounded,
+                            size: 14, color: AppColors.textLight),
+                        const SizedBox(width: 8),
+                        Text(
+                          DateFormat('hh:mm a').format(existingBooking.bookingDate),
+                          style: const TextStyle(
+                              fontSize: 13, color: AppColors.textMedium),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ],
+
+            const SizedBox(height: 28),
+
+            // Book Now button — disabled if already booked
+            SizedBox(
+              width: double.infinity,
+              child: existingBooking != null
+                  ? OutlinedButton(
+                      onPressed: null,
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        side: BorderSide(color: Colors.grey.shade300),
+                      ),
+                      child: Text(
+                        existingBooking.isAccepted
+                            ? 'Already Accepted'
+                            : 'Already Booked',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.grey.shade400,
+                        ),
+                      ),
+                    )
+                  : ElevatedButton(
+                      onPressed: () {
+                        Navigator.pop(context);
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => BookingPage(providerData: provider),
+                          ),
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primaryBlue,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        elevation: 0,
+                      ),
+                      child: const Text(
+                        'Book Now',
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+                      ),
+                    ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _detailRow(IconData icon, String label, String value) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: AppColors.primaryBlue.withOpacity(0.08),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Icon(icon, size: 18, color: AppColors.primaryBlue),
+        ),
+        const SizedBox(width: 14),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                label,
+                style: const TextStyle(
+                  fontSize: 12, fontWeight: FontWeight.w600,
+                  color: AppColors.textLight,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                value,
+                style: const TextStyle(
+                  fontSize: 15, fontWeight: FontWeight.w600,
+                  color: AppColors.textDark,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 

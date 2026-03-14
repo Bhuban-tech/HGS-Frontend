@@ -59,13 +59,11 @@ class BookingProvider with ChangeNotifier {
       // Also add to provider bookings for demo purposes
       _providerBookings.insert(0, booking);
       
-      notifyListeners();
       _setLoading(false);
       return true;
     } catch (e) {
       _error = e.toString();
       _setLoading(false);
-      notifyListeners();
       return false;
     }
   }
@@ -78,11 +76,9 @@ class BookingProvider with ChangeNotifier {
     try {
       _userBookings = await _bookingService.getUserBookings(status: status);
       _setLoading(false);
-      notifyListeners();
     } catch (e) {
       _error = e.toString();
       _setLoading(false);
-      notifyListeners();
     }
   }
 
@@ -94,11 +90,9 @@ class BookingProvider with ChangeNotifier {
     try {
       _providerBookings = await _bookingService.getProviderBookings(status: status);
       _setLoading(false);
-      notifyListeners();
     } catch (e) {
       _error = e.toString();
       _setLoading(false);
-      notifyListeners();
     }
   }
 
@@ -117,12 +111,10 @@ class BookingProvider with ChangeNotifier {
       }
       
       _setLoading(false);
-      notifyListeners();
       return true;
     } catch (e) {
       _error = e.toString();
       _setLoading(false);
-      notifyListeners();
       return false;
     }
   }
@@ -137,12 +129,10 @@ class BookingProvider with ChangeNotifier {
 
       _updateBookingInList(updatedBooking);
       _setLoading(false);
-      notifyListeners();
       return true;
     } catch (e) {
       _error = e.toString();
       _setLoading(false);
-      notifyListeners();
       return false;
     }
   }
@@ -157,12 +147,10 @@ class BookingProvider with ChangeNotifier {
 
       _updateBookingInList(updatedBooking);
       _setLoading(false);
-      notifyListeners();
       return true;
     } catch (e) {
       _error = e.toString();
       _setLoading(false);
-      notifyListeners();
       return false;
     }
   }
@@ -177,12 +165,10 @@ class BookingProvider with ChangeNotifier {
 
       _updateBookingInList(updatedBooking);
       _setLoading(false);
-      notifyListeners();
       return true;
     } catch (e) {
       _error = e.toString();
       _setLoading(false);
-      notifyListeners();
       return false;
     }
   }
@@ -201,9 +187,7 @@ class BookingProvider with ChangeNotifier {
 
   void _setLoading(bool value) {
     _isLoading = value;
-    if (!value) {
-      notifyListeners();
-    }
+    notifyListeners();
   }
 
   void clearError() {

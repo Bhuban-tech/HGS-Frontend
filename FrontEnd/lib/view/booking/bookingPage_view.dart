@@ -2,7 +2,6 @@
 import 'package:HamroGharSewa/constants/app_colors.dart';
 import 'package:flutter/material.dart';
 
-import '../../Booking/ChatPage.dart';
 import '../../Booking/Confirm-Booking.dart';
 
 class BookingPage extends StatefulWidget {
@@ -17,14 +16,20 @@ class _BookingPageState extends State<BookingPage> {
   int selectedDateIndex = 0;
   int selectedTimeIndex = -1;
 
-  final List<Map<String, String>> dates = [
-    {'day': 'Thu', 'date': '4'},
-    {'day': 'Fri', 'date': '5'},
-    {'day': 'Sat', 'date': '6'},
-    {'day': 'Sun', 'date': '7'},
-    {'day': 'Mon', 'date': '8'},
-    {'day': 'Tue', 'date': '9'},
-  ];
+  // Generate 6 days starting from today dynamically
+  List<Map<String, String>> get dates {
+    final now = DateTime.now();
+    return List.generate(6, (i) {
+      final day = now.add(Duration(days: i));
+      const dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+      return {
+        'day': dayNames[day.weekday - 1],
+        'date': day.day.toString(),
+        'month': day.month.toString(),
+        'year': day.year.toString(),
+      };
+    });
+  }
 
   final List<String> timeSlots = [
     '08:00 AM', '09:00 AM', '10:00 AM',
@@ -126,12 +131,16 @@ class _BookingPageState extends State<BookingPage> {
                                   children: [
                                     const Icon(Icons.verified_rounded, size: 13, color: AppColors.primaryBlue),
                                     const SizedBox(width: 5),
-                                    Text(
-                                      provider['service'] ?? "Plumbing Expert",
-                                      style: const TextStyle(
-                                        color: AppColors.primaryBlue,
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.bold,
+                                    Flexible(
+                                      child: Text(
+                                        provider['service'] ?? "Plumbing Expert",
+                                        style: const TextStyle(
+                                          color: AppColors.primaryBlue,
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
                                       ),
                                     ),
                                   ],
@@ -148,45 +157,6 @@ class _BookingPageState extends State<BookingPage> {
                                 ),
                               ),
                               const SizedBox(height: 6),
-                              Row(
-                                children: [
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                    decoration: BoxDecoration(
-                                      color: AppColors.warning.withOpacity(0.15),
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                    child: Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        const Icon(Icons.star_rounded, color: AppColors.warning, size: 16),
-                                        const SizedBox(width: 4),
-                                        Text(
-                                          provider['rating']?.toString() ?? "4.8",
-                                          style: const TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 13,
-                                            color: AppColors.textDark,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  const SizedBox(width: 8),
-                                  Flexible(
-                                    child: Text(
-                                      "(${provider['reviews'] ?? '120'} reviews)",
-                                      style: TextStyle(
-                                        color: Colors.grey[600],
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                  ),
-                                ],
-                              ),
                               const SizedBox(height: 6),
                               Row(
                                 children: [
@@ -207,27 +177,6 @@ class _BookingPageState extends State<BookingPage> {
                                 ],
                               ),
                             ],
-                          ),
-                        ),
-                        // Chat Button
-                        IconButton(
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => ChatPage(
-                                  name: provider['name'] ?? "Provider",
-                                ),
-                              ),
-                            );
-                          },
-                          icon: Container(
-                            padding: const EdgeInsets.all(8),
-                            decoration: BoxDecoration(
-                              color: AppColors.primaryBlue.withOpacity(0.1),
-                              shape: BoxShape.circle,
-                            ),
-                            child: const Icon(Icons.chat_bubble_outline_rounded, color: AppColors.primaryBlue, size: 24),
                           ),
                         ),
                       ],
@@ -472,9 +421,13 @@ class _BookingPageState extends State<BookingPage> {
                   onPressed: selectedTimeIndex == -1
                       ? null
                       : () {
-                          // Calculate the selected date
-                          final now = DateTime.now();
-                          final selectedDate = now.add(Duration(days: selectedDateIndex));
+                          // Get the actual selected date from the dynamic dates list
+                          final selectedDateMap = dates[selectedDateIndex];
+                          final selectedDate = DateTime(
+                            int.parse(selectedDateMap['year']!),
+                            int.parse(selectedDateMap['month']!),
+                            int.parse(selectedDateMap['date']!),
+                          );
                           
                           // Parse the time slot
                           final timeStr = timeSlots[selectedTimeIndex]; // e.g., "09:00 AM"

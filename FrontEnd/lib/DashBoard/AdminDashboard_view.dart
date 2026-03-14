@@ -378,16 +378,16 @@ class _ServiceAdminAppState extends State<ServiceAdminApp> {
         centerTitle: true,
         actions: [
           // Logout button
-          IconButton(
-            icon: const Icon(Icons.logout, color: Colors.white),
-            tooltip: 'Logout',
-            onPressed: () async {
-              await TokenManager().forceLogout();
-              if (context.mounted) {
-                await TokenManager().logout(context);
-              }
-            },
-          ),
+          // IconButton(
+          //   icon: const Icon(Icons.logout, color: Colors.white),
+          //   tooltip: 'Logout',
+          //   onPressed: () async {
+          //     await TokenManager().forceLogout();
+          //     if (context.mounted) {
+          //       await TokenManager().logout(context);
+          //     }
+          //   },
+          // ),
           GestureDetector(
             onTap: () {
               Navigator.pushNamed(context, '/admin-profile');

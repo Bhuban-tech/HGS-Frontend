@@ -2,10 +2,10 @@ class Transaction {
   final String? id;
   final String serviceName;
   final String serviceDescription;
-  final String paymentMethod; // 'eSewa' or 'Khalti'
-  final double amount; // in rupees
-  final String status; // 'Success', 'Pending', 'Failed', 'Refunded'
-  final String bookingStatus; // 'PENDING', 'ACCEPTED', 'COMPLETED', 'CANCELLED'
+  final String paymentMethod;
+  final double amount;
+  final String status;
+  final String bookingStatus;
   final DateTime transactionDate;
   final String transactionId;
   final String? categoryIcon;

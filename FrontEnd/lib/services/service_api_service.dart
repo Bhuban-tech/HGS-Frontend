@@ -54,19 +54,36 @@ class ServiceApiService {
 
       // Map backend fields to frontend expected fields
       return rawList.map((p) {
-        // Debug: print provider data to see what fields are available
-        print('🔍 Provider data: ${p.toString()}');
-        
+        // Debug: print ALL keys from backend to identify correct field names
+        print('🔍 Provider raw keys: ${p.keys.toList()}');
+        print('🔍 Provider raw data: $p');
+
+        // Handle nested category object: { id: 1, name: "Plumbing" }
+        String serviceCategory = 'Service Provider';
+        if (p['serviceCategory'] is Map) {
+          serviceCategory = p['serviceCategory']['name'] ?? 'Service Provider';
+        } else if (p['category'] is Map) {
+          serviceCategory = p['category']['name'] ?? 'Service Provider';
+        } else {
+          serviceCategory = p['serviceCategoryName'] 
+              ?? p['categoryName'] 
+              ?? p['serviceCategory']?.toString()
+              ?? p['category']?.toString()
+              ?? p['serviceType']?.toString()
+              ?? 'Service Provider';
+        }
+
         return {
           'id': p['id'] ?? '',
-          'name': p['userName'] ?? p['name'] ?? 'Unknown',
-          'service': p['serviceCategoryName'] ?? p['categoryName'] ?? p['serviceCategory'] ?? 'Service Provider',
-          'location': p['address'] ?? p['location'] ?? p['serviceLocation'] ?? 'Location not set',
+          'name': p['userName'] ?? p['name'] ?? p['fullName'] ?? 'Unknown',
+          'service': serviceCategory,
+          'location': p['address'] ?? p['location'] ?? p['serviceLocation'] 
+                      ?? p['serviceArea'] ?? p['city'] ?? 'Location not set',
           'status': (p['active'] == true) ? 'Available' : 'Busy',
           'rate': p['experienceYears'] != null ? '${p['experienceYears']} yrs exp' : 'Contact for rate',
           'email': p['email'] ?? '',
           'phone': p['phoneNumber'] ?? p['phone'] ?? '',
-          'serviceCategoryId': p['serviceCategoryId'] ?? '',
+          'serviceCategoryId': p['serviceCategoryId'] ?? p['categoryId'] ?? '',
           'active': p['active'] ?? false,
           'approved': p['approved'] ?? false,
         };

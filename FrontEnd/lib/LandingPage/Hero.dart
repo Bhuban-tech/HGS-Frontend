@@ -69,58 +69,6 @@ class HeroPage extends StatelessWidget {
                       children: [
                         const SizedBox(height: 20),
 
-                        // ── Badges row ────────────────────
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            _glassBadge(
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  const Icon(
-                                    Icons.star_rounded,
-                                    color: Color(0xFFfbbf24),
-                                    size: 16,
-                                  ),
-                                  const SizedBox(width: 6),
-                                  Text(
-                                    '4.9★ Rated',
-                                    style: GoogleFonts.plusJakartaSans(
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.w600,
-                                      color: Colors.white,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            _glassBadge(
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Container(
-                                    width: 8,
-                                    height: 8,
-                                    decoration: const BoxDecoration(
-                                      color: Color(0xFF10b981),
-                                      shape: BoxShape.circle,
-                                    ),
-                                  ),
-                                  const SizedBox(width: 6),
-                                  Text(
-                                    '500+ Pros',
-                                    style: GoogleFonts.plusJakartaSans(
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.w600,
-                                      color: Colors.white,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-
                         const SizedBox(height: 44),
 
                         // ── Logo ────────
@@ -174,80 +122,7 @@ class HeroPage extends StatelessWidget {
                           textAlign: TextAlign.center,
                         ),
 
-                        const SizedBox(height: 36),
-
-                        // ── Service chips ─────────────────
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            _serviceChip(Icons.plumbing_rounded, 'Plumbing'),
-                            const SizedBox(width: 10),
-                            _serviceChip(
-                              Icons.electrical_services_rounded,
-                              'Electrical',
-                            ),
-                            const SizedBox(width: 10),
-                            _serviceChip(
-                              Icons.format_paint_rounded,
-                              'Painting',
-                            ),
-                          ],
-                        ),
-
-                        const SizedBox(height: 44),
-
-                        // ── Stats glass card ──────────────
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            vertical: 22,
-                            horizontal: 12,
-                          ),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.05),
-                            borderRadius: BorderRadius.circular(24),
-                            border: Border.all(
-                              color: Colors.white.withOpacity(0.1),
-                            ),
-                          ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                            children: [
-                              _statItem('10K+', 'Happy Clients'),
-                              Container(
-                                width: 1,
-                                height: 42,
-                                color: Colors.white.withOpacity(0.18),
-                              ),
-                              _statItem('500+', 'Professionals'),
-                              Container(
-                                width: 1,
-                                height: 42,
-                                color: Colors.white.withOpacity(0.18),
-                              ),
-                              _statItem('4.9★', 'Avg Rating'),
-                            ],
-                          ),
-                        ),
-
-                        const SizedBox(height: 44),
-
-                        // ── Primary CTA ───────────────────
-                        _primaryButton(
-                          text: 'Explore Services',
-                          icon: Icons.search_rounded,
-                          onTap: () => Navigator.pushNamed(context, '/login'),
-                        ),
-
-                        const SizedBox(height: 14),
-
-                        // ── Outline CTA ───────────────────
-                        _outlineButton(
-                          text: 'Join as Professional',
-                          icon: Icons.work_outline_rounded,
-                          onTap: () => Navigator.pushNamed(context, '/signup'),
-                        ),
-
-                        const SizedBox(height: 28),
+                        const SizedBox(height: 10),
 
                         Text(
                           'By continuing you agree to our Terms & Privacy',
@@ -351,96 +226,14 @@ class HeroPage extends StatelessWidget {
     );
   }
 
-  static Widget _primaryButton({
-    required String text,
-    required IconData icon,
-    required VoidCallback onTap,
-  }) {
-    return SizedBox(
-      width: double.infinity,
-      height: 62,
-      child: Material(
-        color: Colors.transparent,
-        borderRadius: BorderRadius.circular(20),
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(20),
-          child: Ink(
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [Color(0xFF6366F1), Color(0xFF4F46E5)],
-              ),
-              borderRadius: BorderRadius.circular(20),
-              boxShadow: [
-                BoxShadow(
-                  color: const Color(0xFF6366F1).withOpacity(0.4),
-                  blurRadius: 20,
-                  offset: const Offset(0, 10),
-                ),
-              ],
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(icon, color: Colors.white, size: 22),
-                const SizedBox(width: 12),
-                Text(
-                  text,
-                  style: GoogleFonts.plusJakartaSans(
-                    fontSize: 17,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  static Widget _outlineButton({
-    required String text,
-    required IconData icon,
-    required VoidCallback onTap,
-  }) {
-    return SizedBox(
-      width: double.infinity,
-      height: 62,
-      child: Material(
-        color: Colors.transparent,
-        borderRadius: BorderRadius.circular(20),
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(20),
-          child: Container(
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.05),
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(
-                color: Colors.white.withOpacity(0.22),
-                width: 1.5,
-              ),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(icon, color: Colors.white, size: 22),
-                const SizedBox(width: 12),
-                Text(
-                  text,
-                  style: GoogleFonts.plusJakartaSans(
-                    fontSize: 17,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white.withOpacity(0.9),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
+  Widget _navItem(IconData icon, String label, bool isSelected) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(icon, color: isSelected ? const Color(0xFF10B981) : Colors.white24, size: 24),
+        const SizedBox(height: 4),
+        Text(label, style: GoogleFonts.plusJakartaSans(fontSize: 10, color: isSelected ? const Color(0xFF10B981) : Colors.white24, fontWeight: FontWeight.bold)),
+      ],
     );
   }
 }

@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:HamroGharSewa/constants/app_colors.dart';
 
-/// Welcome card widget for provider dashboard
-/// Shows greeting message with emoji
+
 class WelcomeCard extends StatelessWidget {
   final String providerName;
 

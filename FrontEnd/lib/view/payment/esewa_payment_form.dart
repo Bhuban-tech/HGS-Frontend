@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:HamroGharSewa/constants/app_colors.dart';
-import 'dart:html' as html;
+import 'package:url_launcher/url_launcher.dart';
 
 class EsewaPaymentForm extends StatelessWidget {
   final Map<String, dynamic> paymentData;
@@ -77,8 +77,9 @@ class EsewaPaymentForm extends StatelessWidget {
 
   Future<void> _openEsewaPayment(BuildContext context) async {
     try {
-      // Create and submit POST form using HTML
-      _submitEsewaForm();
+      // Mobile: Use URL launcher with query parameters
+      // Note: eSewa requires POST method, but mobile apps typically use GET with params
+      await _openEsewaPaymentMobile();
       
       if (context.mounted) {
         // Show info and close this page
@@ -109,30 +110,29 @@ class EsewaPaymentForm extends StatelessWidget {
     }
   }
 
-  void _submitEsewaForm() {
+  Future<void> _openEsewaPaymentMobile() async {
     // Get endpoint
     final endpoint = paymentData['api_endpoint'] ?? 'https://esewa.com.np/epay/main/v2/form';
     
-    // Create form element
-    final form = html.FormElement()
-      ..action = endpoint
-      ..method = 'POST'
-      ..target = '_blank';
-    
-    // Add form fields
+    // Build query parameters
+    final params = <String, String>{};
     paymentData.forEach((key, value) {
       if (key != 'api_endpoint' && value != null) {
-        final input = html.InputElement()
-          ..type = 'hidden'
-          ..name = key
-          ..value = value.toString();
-        form.append(input);
+        params[key] = value.toString();
       }
     });
     
-    // Append form to body, submit, and remove
-    html.document.body?.append(form);
-    form.submit();
-    form.remove();
+    // Build URL with query parameters
+    final uri = Uri.parse(endpoint).replace(queryParameters: params);
+    
+    // Launch URL
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(
+        uri,
+        mode: LaunchMode.externalApplication,
+      );
+    } else {
+      throw Exception('Could not launch eSewa payment');
+    }
   }
 }

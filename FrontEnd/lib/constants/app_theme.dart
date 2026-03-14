@@ -50,6 +50,8 @@ class AppTheme {
             fontWeight: FontWeight.bold,
             letterSpacing: 0.5,
           ),
+        ).copyWith(
+          mouseCursor: WidgetStateProperty.all(SystemMouseCursors.click),
         ),
       ),
       
@@ -67,6 +69,8 @@ class AppTheme {
             fontWeight: FontWeight.bold,
             letterSpacing: 0.5,
           ),
+        ).copyWith(
+          mouseCursor: WidgetStateProperty.all(SystemMouseCursors.click),
         ),
       ),
       
@@ -77,6 +81,8 @@ class AppTheme {
             fontSize: 14,
             fontWeight: FontWeight.w600,
           ),
+        ).copyWith(
+          mouseCursor: WidgetStateProperty.all(SystemMouseCursors.click),
         ),
       ),
       

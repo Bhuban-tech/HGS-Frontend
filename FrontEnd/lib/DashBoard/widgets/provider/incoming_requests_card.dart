@@ -3,8 +3,6 @@ import 'package:HamroGharSewa/constants/app_colors.dart';
 import 'package:HamroGharSewa/models/booking_model.dart';
 import 'package:HamroGharSewa/DashBoard/widgets/provider/booking_card.dart';
 
-/// Incoming requests section widget
-/// Shows pending booking requests with LIVE badge
 class IncomingRequestsCard extends StatelessWidget {
   final List<Booking> pendingBookings;
   final Function(String) onAccept;

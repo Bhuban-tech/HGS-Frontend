@@ -53,7 +53,11 @@ class BookingService {
         ),
       );
 
-      return Booking.fromJson(response.data);
+      final dynamic responseData = response.data;
+      if (responseData is Map && responseData['data'] != null) {
+        return Booking.fromJson(responseData['data']);
+      }
+      return Booking.fromJson(responseData);
     } on DioException catch (e) {
       throw _handleError(e);
     }
@@ -137,7 +141,11 @@ class BookingService {
         ),
       );
 
-      return Booking.fromJson(response.data);
+      final dynamic responseData = response.data;
+      if (responseData is Map && responseData['data'] != null) {
+        return Booking.fromJson(responseData['data']);
+      }
+      return Booking.fromJson(responseData);
     } on DioException catch (e) {
       throw _handleError(e);
     }
@@ -150,12 +158,20 @@ class BookingService {
 
       final response = await _dio.patch(
         ApiConstants.acceptBooking(bookingId),
+        data: {},  // send empty body to satisfy backend
         options: Options(
-          headers: {'Authorization': 'Bearer $token'},
+          headers: {
+            'Authorization': 'Bearer $token',
+            'Content-Type': 'application/json',
+          },
         ),
       );
 
-      return Booking.fromJson(response.data);
+      final dynamic responseData = response.data;
+      if (responseData is Map && responseData['data'] != null) {
+        return Booking.fromJson(responseData['data']);
+      }
+      return Booking.fromJson(responseData);
     } on DioException catch (e) {
       throw _handleError(e);
     }
@@ -174,7 +190,11 @@ class BookingService {
         ),
       );
 
-      return Booking.fromJson(response.data);
+      final dynamic responseData = response.data;
+      if (responseData is Map && responseData['data'] != null) {
+        return Booking.fromJson(responseData['data']);
+      }
+      return Booking.fromJson(responseData);
     } on DioException catch (e) {
       throw _handleError(e);
     }
@@ -192,7 +212,11 @@ class BookingService {
         ),
       );
 
-      return Booking.fromJson(response.data);
+      final dynamic responseData = response.data;
+      if (responseData is Map && responseData['data'] != null) {
+        return Booking.fromJson(responseData['data']);
+      }
+      return Booking.fromJson(responseData);
     } on DioException catch (e) {
       throw _handleError(e);
     }
@@ -210,7 +234,11 @@ class BookingService {
         ),
       );
 
-      return Booking.fromJson(response.data);
+      final dynamic responseData = response.data;
+      if (responseData is Map && responseData['data'] != null) {
+        return Booking.fromJson(responseData['data']);
+      }
+      return Booking.fromJson(responseData);
     } on DioException catch (e) {
       throw _handleError(e);
     }
@@ -218,9 +246,11 @@ class BookingService {
 
   String _handleError(DioException e) {
     if (e.response != null) {
+      print('❌ [BookingService] Status: ${e.response!.statusCode}');
+      print('❌ [BookingService] Response body: ${e.response!.data}');
       final data = e.response!.data;
-      if (data is Map && data.containsKey('message')) {
-        return data['message'];
+      if (data is Map) {
+        return data['message'] ?? data['error'] ?? data['detail'] ?? 'Server error: ${e.response!.statusCode}';
       }
       return 'Server error: ${e.response!.statusCode}';
     } else if (e.type == DioExceptionType.connectionTimeout) {

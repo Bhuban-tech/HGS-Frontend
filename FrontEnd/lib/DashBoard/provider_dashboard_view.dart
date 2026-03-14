@@ -278,23 +278,6 @@ class _ProviderDashboardState extends State<ProviderDashboard>
                           color: AppColors.textDark,
                         ),
                       ),
-                      if (pendingBookings.isNotEmpty)
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                          decoration: BoxDecoration(
-                            color: Colors.red,
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: const Text(
-                            'LIVE',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 10,
-                              fontWeight: FontWeight.bold,
-                              letterSpacing: 0.5,
-                            ),
-                          ),
-                        ),
                     ],
                   ),
                 ),
@@ -567,7 +550,7 @@ class _ProviderDashboardState extends State<ProviderDashboard>
             
             const SizedBox(height: 12),
             
-            // Location and Date
+            // Location and Date + Time
             Row(
               children: [
                 Icon(Icons.location_on_outlined, size: 16, color: Colors.grey[600]),
@@ -583,17 +566,46 @@ class _ProviderDashboardState extends State<ProviderDashboard>
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
-                const SizedBox(width: 12),
-                Icon(Icons.calendar_today_outlined, size: 16, color: Colors.grey[600]),
-                const SizedBox(width: 6),
-                Text(
-                  DateFormat('yyyy-MM-dd').format(booking.bookingDate),
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: Colors.grey[700],
-                  ),
-                ),
               ],
+            ),
+
+            const SizedBox(height: 8),
+
+            // Scheduled Date + Time — highlighted
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                color: AppColors.primaryBlue.withValues(alpha: 0.07),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(
+                  color: AppColors.primaryBlue.withValues(alpha: 0.2),
+                ),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.calendar_today_rounded, size: 15, color: AppColors.primaryBlue),
+                  const SizedBox(width: 8),
+                  Text(
+                    DateFormat('EEE, MMM dd yyyy').format(booking.bookingDate),
+                    style: const TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.primaryBlue,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Icon(Icons.access_time_rounded, size: 15, color: AppColors.primaryBlue),
+                  const SizedBox(width: 6),
+                  Text(
+                    DateFormat('hh:mm a').format(booking.bookingDate),
+                    style: const TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.primaryBlue,
+                    ),
+                  ),
+                ],
+              ),
             ),
             
             const SizedBox(height: 12),
@@ -627,12 +639,16 @@ class _ProviderDashboardState extends State<ProviderDashboard>
                 children: [
                   Expanded(
                     child: OutlinedButton(
-                      onPressed: () {
+                      onPressed: provider.isLoading ? null : () {
                         _showRejectDialog(context, provider, booking.id!);
                       },
                       style: OutlinedButton.styleFrom(
-                        foregroundColor: AppColors.error,
-                        side: const BorderSide(color: AppColors.error),
+                        foregroundColor: AppColors.primaryBlue,
+                        side: BorderSide(
+                          color: provider.isLoading
+                              ? Colors.grey.withValues(alpha: 0.3)
+                              : AppColors.primaryBlue,
+                        ),
                         padding: const EdgeInsets.symmetric(vertical: 12),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
@@ -644,7 +660,7 @@ class _ProviderDashboardState extends State<ProviderDashboard>
                   const SizedBox(width: 12),
                   Expanded(
                     child: ElevatedButton(
-                      onPressed: () async {
+                      onPressed: provider.isLoading ? null : () async {
                         final success = await provider.acceptBooking(booking.id!);
                         if (mounted) {
                           ScaffoldMessenger.of(context).showSnackBar(
@@ -652,17 +668,17 @@ class _ProviderDashboardState extends State<ProviderDashboard>
                               content: Text(
                                 success
                                     ? 'Booking accepted! You can now chat with customer.'
-                                    : 'Failed to accept booking.',
+                                    : 'Failed to accept booking: ${provider.error ?? 'Unknown error'}',
                               ),
                               backgroundColor: success ? AppColors.success : AppColors.error,
                               behavior: SnackBarBehavior.floating,
-                              duration: const Duration(seconds: 2),
+                              duration: const Duration(seconds: 3),
                             ),
                           );
                         }
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.success,
+                        backgroundColor: AppColors.primaryBlue,
                         foregroundColor: Colors.white,
                         padding: const EdgeInsets.symmetric(vertical: 12),
                         elevation: 0,
@@ -670,7 +686,16 @@ class _ProviderDashboardState extends State<ProviderDashboard>
                           borderRadius: BorderRadius.circular(12),
                         ),
                       ),
-                      child: const Text('Accept'),
+                      child: provider.isLoading
+                          ? const SizedBox(
+                              height: 20,
+                              width: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Colors.white,
+                              ),
+                            )
+                          : const Text('Accept'),
                     ),
                   ),
                 ],
@@ -708,122 +733,130 @@ class _ProviderDashboardState extends State<ProviderDashboard>
   }
 
 
-  // Show reject confirmation dialog with reason validation
-  void _showRejectDialog(BuildContext context, BookingProvider provider, String bookingId) {
+   void _showRejectDialog(BuildContext context, BookingProvider provider, String bookingId) async {
     final reasonController = TextEditingController();
     final formKey = GlobalKey<FormState>();
 
-    showDialog(
+    await showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text(
-          'Reject Booking',
-          style: TextStyle(fontWeight: FontWeight.bold),
-        ),
-        content: Form(
-          key: formKey,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                'Please provide a reason for rejecting this booking request.',
-                style: TextStyle(fontSize: 14),
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: reasonController,
-                maxLength: 500,
-                minLines: 3,
-                maxLines: 5,
-                decoration: InputDecoration(
-                  labelText: 'Rejection Reason',
-                  hintText: 'Enter reason (10-500 characters)',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
+      barrierDismissible: !provider.isLoading,
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setDialogState) {
+          return AlertDialog(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            title: const Text(
+              'Reject Booking',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+            content: Form(
+              key: formKey,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Please provide a reason for rejecting this booking request.',
+                    style: TextStyle(fontSize: 14),
                   ),
-                  counterText: '',
-                ),
-                validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
-                    return 'Rejection reason is required';
-                  }
-                  if (value.trim().length < 10) {
-                    return 'Reason must be at least 10 characters';
-                  }
-                  if (value.trim().length > 500) {
-                    return 'Reason must not exceed 500 characters';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 8),
-              Text(
-                '${reasonController.text.length}/500 characters',
-                style: TextStyle(fontSize: 12, color: Colors.grey[600]),
-              ),
-            ],
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              reasonController.dispose();
-              Navigator.pop(ctx);
-            },
-            child: const Text('Cancel'),
-          ),
-          ElevatedButton(
-            onPressed: () async {
-              if (formKey.currentState!.validate()) {
-                final reason = reasonController.text.trim();
-                reasonController.dispose();
-                Navigator.pop(ctx);
-                
-                final success = await provider.rejectBooking(bookingId, reason: reason);
-                
-                if (mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Row(
-                        children: [
-                          Icon(
-                            success ? Icons.check_circle : Icons.error,
-                            color: Colors.white,
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Text(
-                              success 
-                                ? 'Booking rejected successfully.' 
-                                : 'Failed to reject booking. Please try again.',
-                            ),
-                          ),
-                        ],
-                      ),
-                      backgroundColor: success ? Colors.orange : Colors.red,
-                      behavior: SnackBarBehavior.floating,
-                      shape: RoundedRectangleBorder(
+                  const SizedBox(height: 16),
+                  TextFormField(
+                    controller: reasonController,
+                    maxLength: 500,
+                    minLines: 3,
+                    maxLines: 5,
+                    enabled: !provider.isLoading,
+                    onChanged: (val) => setDialogState(() {}),
+                    decoration: InputDecoration(
+                      labelText: 'Rejection Reason',
+                      hintText: 'Enter reason (10-500 characters)',
+                      border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      duration: const Duration(seconds: 3),
+                      counterText: '',
                     ),
-                  );
-                }
-              }
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
+                    validator: (value) {
+                      if (value == null || value.trim().isEmpty) {
+                        return 'Rejection reason is required';
+                      }
+                      if (value.trim().length < 10) {
+                        return 'Reason must be at least 10 characters';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    '${reasonController.text.length}/500 characters',
+                    style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                  ),
+                ],
               ),
             ),
-            child: const Text('Reject'),
-          ),
-        ],
+            actions: [
+              TextButton(
+                onPressed: provider.isLoading ? null : () => Navigator.pop(ctx),
+                child: const Text('Cancel'),
+              ),
+              ElevatedButton(
+                onPressed: provider.isLoading ? null : () async {
+                  if (formKey.currentState!.validate()) {
+                    final reason = reasonController.text.trim();
+                    
+                    setDialogState(() {}); // Trigger rebuild to show loading state if we had one here
+                    
+                    final success = await provider.rejectBooking(bookingId, reason: reason);
+                    
+                    if (context.mounted) {
+                      Navigator.pop(ctx); // Close dialog AFTER operation
+                      
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Row(
+                            children: [
+                              Icon(
+                                success ? Icons.check_circle : Icons.error,
+                                color: Colors.white,
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Text(
+                                  success 
+                                    ? 'Booking rejected successfully.' 
+                                    : 'Failed to reject: ${provider.error ?? 'Unknown error'}',
+                                ),
+                              ),
+                            ],
+                          ),
+                          backgroundColor: success ? Colors.orange : Colors.red,
+                          behavior: SnackBarBehavior.floating,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          duration: const Duration(seconds: 3),
+                        ),
+                      );
+                    }
+                  }
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.error,
+                  foregroundColor: Colors.white,
+                ),
+                child: provider.isLoading
+                    ? const SizedBox(
+                        height: 20,
+                        width: 20,
+                        child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                      )
+                    : const Text('Reject Booking'),
+              ),
+            ],
+          );
+        },
       ),
     );
+    
+    reasonController.dispose();
   }
 
   Widget _buildBottomNav() {

@@ -1,19 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:HamroGharSewa/constants/app_colors.dart';
 
-/// Stats cards for provider dashboard
-/// Shows Today, Active, and Messages counts
+
 class ProviderStatsCards extends StatelessWidget {
   final int todayCount;
   final int activeCount;
   final int messagesCount;
 
   const ProviderStatsCards({
-    Key? key,
+    super.key,
     required this.todayCount,
     required this.activeCount,
     required this.messagesCount,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

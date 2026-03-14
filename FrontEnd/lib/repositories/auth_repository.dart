@@ -43,7 +43,7 @@ class AuthRepository {
         },
       );
 
-      // ✅ DEBUG - shows exactly what server returns
+
       print('🔴 RAW SERVER RESPONSE: ${response.data}');
       print('🔴 data field: ${response.data['data']}');
       print('🔴 token field: ${response.data['data']?['token']}');

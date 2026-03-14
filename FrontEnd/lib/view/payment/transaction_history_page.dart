@@ -36,10 +36,10 @@ class _TransactionHistoryPageState extends State<TransactionHistoryPage> {
     try {
       print('📊 Loading transactions...');
       final transactions = await _transactionService.getUserTransactions();
-      print('📊 Transactions loaded: ${transactions.length}');
+      print('Transactions loaded: ${transactions.length}');
       
       if (transactions.isNotEmpty) {
-        print('📊 First transaction: ${transactions[0].toJson()}');
+        print('First transaction: ${transactions[0].toJson()}');
       }
       
       if (mounted) {
@@ -50,7 +50,7 @@ class _TransactionHistoryPageState extends State<TransactionHistoryPage> {
         });
       }
     } catch (error) {
-      print('❌ Transaction loading error: $error');
+ 
       if (mounted) {
         setState(() {
           _error = error.toString();
@@ -68,10 +68,6 @@ class _TransactionHistoryPageState extends State<TransactionHistoryPage> {
         _filteredTransactions = _transactions.where((tx) => tx.paymentMethod.toLowerCase() == 'esewa').toList();
       } else if (_selectedFilter == 'Khalti') {
         _filteredTransactions = _transactions.where((tx) => tx.paymentMethod.toLowerCase() == 'khalti').toList();
-      } else if (_selectedFilter == 'Refunds') {
-        _filteredTransactions = _transactions.where((tx) => tx.refund).toList();
-      } else if (_selectedFilter == 'Failed') {
-        _filteredTransactions = _transactions.where((tx) => tx.status == 'Failed').toList();
       }
     });
   }
@@ -84,22 +80,38 @@ class _TransactionHistoryPageState extends State<TransactionHistoryPage> {
         backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black87),
+          icon: Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: Colors.grey.shade100,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: const Icon(Icons.arrow_back, color: Colors.black87, size: 20),
+          ),
           onPressed: () => Navigator.pop(context),
         ),
         title: const Text(
           'Transaction History',
           style: TextStyle(
             color: Colors.black87,
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
+            fontSize: 22,
+            fontWeight: FontWeight.w800,
+            letterSpacing: -0.5,
           ),
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.refresh, color: Colors.black87),
+            icon: Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: AppColors.primaryBlue.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: const Icon(Icons.refresh, color: AppColors.primaryBlue, size: 20),
+            ),
             onPressed: _loadTransactions,
           ),
+          const SizedBox(width: 8),
         ],
       ),
       body: Column(
@@ -107,23 +119,23 @@ class _TransactionHistoryPageState extends State<TransactionHistoryPage> {
           // Filter Tabs
           Container(
             color: Colors.white,
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
             child: SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               child: Row(
                 children: [
                   _buildFilterChip('All'),
-                  const SizedBox(width: 8),
+                  const SizedBox(width: 12),
                   _buildFilterChip('eSewa'),
-                  const SizedBox(width: 8),
+                  const SizedBox(width: 12),
                   _buildFilterChip('Khalti'),
-                  const SizedBox(width: 8),
-                  _buildFilterChip('Refunds'),
-                  const SizedBox(width: 8),
-                  _buildFilterChip('Failed'),
                 ],
               ),
             ),
+          ),
+          Container(
+            height: 1,
+            color: Colors.grey.shade200,
           ),
           Expanded(child: _buildBody()),
         ],
@@ -134,17 +146,6 @@ class _TransactionHistoryPageState extends State<TransactionHistoryPage> {
   Widget _buildFilterChip(String label) {
     final isSelected = _selectedFilter == label;
     
-    Color backgroundColor;
-    Color textColor;
-    
-    if (isSelected) {
-      backgroundColor = AppColors.primaryBlue;
-      textColor = Colors.white;
-    } else {
-      backgroundColor = const Color(0xFFF5F5F5);
-      textColor = AppColors.textMedium;
-    }
-
     return GestureDetector(
       onTap: () {
         setState(() {
@@ -152,18 +153,33 @@ class _TransactionHistoryPageState extends State<TransactionHistoryPage> {
           _applyFilter();
         });
       },
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
         decoration: BoxDecoration(
-          color: backgroundColor,
-          borderRadius: BorderRadius.circular(20),
+          color: isSelected ? AppColors.primaryBlue : Colors.white,
+          borderRadius: BorderRadius.circular(25),
+          border: Border.all(
+            color: isSelected ? AppColors.primaryBlue : Colors.grey.shade300,
+            width: isSelected ? 2 : 1.5,
+          ),
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: AppColors.primaryBlue.withOpacity(0.3),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ]
+              : [],
         ),
         child: Text(
           label,
           style: TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w600,
-            color: textColor,
+            fontSize: 15,
+            fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
+            color: isSelected ? Colors.white : Colors.grey.shade700,
+            letterSpacing: 0.3,
           ),
         ),
       ),
@@ -276,7 +292,7 @@ class _TransactionHistoryPageState extends State<TransactionHistoryPage> {
       onRefresh: _loadTransactions,
       color: AppColors.primaryBlue,
       child: ListView.builder(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(20),
         itemCount: grouped.length,
         itemBuilder: (context, index) {
           final dateLabel = grouped.keys.elementAt(index);
@@ -286,14 +302,14 @@ class _TransactionHistoryPageState extends State<TransactionHistoryPage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Padding(
-                padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 4),
+                padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 4),
                 child: Text(
                   dateLabel,
                   style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.grey[600],
-                    letterSpacing: 0.5,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w800,
+                    color: Colors.grey[500],
+                    letterSpacing: 1.2,
                   ),
                 ),
               ),
@@ -307,79 +323,81 @@ class _TransactionHistoryPageState extends State<TransactionHistoryPage> {
 
   Widget _buildTransactionCard(Transaction transaction) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(16),
+      margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 20,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
-      child: Row(
-        children: [
-          _buildIcon(transaction),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
               children: [
-                Text(
-                  transaction.serviceName,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.black87,
+                _buildIcon(transaction),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        transaction.serviceName,
+                        style: const TextStyle(
+                          fontSize: 17,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.black87,
+                          letterSpacing: -0.3,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        transaction.serviceDescription,
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.grey[600],
+                          height: 1.3,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
                   ),
                 ),
-                const SizedBox(height: 4),
+              ],
+            ),
+            const SizedBox(height: 14),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
                 Row(
                   children: [
                     _buildPaymentChip(transaction.paymentMethod),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        transaction.serviceDescription,
-                        style: TextStyle(
-                          fontSize: 13,
-                          color: Colors.grey[600],
-                        ),
-                        overflow: TextOverflow.ellipsis,
+                    const SizedBox(width: 10),
+                    Text(
+                      _formatTime(transaction.transactionDate),
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: Colors.grey[500],
+                        fontWeight: FontWeight.w500,
                       ),
                     ),
                   ],
                 ),
+                _buildStatusBadge(transaction.status),
               ],
             ),
-          ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Text(
-                '${transaction.refund ? '+' : '-'} Rs. ${_formatAmount(transaction.amount)}',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: transaction.refund ? Colors.green : Colors.red,
-                ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                _formatTime(transaction.transactionDate),
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Colors.grey[500],
-                ),
-              ),
-              const SizedBox(height: 6),
-              _buildStatusBadge(transaction.status),
-            ],
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -390,27 +408,27 @@ class _TransactionHistoryPageState extends State<TransactionHistoryPage> {
     Color iconColor;
 
     if (tx.refund) {
-      icon = Icons.refresh;
+      icon = Icons.refresh_rounded;
       bgColor = Colors.orange.shade50;
-      iconColor = Colors.orange;
+      iconColor = Colors.orange.shade600;
     } else if (tx.status == 'Failed') {
-      icon = Icons.close;
+      icon = Icons.close_rounded;
       bgColor = Colors.red.shade50;
-      iconColor = Colors.red;
+      iconColor = Colors.red.shade600;
     } else {
-      icon = Icons.favorite;
-      bgColor = _getServiceColor(tx.serviceName).withOpacity(0.1);
+      icon = Icons.check_circle_rounded;
+      bgColor = _getServiceColor(tx.serviceName).withOpacity(0.12);
       iconColor = _getServiceColor(tx.serviceName);
     }
 
     return Container(
-      width: 56,
-      height: 56,
+      width: 64,
+      height: 64,
       decoration: BoxDecoration(
         color: bgColor,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(18),
       ),
-      child: Icon(icon, color: iconColor, size: 28),
+      child: Icon(icon, color: iconColor, size: 32),
     );
   }
 
@@ -418,18 +436,37 @@ class _TransactionHistoryPageState extends State<TransactionHistoryPage> {
     final isEsewa = method.toLowerCase() == 'esewa';
     
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: isEsewa ? Colors.green.shade50 : Colors.purple.shade50,
-        borderRadius: BorderRadius.circular(6),
-      ),
-      child: Text(
-        method,
-        style: TextStyle(
-          fontSize: 11,
-          fontWeight: FontWeight.w600,
-          color: isEsewa ? Colors.green.shade700 : Colors.purple.shade700,
+        color: isEsewa ? const Color(0xFFE8F5E9) : const Color(0xFFF3E5F5),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(
+          color: isEsewa ? const Color(0xFF60BB46) : const Color(0xFF9C27B0),
+          width: 1,
         ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 6,
+            height: 6,
+            decoration: BoxDecoration(
+              color: isEsewa ? const Color(0xFF60BB46) : const Color(0xFF9C27B0),
+              shape: BoxShape.circle,
+            ),
+          ),
+          const SizedBox(width: 6),
+          Text(
+            method,
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w700,
+              color: isEsewa ? const Color(0xFF2E7D32) : const Color(0xFF7B1FA2),
+              letterSpacing: 0.3,
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -437,42 +474,63 @@ class _TransactionHistoryPageState extends State<TransactionHistoryPage> {
   Widget _buildStatusBadge(String status) {
     Color bgColor;
     Color textColor;
+    Color borderColor;
+    IconData icon;
 
     switch (status) {
       case 'Success':
-        bgColor = Colors.green.shade50;
-        textColor = Colors.green.shade700;
+        bgColor = const Color(0xFFE8F5E9);
+        textColor = const Color(0xFF2E7D32);
+        borderColor = const Color(0xFF4CAF50);
+        icon = Icons.check_circle;
         break;
       case 'Pending':
-        bgColor = Colors.orange.shade50;
-        textColor = Colors.orange.shade700;
+        bgColor = const Color(0xFFFFF3E0);
+        textColor = const Color(0xFFE65100);
+        borderColor = const Color(0xFFFF9800);
+        icon = Icons.schedule;
         break;
       case 'Failed':
-        bgColor = Colors.red.shade50;
-        textColor = Colors.red.shade700;
+        bgColor = const Color(0xFFFFEBEE);
+        textColor = const Color(0xFFC62828);
+        borderColor = const Color(0xFFF44336);
+        icon = Icons.error;
         break;
       case 'Refunded':
-        bgColor = Colors.blue.shade50;
-        textColor = Colors.blue.shade700;
+        bgColor = const Color(0xFFE3F2FD);
+        textColor = const Color(0xFF1565C0);
+        borderColor = const Color(0xFF2196F3);
+        icon = Icons.refresh;
         break;
       default:
-        bgColor = Colors.grey.shade50;
+        bgColor = Colors.grey.shade100;
         textColor = Colors.grey.shade700;
+        borderColor = Colors.grey.shade400;
+        icon = Icons.info;
     }
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
       decoration: BoxDecoration(
         color: bgColor,
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: borderColor, width: 1.5),
       ),
-      child: Text(
-        status,
-        style: TextStyle(
-          fontSize: 11,
-          fontWeight: FontWeight.w600,
-          color: textColor,
-        ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 16, color: textColor),
+          const SizedBox(width: 6),
+          Text(
+            status,
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w700,
+              color: textColor,
+              letterSpacing: 0.2,
+            ),
+          ),
+        ],
       ),
     );
   }

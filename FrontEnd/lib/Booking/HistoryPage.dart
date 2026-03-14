@@ -487,22 +487,25 @@ class _HistoryPageState extends State<HistoryPage>
                           fontSize: 14),
                     ),
                     const Spacer(),
-                    // Rate chip (from description if available)
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 12, vertical: 6),
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                            colors: [themeColor,
-                              themeColor.withValues(alpha: 0.7)]),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: const Text(
-                        'View Details',
-                        style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white),
+                    // View Details button
+                    GestureDetector(
+                      onTap: () => _showBookingDetails(context, item, themeColor),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 6),
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                              colors: [themeColor,
+                                themeColor.withValues(alpha: 0.7)]),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: const Text(
+                          'View Details',
+                          style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white),
+                        ),
                       ),
                     ),
                   ]),
@@ -664,6 +667,221 @@ class _HistoryPageState extends State<HistoryPage>
           ],
         ),
       ),
+    );
+  }
+
+  void _showBookingDetails(BuildContext context, dynamic item, Color themeColor) {
+    final DateTime bookingDate = item.bookingDate as DateTime;
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => Container(
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+        ),
+        padding: EdgeInsets.fromLTRB(
+            24, 12, 24, MediaQuery.of(context).viewInsets.bottom + 32),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Handle bar
+            Center(
+              child: Container(
+                width: 40, height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.grey[300],
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
+
+            // Title
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: themeColor.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(Icons.receipt_long_rounded, color: themeColor, size: 22),
+                ),
+                const SizedBox(width: 12),
+                const Text(
+                  'Booking Details',
+                  style: TextStyle(
+                    fontSize: 20, fontWeight: FontWeight.w800,
+                    color: AppColors.textDark,
+                  ),
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 20),
+            const Divider(height: 1),
+            const SizedBox(height: 20),
+
+            // Date + Time slot highlighted card
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: themeColor.withValues(alpha: 0.06),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: themeColor.withValues(alpha: 0.2)),
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Scheduled Day',
+                          style: TextStyle(
+                            fontSize: 12, fontWeight: FontWeight.w600,
+                            color: themeColor.withValues(alpha: 0.7),
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          DateFormat('EEEE').format(bookingDate),
+                          style: TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.w800,
+                            color: themeColor,
+                          ),
+                        ),
+                        Text(
+                          DateFormat('MMMM dd, yyyy').format(bookingDate),
+                          style: const TextStyle(
+                            fontSize: 13, fontWeight: FontWeight.w600,
+                            color: AppColors.textMedium,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    decoration: BoxDecoration(
+                      color: themeColor,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Column(
+                      children: [
+                        const Icon(Icons.access_time_rounded,
+                            color: Colors.white, size: 18),
+                        const SizedBox(height: 4),
+                        Text(
+                          DateFormat('hh:mm a').format(bookingDate),
+                          style: const TextStyle(
+                            fontSize: 14, fontWeight: FontWeight.w800,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 16),
+
+            // Location
+            _bookingDetailRow(
+              Icons.location_on_rounded,
+              'Service Location',
+              (item.location as String?) ?? 'Not specified',
+              themeColor,
+            ),
+
+            if ((item.description as String?)?.isNotEmpty == true) ...[
+              const SizedBox(height: 16),
+              _bookingDetailRow(
+                Icons.notes_rounded,
+                'Description',
+                item.description as String,
+                themeColor,
+              ),
+            ],
+
+            const SizedBox(height: 16),
+
+            // Status
+            _bookingDetailRow(
+              Icons.info_rounded,
+              'Status',
+              (item.status as String).toUpperCase(),
+              themeColor,
+            ),
+
+            const SizedBox(height: 28),
+
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () => Navigator.pop(context),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: themeColor,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  elevation: 0,
+                ),
+                child: const Text(
+                  'Close',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _bookingDetailRow(IconData icon, String label, String value, Color color) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: color.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Icon(icon, size: 18, color: color),
+        ),
+        const SizedBox(width: 14),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                label,
+                style: const TextStyle(
+                  fontSize: 12, fontWeight: FontWeight.w600,
+                  color: AppColors.textLight,
+                ),
+              ),
+              const SizedBox(height: 3),
+              Text(
+                value,
+                style: const TextStyle(
+                  fontSize: 15, fontWeight: FontWeight.w600,
+                  color: AppColors.textDark,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 

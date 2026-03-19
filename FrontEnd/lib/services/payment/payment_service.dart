@@ -99,23 +99,33 @@ class PaymentService {
   }
 
   /// Verify eSewa Payment
-  Future<Map<String, dynamic>> verifyEsewaPayment(String data) async {
+  Future<Map<String, dynamic>> verifyEsewaPayment(String encodedData) async {
     try {
       final token = await _tokenManager.getAccessToken();
+      
+      print('🟢 Verifying eSewa payment...');
+      print('🟢 Data length: ${encodedData.length}');
+      print('🟢 Data preview: ${encodedData.substring(0, encodedData.length.clamp(0, 50))}...');
 
       final response = await _dio.get(
-        '${ApiConstants.baseUrl}/api/payment/esewa/verify?data=$data',
+        '${ApiConstants.baseUrl}/api/payment/esewa/verify',
+        queryParameters: {'data': encodedData}, // Dio auto URL-encodes this safely
         options: Options(
           headers: {'Authorization': 'Bearer $token'},
         ),
       );
 
+      print('🟢 Verification response: ${response.data}');
+
       if (response.data['success'] == true) {
-        return response.data['data'];
+        return response.data['data'] ?? {};
       } else {
         throw response.data['message'] ?? 'Payment verification failed';
       }
     } on DioException catch (e) {
+      print('🔴 Exception type: ${e.type}');
+      print('🔴 Status code: ${e.response?.statusCode}');
+      print('🔴 Response data: ${e.response?.data}');
       throw _handleError(e);
     }
   }

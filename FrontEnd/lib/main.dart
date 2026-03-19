@@ -1,4 +1,3 @@
-
 import 'package:HamroGharSewa/constants/app_theme.dart';
 import 'package:HamroGharSewa/route/app_routes.dart';
 import 'package:HamroGharSewa/services/token_manager.dart';
@@ -14,25 +13,53 @@ import 'package:device_preview/device_preview.dart';
 import 'package:provider/provider.dart';
 import 'package:dio/dio.dart';
 import 'services/auth_service.dart';
+import 'package:flutter/foundation.dart';
+import 'package:webview_flutter/webview_flutter.dart';
+import 'package:webview_flutter_android/webview_flutter_android.dart';
+import 'package:webview_flutter_wkwebview/webview_flutter_wkwebview.dart';
 import 'constants/api_constants.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
+  // Register platform implementation for mobile WebViews
+  if (WebViewPlatform.instance == null) {
+    if (defaultTargetPlatform == TargetPlatform.android) {
+      WebViewPlatform.instance = AndroidWebViewPlatform();
+    } else if (defaultTargetPlatform == TargetPlatform.iOS) {
+      WebViewPlatform.instance = WebKitWebViewPlatform();
+    }
+  }
+
   AuthService().initialize();
   final isLoggedIn = await TokenManager().isLoggedIn();
+
+  // Detect if app was opened via a payment redirect (e.g. from eSewa)
+  String startRoute = AppRoutes.landing;
+  if (kIsWeb) {
+    final uri = Uri.base;
+    final path = uri.path;
+    if (path.contains('payment-success')) {
+      startRoute = AppRoutes.paymentSuccess;
+    } else if (path.contains('payment-failure')) {
+      startRoute = AppRoutes.paymentFailure;
+    } else if (isLoggedIn) {
+      startRoute = AppRoutes.landing;
+    }
+  }
   
   runApp(
     DevicePreview(
       enabled: true, 
-      builder: (context) => MyApp(isLoggedIn: isLoggedIn),
+      builder: (context) => MyApp(isLoggedIn: isLoggedIn, startRoute: startRoute),
     ),
   );
 }
 
 class MyApp extends StatelessWidget {
   final bool isLoggedIn;
-  const MyApp({Key? key, required this.isLoggedIn}) : super(key: key);
+  final String startRoute;
+  const MyApp({Key? key, required this.isLoggedIn, required this.startRoute}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -79,7 +106,7 @@ class MyApp extends StatelessWidget {
         title: 'HamroGharSewa',
         debugShowCheckedModeBanner: false,
         theme: AppTheme.lightTheme,
-        initialRoute: AppRoutes.landing,
+        initialRoute: startRoute,
         onGenerateRoute: AppRoutes.generateRoute,
       ),
     );

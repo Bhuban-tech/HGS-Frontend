@@ -23,7 +23,7 @@ class ServiceProvider {
              json['active'] == true || 
              json['status'] == 'approved' ||
              json['approved'] == true ||
-             json['approved'] == 1, // Adjust based on your backend response
+             json['approved'] == 1, 
     );
   }
 }

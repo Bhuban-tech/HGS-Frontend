@@ -49,15 +49,18 @@ class _ChatScreenState extends State<ChatScreen> {
     if (!mounted) return;
 
     final chatProvider = context.read<ChatProvider>();
-    
+
+    // Load history first (REST), then connect WebSocket
+    await chatProvider.loadChatHistory(widget.booking.id!);
+
     // Connect to WebSocket if not already connected
     if (!chatProvider.isConnected) {
       await chatProvider.connect();
-      await chatProvider.subscribeToUserTopic(_currentUserId!);
     }
 
-    // Load chat history
-    await chatProvider.loadChatHistory(widget.booking.id!);
+    // Subscribe to personal queue + booking topic
+    await chatProvider.subscribeToUserTopic(_currentUserId!);
+    await chatProvider.subscribeToBookingTopic(widget.booking.id!);
 
     // Scroll to bottom
     _scrollToBottom();
@@ -325,9 +328,7 @@ class _ChatScreenState extends State<ChatScreen> {
                   const SizedBox(width: 12),
                   Container(
                     decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: [AppColors.primaryBlue, AppColors.primaryPurple],
-                      ),
+                      color: AppColors.primaryBlue,
                       shape: BoxShape.circle,
                       boxShadow: [
                         BoxShadow(

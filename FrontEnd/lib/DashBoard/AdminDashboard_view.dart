@@ -772,9 +772,11 @@ class _ServiceAdminAppState extends State<ServiceAdminApp> {
                                       borderRadius: BorderRadius.circular(10),
                                     ),
                                     padding: const EdgeInsets.symmetric(vertical: 12),
+                                    alignment: Alignment.center,
                                   ),
                                   child: const Text(
-                                    'View Details',
+                                    'Details',
+                                    textAlign: TextAlign.center,
                                     style: TextStyle(fontWeight: FontWeight.w600),
                                   ),
                                 ),
@@ -784,16 +786,18 @@ class _ServiceAdminAppState extends State<ServiceAdminApp> {
                                 child: ElevatedButton(
                                   onPressed: () => _approveProvider(provider['id'].toString()),
                                   style: ElevatedButton.styleFrom(
-                                    backgroundColor: Colors.green,
+                                    backgroundColor: AppColors.primaryBlue,
                                     foregroundColor: Colors.white,
                                     elevation: 0,
                                     shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(10),
                                     ),
                                     padding: const EdgeInsets.symmetric(vertical: 12),
+                                    alignment: Alignment.center,
                                   ),
                                   child: const Text(
                                     'Approve',
+                                    textAlign: TextAlign.center,
                                     style: TextStyle(fontWeight: FontWeight.bold),
                                   ),
                                 ),
@@ -803,15 +807,17 @@ class _ServiceAdminAppState extends State<ServiceAdminApp> {
                                 child: OutlinedButton(
                                   onPressed: () => _rejectProvider(provider['id'].toString()),
                                   style: OutlinedButton.styleFrom(
-                                    foregroundColor: Colors.red,
-                                    side: BorderSide(color: Colors.red.withOpacity(0.5)),
+                                    foregroundColor: AppColors.primaryBlue,
+                                    side: BorderSide(color: AppColors.primaryBlue.withOpacity(0.5)),
                                     shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(10),
                                     ),
                                     padding: const EdgeInsets.symmetric(vertical: 12),
+                                    alignment: Alignment.center,
                                   ),
                                   child: const Text(
                                     'Reject',
+                                    textAlign: TextAlign.center,
                                     style: TextStyle(fontWeight: FontWeight.w600),
                                   ),
                                 ),

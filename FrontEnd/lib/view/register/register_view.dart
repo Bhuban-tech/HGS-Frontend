@@ -2,7 +2,6 @@ import 'package:HamroGharSewa/common/custom_text_field.dart';
 import 'package:HamroGharSewa/constants/app_colors.dart';
 import 'package:HamroGharSewa/services/auth_service.dart';
 import 'package:HamroGharSewa/view/verifyotpscreen/verifyotpscreen.dart';
-import 'package:HamroGharSewa/widgets/hamro_logo.dart';
 import 'package:flutter/material.dart';
 import 'package:HamroGharSewa/services/api_client.dart';
 import 'dart:convert';
@@ -237,53 +236,6 @@ class _SignUpScreenState extends State<SignUpScreen> with SingleTickerProviderSt
                 child: Column(
                   children: [
                     const SizedBox(height: 20),
-                    
-                    // Logo
-                    Column(
-                      children: [
-                        Container(
-                          width: 80,
-                          height: 80,
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            shape: BoxShape.circle,
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withOpacity(0.1),
-                                blurRadius: 20,
-                                spreadRadius: 5,
-                              ),
-                            ],
-                          ),
-                          child: const HamroLogo(
-                            size: 80,
-                            showText: false,
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                        Text(
-                          _isProvider ? 'Join as Provider' : 'Create Account',
-                          style: const TextStyle(
-                            fontSize: 32,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                            letterSpacing: 1,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          _isProvider
-                              ? 'Start growing your business'
-                              : 'Join our community today',
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: Colors.white.withOpacity(0.8),
-                          ),
-                        ),
-                      ],
-                    ),
-                    
-                    const SizedBox(height: 40),
 
                     // Register Form Card
                     ClipRRect(
@@ -307,7 +259,7 @@ class _SignUpScreenState extends State<SignUpScreen> with SingleTickerProviderSt
                             key: _formKey,
                             child: Column(
                               children: [
-                                // Role Toggle
+                               
                                 Container(
                                   padding: const EdgeInsets.all(4),
                                   decoration: BoxDecoration(
@@ -528,7 +480,7 @@ class _SignUpScreenState extends State<SignUpScreen> with SingleTickerProviderSt
                                           ),
                                         )
                                       : Text(
-                                          _isProvider ? 'REGISTER AS PROVIDER' : 'SIGN UP AS USER',
+                                          _isProvider ? 'REGISTER AS PROVIDER' : 'REGISTER AS USER',
                                           style: const TextStyle(
                                             fontSize: 16,
                                             fontWeight: FontWeight.bold,

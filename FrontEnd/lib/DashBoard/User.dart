@@ -14,7 +14,9 @@ import 'package:dio/dio.dart';
 import 'package:intl/intl.dart';
 
 import 'package:HamroGharSewa/route/app_routes.dart';
-
+import 'package:flutter/foundation.dart';
+// ignore: avoid_web_libraries_in_flutter
+import 'dart:js' as js;
 
 class UserDashboard extends StatefulWidget {
   const UserDashboard({super.key});
@@ -151,10 +153,10 @@ class _UserDashboardState extends State<UserDashboard>
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Welcome Back,',
+                            'Welcome,',
                             style: TextStyle(
                               color: Colors.white.withValues(alpha: 0.9),
-                              fontSize: 16,
+                              fontSize: 20,
                             ),
                           ),
                           Text(
@@ -1607,10 +1609,7 @@ class _UserDashboardState extends State<UserDashboard>
               title: const Text('Edit Profile'),
               onTap: () {
                 Navigator.pop(context);
-                // TODO: Navigate to edit profile page
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Edit Profile coming soon')),
-                );
+                Navigator.pushNamed(context, AppRoutes.editProfile);
               },
             ),
             const Divider(),
@@ -2145,15 +2144,21 @@ class _UserDashboardState extends State<UserDashboard>
       );
 
       final paymentData = await _paymentService.initiateEsewaPayment(amount);
+      final formData = paymentData['formData'] as Map<String, dynamic>? ?? {};
       
       // Debug print
       print('🟢 eSewa Payment Data: $paymentData');
-      print('🟢 Transaction UUID: ${paymentData['transaction_uuid']}');
-      print('🟢 Amount: ${paymentData['amount']}');
+      print('🟢 Transaction UUID: ${formData['transaction_uuid']}');
+      print('🟢 Amount: ${formData['amount']}');
       
       if (mounted) {
         Navigator.pop(context); // Close loading
         
+        if (kIsWeb) {
+          _handleWebEsewaRedirection(paymentData);
+          return;
+        }
+
         // Navigate to eSewa payment form
         await Navigator.push(
           context,
@@ -2251,6 +2256,11 @@ class _UserDashboardState extends State<UserDashboard>
       if (mounted) {
         Navigator.pop(context); // Close loading
 
+        if (kIsWeb) {
+          _handleWebEsewaRedirection(paymentData);
+          return;
+        }
+
         // Open eSewa payment form in WebView
         Navigator.push(
           context,
@@ -2271,6 +2281,50 @@ class _UserDashboardState extends State<UserDashboard>
             backgroundColor: AppColors.error,
             duration: const Duration(seconds: 5),
           ),
+        );
+      }
+    }
+  }
+
+  void _handleWebEsewaRedirection(Map<String, dynamic> paymentData) {
+    final endpoint = paymentData['api_endpoint'] ?? 'https://rc-epay.esewa.com.np/api/epay/main/v2/form';
+    final formData = paymentData['formData'] as Map<String, dynamic>? ?? paymentData;
+
+    final StringBuffer jsCode = StringBuffer();
+    jsCode.writeln('var form = document.createElement("form");');
+    jsCode.writeln('form.setAttribute("method", "post");');
+    jsCode.writeln('form.setAttribute("action", "$endpoint");');
+    jsCode.writeln('var currentOrigin = window.location.origin;');
+
+    formData.forEach((key, value) {
+      if (key != 'api_endpoint' && value != null) {
+        final rawValue = value.toString().replaceAll('"', r'"');
+        final safeKey = key.replaceAll(RegExp(r'[^a-zA-Z0-9_]'), '_');
+
+        if (key == 'success_url' || key == 'failure_url') {
+          jsCode.writeln('var fv_$safeKey = "$rawValue".replace("http://localhost:3000", currentOrigin);');
+        } else {
+          jsCode.writeln('var fv_$safeKey = "$rawValue";');
+        }
+
+        jsCode.writeln('var fi_$safeKey = document.createElement("input");');
+        jsCode.writeln('fi_$safeKey.setAttribute("type", "hidden");');
+        jsCode.writeln('fi_$safeKey.setAttribute("name", "$key");');
+        jsCode.writeln('fi_$safeKey.setAttribute("value", fv_$safeKey);');
+        jsCode.writeln('form.appendChild(fi_$safeKey);');
+      }
+    });
+
+    jsCode.writeln('document.body.appendChild(form);');
+    jsCode.writeln('form.submit();');
+
+    try {
+      js.context.callMethod('eval', [jsCode.toString()]);
+    } catch (e) {
+      print('🔴 Web Redirection Error: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Web redirection failed: $e'), backgroundColor: AppColors.error),
         );
       }
     }

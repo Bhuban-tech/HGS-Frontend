@@ -202,7 +202,7 @@ class _ProviderDashboardState extends State<ProviderDashboard>
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                'Welcome back, $providerName!',
+                                'Welcome, $providerName!',
                                 style: const TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.bold,
@@ -264,7 +264,7 @@ class _ProviderDashboardState extends State<ProviderDashboard>
 
                 const SizedBox(height: 24),
 
-                // Incoming Requests Section
+               
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20),
                   child: Row(
@@ -793,62 +793,76 @@ class _ProviderDashboardState extends State<ProviderDashboard>
               ),
             ),
             actions: [
-              TextButton(
-                onPressed: provider.isLoading ? null : () => Navigator.pop(ctx),
-                child: const Text('Cancel'),
-              ),
-              ElevatedButton(
-                onPressed: provider.isLoading ? null : () async {
-                  if (formKey.currentState!.validate()) {
-                    final reason = reasonController.text.trim();
-                    
-                    setDialogState(() {}); // Trigger rebuild to show loading state if we had one here
-                    
-                    final success = await provider.rejectBooking(bookingId, reason: reason);
-                    
-                    if (context.mounted) {
-                      Navigator.pop(ctx); // Close dialog AFTER operation
-                      
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Row(
-                            children: [
-                              Icon(
-                                success ? Icons.check_circle : Icons.error,
-                                color: Colors.white,
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: TextButton(
+                      onPressed: provider.isLoading ? null : () => Navigator.pop(ctx),
+                      child: const Text('Cancel'),
+                    ),
+                  ),
+                  ElevatedButton(
+                    onPressed: provider.isLoading ? null : () async {
+                      if (formKey.currentState!.validate()) {
+                        final reason = reasonController.text.trim();
+                        
+                        setDialogState(() {});
+                        
+                        final success = await provider.rejectBooking(bookingId, reason: reason);
+                        
+                        if (context.mounted) {
+                          Navigator.pop(ctx);
+                          
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Row(
+                                children: [
+                                  Icon(
+                                    success ? Icons.check_circle : Icons.error,
+                                    color: Colors.white,
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Text(
+                                      success 
+                                        ? 'Booking rejected successfully.' 
+                                        : 'Failed to reject: ${provider.error ?? 'Unknown error'}',
+                                    ),
+                                  ),
+                                ],
                               ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: Text(
-                                  success 
-                                    ? 'Booking rejected successfully.' 
-                                    : 'Failed to reject: ${provider.error ?? 'Unknown error'}',
-                                ),
+                              backgroundColor: success ? Colors.orange : Colors.red,
+                              behavior: SnackBarBehavior.floating,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
                               ),
-                            ],
-                          ),
-                          backgroundColor: success ? Colors.orange : Colors.red,
-                          behavior: SnackBarBehavior.floating,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          duration: const Duration(seconds: 3),
-                        ),
-                      );
-                    }
-                  }
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.error,
-                  foregroundColor: Colors.white,
-                ),
-                child: provider.isLoading
-                    ? const SizedBox(
-                        height: 20,
-                        width: 20,
-                        child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-                      )
-                    : const Text('Reject Booking'),
+                              duration: const Duration(seconds: 3),
+                            ),
+                          );
+                        }
+                      }
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primaryBlue,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: provider.isLoading
+                        ? const SizedBox(
+                            height: 20,
+                            width: 20,
+                            child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                          )
+                        : const Text('Reject Booking',
+                            style: TextStyle(fontWeight: FontWeight.bold)),
+                  ),
+                  const SizedBox(height: 4),
+                ],
               ),
             ],
           );
@@ -970,10 +984,7 @@ class _ProviderDashboardState extends State<ProviderDashboard>
               title: const Text('Edit Profile'),
               onTap: () {
                 Navigator.pop(context);
-                // TODO: Navigate to edit profile page
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Edit Profile coming soon')),
-                );
+                Navigator.pushNamed(context, AppRoutes.editProfile);
               },
             ),
             const Divider(),

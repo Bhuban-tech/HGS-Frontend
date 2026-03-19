@@ -1,6 +1,6 @@
 class ApiConstants {
 
-  static const String baseUrl = 'http://192.168.1.77:8080';
+  static const String baseUrl = 'http://192.168.1.179:8080';
 
   static const String login = '/api/auth/login';
   static const String register = '/api/auth/register';
@@ -12,8 +12,7 @@ class ApiConstants {
 
   static const String adminUsers = '/api/admin/users';
   static const String adminProviders = '/api/admin/service-providers';
-  static const String adminPendingProviders =
-      '/api/admin/service-providers/pending';
+  static const String adminPendingProviders = '/api/admin/service-providers/pending';
 
   static String adminApproveProvider(String id) => '/api/admin/approve/$id';
   static String adminRejectProvider(String id) => '/api/admin/reject/$id';

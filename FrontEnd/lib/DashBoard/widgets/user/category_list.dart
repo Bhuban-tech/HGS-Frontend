@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:HamroGharSewa/constants/app_colors.dart';
 
-/// Horizontal scrolling category list
-/// Shows service categories with icons
 class CategoryList extends StatelessWidget {
   final List<Map<String, dynamic>> categories;
   final String? selectedCategory;

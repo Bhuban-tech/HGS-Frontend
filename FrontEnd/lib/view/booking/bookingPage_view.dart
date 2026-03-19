@@ -16,17 +16,22 @@ class _BookingPageState extends State<BookingPage> {
   int selectedDateIndex = 0;
   int selectedTimeIndex = -1;
 
-  // Generate 6 days starting from today dynamically
+  // Generate 7 days starting from today dynamically — show full week
   List<Map<String, String>> get dates {
     final now = DateTime.now();
-    return List.generate(6, (i) {
+    // Start from today, show 7 days
+    return List.generate(7, (i) {
       final day = now.add(Duration(days: i));
-      const dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+      const fullNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+      const shortLabels = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+      final weekdayIndex = day.weekday - 1; // 0=Mon ... 6=Sun
       return {
-        'day': dayNames[day.weekday - 1],
+        'day': fullNames[weekdayIndex],      // e.g. "Sat"
+        'label': shortLabels[weekdayIndex],  // e.g. "Saturday"
         'date': day.day.toString(),
         'month': day.month.toString(),
         'year': day.year.toString(),
+        'isToday': i == 0 ? 'true' : 'false',
       };
     });
   }
@@ -261,18 +266,23 @@ class _BookingPageState extends State<BookingPage> {
                                 Text(
                                   dates[index]['day']!,
                                   style: TextStyle(
-                                    color: isSelected ? Colors.white.withOpacity(0.8) : AppColors.textMedium,
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.w600,
+                                    color: isSelected ? Colors.white : AppColors.textDark,
+                                    fontSize: 17,
+                                    fontWeight: FontWeight.bold,
+                                    letterSpacing: 0.3,
                                   ),
                                 ),
-                                const SizedBox(height: 6),
+                                const SizedBox(height: 4),
                                 Text(
-                                  dates[index]['date']!,
+                                  dates[index]['isToday'] == 'true' ? 'Today' : dates[index]['date']!,
                                   style: TextStyle(
-                                    color: isSelected ? Colors.white : AppColors.textDark,
-                                    fontSize: 22,
-                                    fontWeight: FontWeight.bold,
+                                    color: isSelected
+                                        ? Colors.white.withOpacity(0.85)
+                                        : dates[index]['isToday'] == 'true'
+                                            ? AppColors.primaryBlue
+                                            : AppColors.textLight,
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w600,
                                   ),
                                 ),
                               ],

@@ -3,7 +3,6 @@ import 'package:HamroGharSewa/constants/app_colors.dart';
 import 'package:HamroGharSewa/services/auth_service.dart';
 import 'package:HamroGharSewa/services/token_manager.dart';
 import 'package:HamroGharSewa/view/register/register_view.dart';
-import 'package:HamroGharSewa/widgets/hamro_logo.dart';
 import 'package:flutter/material.dart';
 import 'dart:ui';
 
@@ -21,7 +20,6 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
 
   bool _isLoading = false;
   bool _obscurePassword = true;
-  bool _isProvider = false; // Toggle state
   late AnimationController _animController;
   late Animation<double> _fadeAnimation;
 
@@ -46,7 +44,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
     super.dispose();
   }
 
-  Future<void> _handleLogin() async {
+  Future<void> _handleLogin(bool isProvider) async {
     if (!_formKey.currentState!.validate()) return;
 
     setState(() => _isLoading = true);
@@ -60,29 +58,22 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
       if (!mounted) return;
 
       if (result.success) {
-        // Validation: Verify if the account role matches the selected mode
         final userData = await TokenManager().getUserData();
         final role = userData?['role']?.toString().toUpperCase() ?? '';
-        
-        bool isRoleCorrect = false;
-        if (_isProvider) {
-          // If trying to login as provider, account must have PROVIDER role
-          isRoleCorrect = (role == 'PROVIDER' || role == 'SERVICE_PROVIDER');
-        } else {
-          // If trying to login as user, account must NOT be just a provider (could be USER or ADMIN)
-          isRoleCorrect = (role != 'PROVIDER' && role != 'SERVICE_PROVIDER');
-        }
+
+        bool isRoleCorrect = isProvider
+            ? (role == 'PROVIDER' || role == 'SERVICE_PROVIDER')
+            : (role != 'PROVIDER' && role != 'SERVICE_PROVIDER');
 
         if (!mounted) return;
 
         if (!isRoleCorrect) {
-          // Mismatch found - clear data and notify user
           await TokenManager().clearAll();
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(_isProvider 
-                ? "This email belongs to a User account. Please switch to 'User' mode."
-                : "This email belongs to a Provider account. Please switch to 'Provider' mode."),
+              content: Text(isProvider
+                  ? "This email belongs to a User account. Please use 'Login as User'."
+                  : "This email belongs to a Provider account. Please use 'Login as Provider'."),
               backgroundColor: AppColors.error,
               behavior: SnackBarBehavior.floating,
             ),
@@ -162,46 +153,6 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    // Logo
-                    Container(
-                      width: 100,
-                      height: 100,
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        shape: BoxShape.circle,
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.1),
-                            blurRadius: 20,
-                            spreadRadius: 5,
-                          ),
-                        ],
-                      ),
-                      child: const HamroLogo(
-                        size: 100,
-                        showText: false,
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-                    Text(
-                      _isProvider ? 'Provider Hub' : 'Welcome Back',
-                      style: const TextStyle(
-                        fontSize: 32,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                        letterSpacing: 1,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      _isProvider ? 'Manage your business today' : 'Sign in to your account',
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.white.withOpacity(0.8),
-                      ),
-                    ),
-                    const SizedBox(height: 32),
-
                     // Login Card
                     ClipRRect(
                       borderRadius: BorderRadius.circular(24),
@@ -218,33 +169,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.stretch,
                               children: [
-                                // Custom Segmented Control (Toggle)
-                                Container(
-                                  padding: const EdgeInsets.all(4),
-                                  decoration: BoxDecoration(
-                                    color: AppColors.lightGrey.withOpacity(0.5),
-                                    borderRadius: BorderRadius.circular(14),
-                                  ),
-                                  child: Row(
-                                    children: [
-                                      _buildToggleItem('User', !_isProvider, () {
-                                        if (_isProvider) {
-                                          setState(() => _isProvider = false);
-                                          _emailController.clear();
-                                          _passwordController.clear();
-                                        }
-                                      }),
-                                      _buildToggleItem('Provider', _isProvider, () {
-                                        if (!_isProvider) {
-                                          setState(() => _isProvider = true);
-                                          _emailController.clear();
-                                          _passwordController.clear();
-                                        }
-                                      }),
-                                    ],
-                                  ),
-                                ),
-                                const SizedBox(height: 24),
+                                const SizedBox(height: 8),
 
                                 CustomTextField(
                                   controller: _emailController,
@@ -287,7 +212,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                                 ),
                                 const SizedBox(height: 24),
                                 ElevatedButton(
-                                  onPressed: _isLoading ? null : _handleLogin,
+                                  onPressed: _isLoading ? null : () => _handleLogin(false),
                                   style: ElevatedButton.styleFrom(
                                     backgroundColor: AppColors.primaryBlue,
                                     foregroundColor: Colors.white,
@@ -297,10 +222,22 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                                   ),
                                   child: _isLoading
                                       ? const SizedBox(height: 24, width: 24, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                                      : Text(
-                                          _isProvider ? 'LOG IN AS PROVIDER' : 'SIGN IN AS USER',
-                                          style: const TextStyle(fontWeight: FontWeight.bold),
-                                        ),
+                                      : const Text('LOGIN AS USER', style: TextStyle(fontWeight: FontWeight.bold)),
+                                ),
+                                const SizedBox(height: 12),
+                                ElevatedButton(
+                                  onPressed: _isLoading ? null : () => _handleLogin(true),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.white,
+                                    foregroundColor: AppColors.primaryBlue,
+                                    padding: const EdgeInsets.symmetric(vertical: 16),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(16),
+                                      side: BorderSide(color: AppColors.primaryBlue, width: 1.5),
+                                    ),
+                                    elevation: 0,
+                                  ),
+                                  child: const Text('LOGIN AS PROVIDER', style: TextStyle(fontWeight: FontWeight.bold)),
                                 ),
                               ],
                             ),
@@ -328,29 +265,4 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
     );
   }
 
-  Widget _buildToggleItem(String label, bool isSelected, VoidCallback onTap) {
-    return Expanded(
-      child: GestureDetector(
-        onTap: onTap,
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 12),
-          decoration: BoxDecoration(
-            color: isSelected ? Colors.white : Colors.transparent,
-            borderRadius: BorderRadius.circular(10),
-            boxShadow: isSelected
-                ? [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 4, offset: const Offset(0, 2))]
-                : null,
-          ),
-          child: Text(
-            label,
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              color: isSelected ? AppColors.textDark : AppColors.textLight,
-              fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-            ),
-          ),
-        ),
-      ),
-    );
-  }
 }

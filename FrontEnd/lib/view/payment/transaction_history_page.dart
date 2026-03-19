@@ -34,12 +34,12 @@ class _TransactionHistoryPageState extends State<TransactionHistoryPage> {
     });
 
     try {
-      print('📊 Loading transactions...');
+
       final transactions = await _transactionService.getUserTransactions();
-      print('Transactions loaded: ${transactions.length}');
+
       
       if (transactions.isNotEmpty) {
-        print('First transaction: ${transactions[0].toJson()}');
+
       }
       
       if (mounted) {
@@ -79,39 +79,44 @@ class _TransactionHistoryPageState extends State<TransactionHistoryPage> {
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
-        leading: IconButton(
-          icon: Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: Colors.grey.shade100,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: const Icon(Icons.arrow_back, color: Colors.black87, size: 20),
+        centerTitle: true,
+        leading: Container(
+          margin: const EdgeInsets.all(10),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Colors.grey.shade200),
           ),
-          onPressed: () => Navigator.pop(context),
+          child: IconButton(
+            padding: EdgeInsets.zero,
+            icon: const Icon(Icons.chevron_left, color: Colors.black87, size: 24),
+            onPressed: () => Navigator.pop(context),
+          ),
         ),
         title: const Text(
           'Transaction History',
           style: TextStyle(
-            color: Colors.black87,
-            fontSize: 22,
+            color: Color(0xFF1E293B),
+            fontSize: 19,
             fontWeight: FontWeight.w800,
             letterSpacing: -0.5,
           ),
         ),
         actions: [
-          IconButton(
-            icon: Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: AppColors.primaryBlue.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: const Icon(Icons.refresh, color: AppColors.primaryBlue, size: 20),
+          Container(
+            width: 40,
+            height: 40,
+            margin: const EdgeInsets.only(right: 16, top: 10, bottom: 10),
+            decoration: BoxDecoration(
+              color: const Color(0xFFEEF2FF),
+              borderRadius: BorderRadius.circular(12),
             ),
-            onPressed: _loadTransactions,
+            child: IconButton(
+              padding: EdgeInsets.zero,
+              icon: const Icon(Icons.refresh_rounded, color: AppColors.primaryBlue, size: 20),
+              onPressed: _loadTransactions,
+            ),
           ),
-          const SizedBox(width: 8),
         ],
       ),
       body: Column(
@@ -119,15 +124,17 @@ class _TransactionHistoryPageState extends State<TransactionHistoryPage> {
           // Filter Tabs
           Container(
             color: Colors.white,
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-            child: SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            child: Container(
+              padding: const EdgeInsets.all(6),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF1F5F9),
+                borderRadius: BorderRadius.circular(16),
+              ),
               child: Row(
                 children: [
                   _buildFilterChip('All'),
-                  const SizedBox(width: 12),
                   _buildFilterChip('eSewa'),
-                  const SizedBox(width: 12),
                   _buildFilterChip('Khalti'),
                 ],
               ),
@@ -145,41 +152,39 @@ class _TransactionHistoryPageState extends State<TransactionHistoryPage> {
 
   Widget _buildFilterChip(String label) {
     final isSelected = _selectedFilter == label;
-    
-    return GestureDetector(
-      onTap: () {
-        setState(() {
-          _selectedFilter = label;
-          _applyFilter();
-        });
-      },
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-        decoration: BoxDecoration(
-          color: isSelected ? AppColors.primaryBlue : Colors.white,
-          borderRadius: BorderRadius.circular(25),
-          border: Border.all(
-            color: isSelected ? AppColors.primaryBlue : Colors.grey.shade300,
-            width: isSelected ? 2 : 1.5,
+
+    return Expanded(
+      child: GestureDetector(
+        onTap: () {
+          setState(() {
+            _selectedFilter = label;
+            _applyFilter();
+          });
+        },
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 250),
+          padding: const EdgeInsets.symmetric(vertical: 10),
+          decoration: BoxDecoration(
+            color: isSelected ? AppColors.primaryBlue : Colors.transparent,
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: isSelected
+                ? [
+                    BoxShadow(
+                      color: AppColors.primaryBlue.withOpacity(0.35),
+                      blurRadius: 12,
+                      offset: const Offset(0, 4),
+                    ),
+                  ]
+                : [],
           ),
-          boxShadow: isSelected
-              ? [
-                  BoxShadow(
-                    color: AppColors.primaryBlue.withOpacity(0.3),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
-                  ),
-                ]
-              : [],
-        ),
-        child: Text(
-          label,
-          style: TextStyle(
-            fontSize: 15,
-            fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
-            color: isSelected ? Colors.white : Colors.grey.shade700,
-            letterSpacing: 0.3,
+          child: Text(
+            label,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+              color: isSelected ? Colors.white : const Color(0xFF94A3B8),
+            ),
           ),
         ),
       ),
@@ -226,7 +231,7 @@ class _TransactionHistoryPageState extends State<TransactionHistoryPage> {
               const SizedBox(height: 24),
               ElevatedButton.icon(
                 onPressed: _loadTransactions,
-                icon: const Icon(Icons.refresh),
+
                 label: const Text('Retry'),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primaryBlue,
@@ -250,35 +255,63 @@ class _TransactionHistoryPageState extends State<TransactionHistoryPage> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Container(
-                padding: const EdgeInsets.all(24),
+                width: 100,
+                height: 100,
                 decoration: BoxDecoration(
-                  color: Colors.grey[200],
-                  shape: BoxShape.circle,
+                  color: const Color(0xFFF0F2FF),
+                  borderRadius: BorderRadius.circular(30),
                 ),
-                child: Icon(
-                  Icons.receipt_long_outlined,
-                  size: 64,
-                  color: Colors.grey[400],
+                child: const Icon(
+                  Icons.description_outlined,
+                  size: 48,
+                  color: Color(0xFF4F46E5),
                 ),
               ),
-              const SizedBox(height: 24),
-              Text(
+              const SizedBox(height: 32),
+              const Text(
                 'No Transactions Yet',
                 style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.grey[700],
+                  fontSize: 22,
+                  fontWeight: FontWeight.w900,
+                  color: Color(0xFF1E293B),
                 ),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 12),
               Text(
-                'Your payment history will appear here',
+                'Your payment history will appear\nhere once you make a transaction',
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  fontSize: 14,
-                  color: Colors.grey[600],
+                  fontSize: 16,
+                  color: Colors.grey.shade500,
+                  height: 1.5,
                 ),
               ),
+              const Spacer(),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () {
+                    // Navigate to service selection or booking
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFF8FAFC),
+                    foregroundColor: const Color(0xFFE2E8F0),
+                    elevation: 0,
+                    padding: const EdgeInsets.symmetric(vertical: 18),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                  ),
+                  child: const Text(
+                    'Make Your First Payment',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
             ],
           ),
         ),
@@ -534,6 +567,8 @@ class _TransactionHistoryPageState extends State<TransactionHistoryPage> {
       ),
     );
   }
+
+
 
   Color _getServiceColor(String name) {
     final lowerName = name.toLowerCase();

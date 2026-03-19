@@ -32,10 +32,10 @@ class _ChatPageState extends State<ChatPage> {
   void initState() {
     super.initState();
     
-    print('🚀 [PROVIDER CHAT] ChatPage initialized');
-    print('📝 [PROVIDER CHAT] Name: ${widget.name}');
-    print('📋 [PROVIDER CHAT] Booking ID: ${widget.bookingId}');
-    print('👤 [PROVIDER CHAT] User ID: ${widget.userId}');
+    print('[PROVIDER CHAT] ChatPage initialized');
+    print('[PROVIDER CHAT] Name: ${widget.name}');
+    print('[PROVIDER CHAT] Booking ID: ${widget.bookingId}');
+    print('[PROVIDER CHAT] User ID: ${widget.userId}');
     
     // Connect to WebSocket and load chat history
     WidgetsBinding.instance.addPostFrameCallback((_) async {
@@ -50,9 +50,9 @@ class _ChatPageState extends State<ChatPage> {
         _currentUserEmail = userData?['email'];
       });
       
-      print('👤 [PROVIDER CHAT] Current User ID: $_currentUserId');
-      print('📧 [PROVIDER CHAT] Current User Email: $_currentUserEmail');
-      print('🎭 [PROVIDER CHAT] Current User Role: ${userData?['role']}');
+      print('[PROVIDER CHAT] Current User ID: $_currentUserId');
+      print('[PROVIDER CHAT] Current User Email: $_currentUserEmail');
+      print('[PROVIDER CHAT] Current User Role: ${userData?['role']}');
       
       // Connect to WebSocket if not connected
       if (!chatProvider.isConnected) {
@@ -224,28 +224,37 @@ class _ChatPageState extends State<ChatPage> {
                   print('❌ [PROVIDER CHAT] Error: ${chatProvider.error}');
                 }
                 
-                final displayMessages = messages.isEmpty ? [
-                   ChatMessage(
-                     id: '1',
-                     bookingId: 'demo',
-                     senderId: 'other',
-                     senderName: widget.name,
-                     receiverId: 'me',
-                     message: 'Hi, when can you come to fix the switch?',
-                     timestamp: DateTime.now().subtract(const Duration(minutes: 5)),
-                   ),
-                   ChatMessage(
-                     id: '2',
-                     bookingId: 'demo',
-                     senderId: 'me',
-                     senderName: 'You',
-                     receiverId: 'other',
-                     message: 'I can come today at 3 PM. Will that work?',
-                     timestamp: DateTime.now().subtract(const Duration(minutes: 2)),
-                   ),
-                ] : messages;
+                if (chatProvider.isLoading) {
+                  return const Center(
+                    child: CircularProgressIndicator(color: AppColors.primaryBlue),
+                  );
+                }
 
-                print('📊 [PROVIDER CHAT] Displaying ${displayMessages.length} messages');
+                if (messages.isEmpty) {
+                  return Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.chat_bubble_outline_rounded,
+                            size: 56, color: Colors.grey[300]),
+                        const SizedBox(height: 12),
+                        Text(
+                          'No messages yet',
+                          style: TextStyle(
+                            color: Colors.grey[400],
+                            fontSize: 15,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          'Start the conversation',
+                          style: TextStyle(color: Colors.grey[400], fontSize: 13),
+                        ),
+                      ],
+                    ),
+                  );
+                }
 
                 // Auto-scroll to bottom when messages change
                 WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -255,18 +264,12 @@ class _ChatPageState extends State<ChatPage> {
                 return ListView.builder(
                   controller: _scrollController,
                   padding: const EdgeInsets.all(20),
-                  itemCount: displayMessages.length,
+                  itemCount: messages.length,
                   itemBuilder: (context, index) {
-                    final msg = displayMessages[index];
-                    // Check if message is from current user
+                    final msg = messages[index];
                     final isMe = msg.senderId == _currentUserId || 
                                  msg.senderId == 'me' || 
                                  msg.senderId == 'current_user';
-                    
-                    if (index == 0 || index == displayMessages.length - 1) {
-                      print('💬 [PROVIDER CHAT] Message #$index: "${msg.message}" from ${msg.senderName} (isMe: $isMe)');
-                    }
-                     
                     return _buildMessageBubble(msg, isMe);
                   },
                 );

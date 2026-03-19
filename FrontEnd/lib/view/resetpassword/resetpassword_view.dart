@@ -42,7 +42,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
 
     if (!mounted) return;
 
-    // TEMPORARY: Show success message even though feature is not implemented
+   
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
         content: Text("Password reset feature is coming soon!"),

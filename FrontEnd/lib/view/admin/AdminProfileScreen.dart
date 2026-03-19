@@ -4,6 +4,7 @@ import 'package:HamroGharSewa/constants/app_colors.dart';
 import 'package:HamroGharSewa/constants/api_constants.dart';
 import 'package:HamroGharSewa/services/api_client.dart';
 import 'package:HamroGharSewa/services/token_manager.dart';
+import 'package:HamroGharSewa/view/profile/email_change_otp_screen.dart';
 
 class AdminProfileScreen extends StatefulWidget {
   const AdminProfileScreen({super.key});
@@ -14,15 +15,11 @@ class AdminProfileScreen extends StatefulWidget {
 
 class _AdminProfileScreenState extends State<AdminProfileScreen> {
   final ApiClient _apiClient = ApiClient();
-  final TokenManager _tokenManager = TokenManager();
 
   final _nameController = TextEditingController();
-  final _phoneController = TextEditingController();
   final _newEmailController = TextEditingController();
-  final _otpController = TextEditingController();
 
   bool _isLoading = false;
-  bool _otpSent = false;
   Map<String, dynamic>? _profile;
 
   @override
@@ -34,9 +31,7 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
   @override
   void dispose() {
     _nameController.dispose();
-    _phoneController.dispose();
     _newEmailController.dispose();
-    _otpController.dispose();
     super.dispose();
   }
 
@@ -49,7 +44,6 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
         setState(() {
           _profile = decoded['data'];
           _nameController.text = _profile?['userName'] ?? '';
-          _phoneController.text = _profile?['phoneNumber'] ?? '';
         });
       }
     } catch (e) {
@@ -66,7 +60,6 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
       ApiConstants.updateProfile,
         {
           'userName': _nameController.text.trim(),
-          'phoneNumber': _phoneController.text.trim(),
         },
       );
       if (response.statusCode == 200) {
@@ -88,7 +81,6 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
       _showSnackBar('Please enter new email', isError: true);
       return;
     }
-
     setState(() => _isLoading = true);
     try {
       final response = await _apiClient.post(
@@ -96,46 +88,18 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
         null,
       );
       if (response.statusCode == 200) {
-        setState(() => _otpSent = true);
         _showSnackBar('OTP sent to $newEmail');
+        if (mounted) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => EmailChangeOtpScreen(newEmail: newEmail),
+            ),
+          );
+        }
       } else {
         final decoded = jsonDecode(response.body);
         _showSnackBar(decoded['message'] ?? 'Failed to send OTP', isError: true);
-      }
-    } catch (e) {
-      _showSnackBar('Error: $e', isError: true);
-    } finally {
-      if (mounted) setState(() => _isLoading = false);
-    }
-  }
-
-  Future<void> _confirmEmailChange() async {
-    final newEmail = _newEmailController.text.trim();
-    final otp = _otpController.text.trim();
-
-    if (otp.isEmpty) {
-      _showSnackBar('Please enter OTP', isError: true);
-      return;
-    }
-
-    setState(() => _isLoading = true);
-    try {
-      final response = await _apiClient.post(
-        '${ApiConstants.confirmEmailChange}?newEmail=$newEmail&otp=$otp',
-        null,
-      );
-      if (response.statusCode == 200) {
-        _showSnackBar('Email changed successfully!');
-        await _tokenManager.logout(context);
-        setState(() {
-          _otpSent = false;
-          _newEmailController.clear();
-          _otpController.clear();
-        });
-        _loadProfile();
-      } else {
-        final decoded = jsonDecode(response.body);
-        _showSnackBar(decoded['message'] ?? 'Invalid OTP', isError: true);
       }
     } catch (e) {
       _showSnackBar('Error: $e', isError: true);
@@ -261,9 +225,6 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
                     _buildTextField('Full Name', _nameController,
                         icon: Icons.person),
                     const SizedBox(height: 16),
-                    _buildTextField('Phone Number', _phoneController,
-                        icon: Icons.phone),
-                    const SizedBox(height: 16),
                     Row(
                       children: [
                         Icon(Icons.email, color: AppColors.primaryBlue, size: 20),
@@ -303,67 +264,21 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
                         'New Email Address', _newEmailController,
                         icon: Icons.email),
                     const SizedBox(height: 12),
-
-                    if (!_otpSent)
-                      SizedBox(
-                        width: double.infinity,
-                        height: 48,
-                        child: ElevatedButton.icon(
-                          onPressed:
-                          _isLoading ? null : _requestEmailChange,
-                          icon: const Icon(Icons.send),
-                          label: const Text('Send OTP'),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.primaryBlue,
-                            foregroundColor: Colors.white,
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12)),
-                          ),
+                    SizedBox(
+                      width: double.infinity,
+                      height: 48,
+                      child: ElevatedButton.icon(
+                        onPressed: _isLoading ? null : _requestEmailChange,
+                        icon: const Icon(Icons.send),
+                        label: const Text('Send OTP'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.primaryBlue,
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12)),
                         ),
                       ),
-
-                    if (_otpSent) ...[
-                      const SizedBox(height: 12),
-                      _buildTextField('Enter OTP', _otpController,
-                          icon: Icons.lock),
-                      const SizedBox(height: 12),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: OutlinedButton(
-                              onPressed: () =>
-                                  setState(() => _otpSent = false),
-                              style: OutlinedButton.styleFrom(
-                                padding: const EdgeInsets.symmetric(
-                                    vertical: 12),
-                                shape: RoundedRectangleBorder(
-                                    borderRadius:
-                                    BorderRadius.circular(12)),
-                              ),
-                              child: const Text('Cancel'),
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: ElevatedButton(
-                              onPressed: _isLoading
-                                  ? null
-                                  : _confirmEmailChange,
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: AppColors.primaryBlue,
-                                foregroundColor: Colors.white,
-                                padding: const EdgeInsets.symmetric(
-                                    vertical: 12),
-                                shape: RoundedRectangleBorder(
-                                    borderRadius:
-                                    BorderRadius.circular(12)),
-                              ),
-                              child: const Text('Verify OTP'),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
+                    ),
                   ],
                 ),
               ],

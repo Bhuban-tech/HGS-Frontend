@@ -125,6 +125,11 @@ class ChatProvider with ChangeNotifier {
       
       final messages = await _chatService.getChatHistory(bookingId);
       
+      // Filter out backend artifact messages
+      final filtered = messages.where((m) => 
+        m.message.trim().toLowerCase() != 'chat history'
+      ).toList();
+      
       // Merge with existing messages instead of replacing
       if (_chatHistory.containsKey(bookingId)) {
         final existingMessages = _chatHistory[bookingId]!;
@@ -133,7 +138,7 @@ class ChatProvider with ChangeNotifier {
         final existingIds = existingMessages.map((m) => m.id).toSet();
         
         // Add new messages from backend that don't exist locally
-        for (var message in messages) {
+        for (var message in filtered) {
           if (!existingIds.contains(message.id)) {
             existingMessages.add(message);
           }
@@ -144,7 +149,7 @@ class ChatProvider with ChangeNotifier {
         
         _chatHistory[bookingId] = existingMessages;
       } else {
-        _chatHistory[bookingId] = messages;
+        _chatHistory[bookingId] = filtered;
       }
       
       if (kDebugMode) {

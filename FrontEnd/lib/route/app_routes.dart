@@ -8,6 +8,10 @@ import 'package:HamroGharSewa/view/register/register_view.dart';
 import 'package:HamroGharSewa/Booking/HistoryPage.dart';
 import 'package:HamroGharSewa/Booking/ChatPage.dart';
 import 'package:HamroGharSewa/view/admin/AdminProfileScreen.dart';
+import 'package:HamroGharSewa/view/profile/edit_profile_screen.dart';
+import 'package:HamroGharSewa/view/payment/payment_success_page.dart';
+import 'package:HamroGharSewa/view/profile/user_profile_screen.dart';
+import 'package:HamroGharSewa/view/profile/edit_profile_screen.dart';
 import 'package:flutter/material.dart';
 
 class AppRoutes {
@@ -21,7 +25,10 @@ class AppRoutes {
   static const String history = '/history';
   static const String chat = '/chat';
   static const String profile = '/profile';
+  static const String editProfile = '/edit-profile';
   static const String adminProfile = '/admin-profile';
+  static const String paymentSuccess = '/payment-success';
+  static const String paymentFailure = '/payment-failure';
 
 
   static Route<dynamic> generateRoute(RouteSettings settings) {
@@ -56,12 +63,40 @@ class AppRoutes {
         return MaterialPageRoute(builder: (_) => const ChatPage(name: "Support Chat"));
 
       case profile:
-        // Navigate to UserDashboard for now (can be enhanced to show actual profile)
-        return MaterialPageRoute(builder: (_) => const UserDashboard());
+        return MaterialPageRoute(builder: (_) => const UserProfileScreen());
+      
+      case editProfile:
+        return MaterialPageRoute(builder: (_) => const EditProfileScreen());
       
       case adminProfile:
         return MaterialPageRoute(builder: (_) => const AdminProfileScreen());
       
+      case paymentSuccess:
+        return MaterialPageRoute(builder: (_) => const PaymentSuccessPage());
+      
+      case paymentFailure:
+        return MaterialPageRoute(
+          builder: (context) => Scaffold(
+            body: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.error_outline, color: Colors.red, size: 80),
+                  const SizedBox(height: 16),
+                  const Text('Payment Failed!', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 8),
+                  const Text('Something went wrong during the transaction.'),
+                  const SizedBox(height: 24),
+                  ElevatedButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text('Go Back'),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+
       default:
         return MaterialPageRoute(
           builder: (_) => Scaffold(

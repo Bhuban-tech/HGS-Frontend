@@ -1,8 +1,12 @@
+import 'dart:convert';
+import 'package:flutter/foundation.dart'; // To check for kIsWeb
 import 'package:flutter/material.dart';
 import 'package:HamroGharSewa/constants/app_colors.dart';
-import 'package:url_launcher/url_launcher.dart';
+import 'package:webview_flutter/webview_flutter.dart';
+// ignore: avoid_web_libraries_in_flutter
+import 'dart:js' as js; // Needed for Web POST redirection
 
-class EsewaPaymentForm extends StatelessWidget {
+class EsewaPaymentForm extends StatefulWidget {
   final Map<String, dynamic> paymentData;
 
   const EsewaPaymentForm({
@@ -11,128 +15,152 @@ class EsewaPaymentForm extends StatelessWidget {
   }) : super(key: key);
 
   @override
-  Widget build(BuildContext context) {
-    // Immediately try to open payment
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _openEsewaPayment(context);
+  State<EsewaPaymentForm> createState() => _EsewaPaymentFormState();
+}
+
+class _EsewaPaymentFormState extends State<EsewaPaymentForm> {
+  WebViewController? _controller;
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    if (kIsWeb) {
+      _initiateWebPayment();
+    } else {
+      _initializeWebView();
+    }
+  }
+
+  void _initiateWebPayment() {
+    final endpoint = widget.paymentData['api_endpoint'] ?? 'https://rc-epay.esewa.com.np/api/epay/main/v2/form';
+    final Map<String, dynamic> formData = widget.paymentData['formData'] as Map<String, dynamic>? ?? widget.paymentData;
+
+    final StringBuffer jsCode = StringBuffer();
+    jsCode.writeln('var form = document.createElement("form");');
+    jsCode.writeln('form.setAttribute("method", "post");');
+    jsCode.writeln('form.setAttribute("action", "$endpoint");');
+
+    formData.forEach((key, value) {
+      if (key != 'api_endpoint' && value != null) {
+        final sanitizedValue = value.toString().replaceAll("'", "\\'");
+        jsCode.writeln('var field$key = document.createElement("input");');
+        jsCode.writeln('field$key.setAttribute("type", "hidden");');
+        jsCode.writeln('field$key.setAttribute("name", "$key");');
+        jsCode.writeln('field$key.setAttribute("value", "$sanitizedValue");');
+        jsCode.writeln('form.appendChild(field$key);');
+      }
     });
 
+    jsCode.writeln('document.body.appendChild(form);');
+    jsCode.writeln('form.submit();');
+
+    try {
+      js.context.callMethod('eval', [jsCode.toString()]);
+    } catch (e) {
+      print('🔴 Web Redirection Error: $e');
+    }
+  }
+
+  void _initializeWebView() {
+    final endpoint = widget.paymentData['api_endpoint'] ?? 'https://rc-epay.esewa.com.np/api/epay/main/v2/form';
+    final Map<String, dynamic> formData = widget.paymentData['formData'] as Map<String, dynamic>? ?? widget.paymentData;
+
+    final String formHtml = _generateEsewaFormHtml(endpoint, formData);
+    final String contentBase64 = base64Encode(const Utf8Encoder().convert(formHtml));
+
+    _controller = WebViewController()
+      ..setJavaScriptMode(JavaScriptMode.unrestricted)
+      ..setNavigationDelegate(
+        NavigationDelegate(
+          onPageStarted: (String url) => setState(() => _isLoading = true),
+          onPageFinished: (String url) => setState(() => _isLoading = false),
+          onWebResourceError: (WebResourceError error) => print('🔴 WebView error: ${error.description}'),
+        ),
+      )
+      ..loadRequest(Uri.parse('data:text/html;base64,$contentBase64'));
+  }
+
+  String _generateEsewaFormHtml(String endpoint, Map<String, dynamic> data) {
+    final StringBuffer formFields = StringBuffer();
+    
+    data.forEach((key, value) {
+      if (key != 'api_endpoint' && value != null) {
+        formFields.writeln('<input type="hidden" name="$key" value="$value">');
+      }
+    });
+
+    return '''
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>eSewa Payment</title>
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        </head>
+        <body onload="document.forms[0].submit()">
+          <div style="text-align: center; margin-top: 50px; font-family: sans-serif;">
+            <div class="spinner"></div>
+            <p>Redirecting to eSewa...</p>
+            <form action="$endpoint" method="POST">
+              $formFields
+            </form>
+          </div>
+          <style>
+            .spinner {
+              border: 4px solid #f3f3f3;
+              border-top: 4px solid #60BB46;
+              border-radius: 50%;
+              width: 40px;
+              height: 40px;
+              animation: spin 1s linear infinite;
+              margin: 0 auto 20px;
+            }
+            @keyframes spin {
+              0% { transform: rotate(0deg); }
+              100% { transform: rotate(360deg); }
+            }
+          </style>
+        </body>
+      </html>
+    ''';
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: const Color(0xFF60BB46),
         title: const Text(
           'eSewa Payment',
-          style: TextStyle(color: Colors.white),
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        ),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () => Navigator.pop(context),
         ),
       ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const CircularProgressIndicator(
-              color: Color(0xFF60BB46),
+      body: kIsWeb 
+        ? const Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                CircularProgressIndicator(color: Color(0xFF60BB46)),
+                SizedBox(height: 16),
+                Text('Processing payment redirection...'),
+              ],
             ),
-            const SizedBox(height: 24),
-            const Text(
-              'Opening eSewa Payment...',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 8),
-            const Text(
-              'Please complete the payment in your browser',
-              style: TextStyle(
-                fontSize: 14,
-                color: AppColors.textLight,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 32),
-            ElevatedButton(
-              onPressed: () => _openEsewaPayment(context),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF60BB46),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 32,
-                  vertical: 16,
+          )
+        : Stack(
+            children: [
+              if (_controller != null) WebViewWidget(controller: _controller!),
+              if (_isLoading)
+                const Center(
+                  child: CircularProgressIndicator(
+                    color: Color(0xFF60BB46),
+                  ),
                 ),
-              ),
-              child: const Text(
-                'Open Payment Page',
-                style: TextStyle(color: Colors.white),
-              ),
-            ),
-            const SizedBox(height: 16),
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Cancel'),
-            ),
-          ],
-        ),
-      ),
+            ],
+          ),
     );
-  }
-
-  Future<void> _openEsewaPayment(BuildContext context) async {
-    try {
-      // Mobile: Use URL launcher with query parameters
-      // Note: eSewa requires POST method, but mobile apps typically use GET with params
-      await _openEsewaPaymentMobile();
-      
-      if (context.mounted) {
-        // Show info and close this page
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Payment page opened. Complete payment and return to app.'),
-            backgroundColor: AppColors.success,
-            duration: Duration(seconds: 4),
-          ),
-        );
-        
-        // Close this page after a short delay
-        Future.delayed(const Duration(seconds: 2), () {
-          if (context.mounted) {
-            Navigator.pop(context);
-          }
-        });
-      }
-    } catch (e) {
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to open payment: $e'),
-            backgroundColor: AppColors.error,
-          ),
-        );
-      }
-    }
-  }
-
-  Future<void> _openEsewaPaymentMobile() async {
-    // Get endpoint
-    final endpoint = paymentData['api_endpoint'] ?? 'https://esewa.com.np/epay/main/v2/form';
-    
-    // Build query parameters
-    final params = <String, String>{};
-    paymentData.forEach((key, value) {
-      if (key != 'api_endpoint' && value != null) {
-        params[key] = value.toString();
-      }
-    });
-    
-    // Build URL with query parameters
-    final uri = Uri.parse(endpoint).replace(queryParameters: params);
-    
-    // Launch URL
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(
-        uri,
-        mode: LaunchMode.externalApplication,
-      );
-    } else {
-      throw Exception('Could not launch eSewa payment');
-    }
   }
 }
